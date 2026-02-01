@@ -697,6 +697,27 @@ export function getPendingMatches(): Match[] {
   return matches.filter((m) => m.status === 'pending').sort((a, b) => b.score - a.score)
 }
 
+export function getPendingMatchesWithDetails(): MatchWithDetails[] {
+  return getPendingMatches()
+    .map((match) => {
+      const mentor = getMentorById(match.mentorId)
+      const experience = getExperienceById(match.experienceId)
+      const bottleneck = getBottleneckById(match.bottleneckId)
+      const startup = bottleneck ? startups.find((s) => s.id === bottleneck.startupId) : undefined
+
+      if (!mentor || !experience || !bottleneck || !startup) return null
+
+      return {
+        ...match,
+        mentor,
+        experience,
+        bottleneck,
+        startup,
+      }
+    })
+    .filter((m): m is MatchWithDetails => m !== null)
+}
+
 export function getMatchWithDetails(id: string): MatchWithDetails | undefined {
   const match = getMatchById(id)
   if (!match) return undefined

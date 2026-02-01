@@ -4,6 +4,87 @@
 // =====================================================
 
 // -----------------------------------------------------
+// AUTH & USER TYPES
+// -----------------------------------------------------
+
+export const USER_TYPES = ['founder', 'partner'] as const
+export const PARTNER_SUB_TYPES = ['mentor', 'vc', 'startup_manager'] as const
+export const SHARED_VIEW_TYPES = ['metrics', 'checkpoint', 'document'] as const
+export const SHARED_VIEW_PERMISSIONS = ['view', 'comment', 'download'] as const
+
+export type UserType = (typeof USER_TYPES)[number]
+export type PartnerSubType = (typeof PARTNER_SUB_TYPES)[number]
+export type SharedViewType = (typeof SHARED_VIEW_TYPES)[number]
+export type SharedViewPermission = (typeof SHARED_VIEW_PERMISSIONS)[number]
+
+/**
+ * Authenticated user with role information
+ */
+export interface AuthUser {
+  id: string
+  email: string
+  name: string
+  avatarUrl: string | null
+  userType: UserType | null       // null = needs role selection
+  partnerSubType: PartnerSubType | null
+  startupId: string | null        // For founders - their associated startup
+  onboardingComplete: boolean     // For founders - have they completed onboarding?
+  createdAt: string
+}
+
+/**
+ * Shared view - allows partners to share specific resources with founders
+ */
+export interface SharedView {
+  id: string
+  createdBy: string               // Partner user ID
+  targetFounderId: string         // Which founder can see this
+  targetStartupId: string         // Associated startup
+  viewType: SharedViewType
+  resourceIds: string[]           // IDs of metrics, checkpoints, or documents
+  permissions: SharedViewPermission[]
+  expiresAt: string | null
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+/**
+ * Document uploaded by a founder
+ */
+export interface FounderDocument {
+  id: string
+  startupId: string
+  uploadedBy: string              // Founder user ID
+  fileName: string
+  fileType: string                // e.g., 'pitch_deck', 'financials', 'legal'
+  fileUrl: string
+  fileSize: number                // bytes
+  description: string | null
+  isSharedWithPartners: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+/**
+ * Feature/mentor request from a founder
+ */
+export interface FounderRequest {
+  id: string
+  startupId: string
+  requestedBy: string             // Founder user ID
+  requestType: 'feature' | 'mentor' | 'feedback' | 'other'
+  title: string
+  description: string
+  priority: 'low' | 'medium' | 'high'
+  status: 'pending' | 'in_review' | 'approved' | 'completed' | 'declined'
+  assignedTo: string | null       // Partner user ID
+  responseNotes: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+// -----------------------------------------------------
 // ENUMS & CONSTANTS
 // -----------------------------------------------------
 

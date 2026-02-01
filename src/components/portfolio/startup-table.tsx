@@ -20,9 +20,10 @@ import { getStageInfo, getRiskInfo } from '@/types'
 
 interface StartupTableProps {
   startups: StartupWithFounders[]
+  linkPrefix?: string
 }
 
-export function StartupTable({ startups }: StartupTableProps) {
+export function StartupTable({ startups, linkPrefix = '/startup' }: StartupTableProps) {
   const riskColorClass = {
     low: 'bg-green-500/10 text-green-700 border-green-500/20',
     normal: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
@@ -62,7 +63,7 @@ export function StartupTable({ startups }: StartupTableProps) {
               <TableRow key={startup.id} className="group">
                 <TableCell>
                   <Link
-                    href={`/startup/${startup.id}`}
+                    href={`${linkPrefix}/${startup.id}`}
                     className="flex items-center gap-3 group-hover:text-primary transition-colors"
                   >
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">

@@ -11,6 +11,7 @@ import type { MatchWithDetails, ConfidenceLevel } from '@/types'
 
 interface MatchCardProps {
   match: MatchWithDetails
+  linkPrefix?: string
 }
 
 function getScoreColor(score: number) {
@@ -40,7 +41,7 @@ function getStatusBadge(status: string) {
   return config[status] || config.pending
 }
 
-export function MatchCard({ match }: MatchCardProps) {
+export function MatchCard({ match, linkPrefix = '/match' }: MatchCardProps) {
   const mentorInitials = match.mentor.name
     .split(' ')
     .map((n) => n[0])
@@ -51,7 +52,7 @@ export function MatchCard({ match }: MatchCardProps) {
   const statusConfig = getStatusBadge(match.status)
 
   return (
-    <Link href={`/match/${match.id}`}>
+    <Link href={`${linkPrefix}/${match.id}`}>
       <Card className="cursor-pointer hover:shadow-md transition-shadow">
         <CardContent className="pt-6">
           <div className="flex items-start gap-4">

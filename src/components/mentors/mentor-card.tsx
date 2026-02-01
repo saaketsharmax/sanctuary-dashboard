@@ -9,9 +9,10 @@ import type { Mentor } from '@/types'
 
 interface MentorCardProps {
   mentor: Mentor
+  linkPrefix?: string
 }
 
-export function MentorCard({ mentor }: MentorCardProps) {
+export function MentorCard({ mentor, linkPrefix = '/mentors' }: MentorCardProps) {
   const initials = mentor.name
     .split(' ')
     .map((n) => n[0])
@@ -19,7 +20,7 @@ export function MentorCard({ mentor }: MentorCardProps) {
     .toUpperCase()
 
   return (
-    <Link href={`/mentors/${mentor.id}`}>
+    <Link href={`${linkPrefix}/${mentor.id}`}>
       <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
         <CardContent className="pt-6">
           <div className="flex items-start gap-4">
