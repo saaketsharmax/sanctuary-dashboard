@@ -3,41 +3,28 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { PartnerHeader } from '@/components/partner/layout/partner-header'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Building2,
-  Users,
-  Calendar,
-  ArrowRight,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  FileText,
-  MessageSquare,
-} from 'lucide-react'
 import { getAllApplicationsWithFounders, getOnboardingStats } from '@/lib/mock-data'
 import { APPLICATION_STAGES } from '@/types'
 
-function getStatusBadge(status: string) {
-  const configs: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
-    draft: { label: 'Draft', className: 'bg-gray-100 text-gray-700', icon: <FileText className="h-3 w-3" /> },
-    submitted: { label: 'Submitted', className: 'bg-blue-100 text-blue-700', icon: <Clock className="h-3 w-3" /> },
-    interview_scheduled: { label: 'Interview Scheduled', className: 'bg-purple-100 text-purple-700', icon: <Calendar className="h-3 w-3" /> },
-    interview_completed: { label: 'Interview Done', className: 'bg-indigo-100 text-indigo-700', icon: <MessageSquare className="h-3 w-3" /> },
-    assessment_generated: { label: 'Assessment Ready', className: 'bg-cyan-100 text-cyan-700', icon: <FileText className="h-3 w-3" /> },
-    under_review: { label: 'Under Review', className: 'bg-yellow-100 text-yellow-700', icon: <Clock className="h-3 w-3" /> },
-    approved: { label: 'Approved', className: 'bg-green-100 text-green-700', icon: <CheckCircle2 className="h-3 w-3" /> },
-    rejected: { label: 'Rejected', className: 'bg-red-100 text-red-700', icon: <XCircle className="h-3 w-3" /> },
-    withdrawn: { label: 'Withdrawn', className: 'bg-gray-100 text-gray-700', icon: <XCircle className="h-3 w-3" /> },
+type FilterValue = 'all' | 'needs_review' | 'in_progress' | 'decided'
+
+function getStatusStyle(status: string) {
+  const configs: Record<string, { label: string; borderClass: string; textClass: string }> = {
+    draft: { label: 'DRAFT', borderClass: 'border-[var(--cream)]/20', textClass: 'text-[var(--cream)]/40' },
+    submitted: { label: 'SUBMITTED', borderClass: 'border-blue-500', textClass: 'text-blue-500' },
+    interview_scheduled: { label: 'INTERVIEW_SCHEDULED', borderClass: 'border-purple-500', textClass: 'text-purple-500' },
+    interview_completed: { label: 'INTERVIEW_DONE', borderClass: 'border-indigo-500', textClass: 'text-indigo-500' },
+    assessment_generated: { label: 'ASSESSMENT_READY', borderClass: 'border-cyan-500', textClass: 'text-cyan-500' },
+    under_review: { label: 'UNDER_REVIEW', borderClass: 'border-amber-500', textClass: 'text-amber-500' },
+    approved: { label: 'APPROVED', borderClass: 'border-[var(--olive)]', textClass: 'text-[var(--olive)]' },
+    rejected: { label: 'REJECTED', borderClass: 'border-[var(--warning)]', textClass: 'text-[var(--warning)]' },
+    withdrawn: { label: 'WITHDRAWN', borderClass: 'border-[var(--cream)]/20', textClass: 'text-[var(--cream)]/40' },
   }
   return configs[status] || configs.draft
 }
 
 export default function PartnerApplicationsPage() {
-  const [filter, setFilter] = useState<string>('all')
+  const [filter, setFilter] = useState<FilterValue>('all')
 
   const applications = getAllApplicationsWithFounders()
   const stats = getOnboardingStats()
@@ -62,144 +49,163 @@ export default function PartnerApplicationsPage() {
     : decided
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-[var(--deep-black)]">
       <PartnerHeader
-        title="Applications"
-        description="Review startup applications"
+        title="APPLICANT_QUEUE"
+        breadcrumb={['Applications']}
       />
 
-      <div className="flex-1 overflow-auto p-6 space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Total</p>
-              <p className="text-2xl font-bold">{stats.totalApplications}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Needs Review</p>
-              <p className="text-2xl font-bold text-blue-600">{needsReview.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">In Progress</p>
-              <p className="text-2xl font-bold text-yellow-600">{inProgress.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Approved</p>
-              <p className="text-2xl font-bold text-green-600">{stats.approved}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Rejected</p>
-              <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
-            </CardContent>
-          </Card>
+      {/* Stats */}
+      <section className="grid grid-cols-2 md:grid-cols-5 border-b border-[var(--grid-line)]">
+        <div className="p-6 border-r border-[var(--grid-line)]">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--olive)] mb-2">
+            TOTAL_QUEUE
+          </p>
+          <p className="text-3xl font-black font-mono text-[var(--cream)]">{stats.totalApplications}</p>
         </div>
+        <div className="p-6 border-r border-[var(--grid-line)]">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-blue-400 mb-2">
+            NEEDS_REVIEW
+          </p>
+          <p className="text-3xl font-black font-mono text-blue-400">{needsReview.length}</p>
+        </div>
+        <div className="p-6 border-r border-[var(--grid-line)]">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-500 mb-2">
+            IN_PROGRESS
+          </p>
+          <p className="text-3xl font-black font-mono text-amber-500">{inProgress.length}</p>
+        </div>
+        <div className="p-6 border-r border-[var(--grid-line)]">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--olive)] mb-2">
+            APPROVED
+          </p>
+          <p className="text-3xl font-black font-mono text-[var(--olive)]">{stats.approved}</p>
+        </div>
+        <div className="p-6">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--warning)] mb-2">
+            REJECTED
+          </p>
+          <p className="text-3xl font-black font-mono text-[var(--warning)]">{stats.rejected}</p>
+        </div>
+      </section>
 
-        {/* Applications List */}
-        <Tabs value={filter} onValueChange={setFilter}>
-          <TabsList>
-            <TabsTrigger value="all">All ({applications.length})</TabsTrigger>
-            <TabsTrigger value="needs_review">Needs Review ({needsReview.length})</TabsTrigger>
-            <TabsTrigger value="in_progress">In Progress ({inProgress.length})</TabsTrigger>
-            <TabsTrigger value="decided">Decided ({decided.length})</TabsTrigger>
-          </TabsList>
+      {/* Tab Navigation */}
+      <div className="border-b border-[var(--grid-line)] px-10 flex gap-8">
+        {[
+          { value: 'all', label: `ALL_${applications.length}` },
+          { value: 'needs_review', label: `NEEDS_REVIEW_${needsReview.length}` },
+          { value: 'in_progress', label: `IN_PROGRESS_${inProgress.length}` },
+          { value: 'decided', label: `DECIDED_${decided.length}` },
+        ].map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => setFilter(tab.value as FilterValue)}
+            className={`py-4 text-xs font-bold tracking-widest font-mono uppercase transition-colors border-b-2 -mb-px ${
+              filter === tab.value
+                ? 'border-[var(--olive)] text-[var(--olive)]'
+                : 'border-transparent text-[var(--cream)]/40 hover:text-[var(--cream)]'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-          <TabsContent value={filter} className="mt-6">
-            <div className="space-y-4">
-              {filteredApplications.length > 0 ? (
-                filteredApplications.map((app) => {
-                  const statusConfig = getStatusBadge(app.status)
-                  const stageLabel = APPLICATION_STAGES.find((s) => s.value === app.stage)?.label || app.stage
-                  const leadFounder = app.founders.find((f) => f.isLead) || app.founders[0]
+      {/* Applications List */}
+      <div className="flex-1 overflow-auto p-10 space-y-px bg-[var(--grid-line)]">
+        {filteredApplications.length > 0 ? (
+          filteredApplications.map((app) => {
+            const statusConfig = getStatusStyle(app.status)
+            const stageLabel = APPLICATION_STAGES.find((s) => s.value === app.stage)?.label || app.stage
+            const leadFounder = app.founders.find((f) => f.isLead) || app.founders[0]
 
-                  return (
-                    <Card key={app.id} className="hover:border-green-500 transition-colors">
-                      <CardContent className="pt-6">
-                        <div className="flex items-start gap-4">
-                          <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
-                            <Building2 className="h-6 w-6" />
-                          </div>
+            return (
+              <div
+                key={app.id}
+                className="bg-[var(--deep-black)] p-6 hover:bg-[#0a0a0a] transition-colors"
+              >
+                <div className="flex items-start gap-6">
+                  <div className="size-14 border border-[var(--grid-line)] flex items-center justify-center">
+                    <span className="text-xl font-bold font-mono text-[var(--olive)]">
+                      {app.companyName.charAt(0)}
+                    </span>
+                  </div>
 
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-4">
-                              <div>
-                                <h3 className="font-semibold text-lg">{app.companyName}</h3>
-                                <p className="text-sm text-muted-foreground line-clamp-1">
-                                  {app.companyOneLiner}
-                                </p>
-                              </div>
-                              <Badge className={statusConfig.className}>
-                                {statusConfig.icon}
-                                <span className="ml-1">{statusConfig.label}</span>
-                              </Badge>
-                            </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="font-bold font-mono uppercase text-lg tracking-tight text-[var(--cream)]">
+                          {app.companyName.replace(/ /g, '_').toUpperCase()}
+                        </h3>
+                        <p className="text-sm text-[var(--cream)]/60 line-clamp-1">
+                          {app.companyOneLiner}
+                        </p>
+                      </div>
+                      <span className={`text-[10px] font-mono uppercase px-2 py-0.5 border ${statusConfig.borderClass} ${statusConfig.textClass}`}>
+                        {statusConfig.label}
+                      </span>
+                    </div>
 
-                            <div className="mt-4 grid gap-4 md:grid-cols-3">
-                              <div className="flex items-center gap-2 text-sm">
-                                <Users className="h-4 w-4 text-muted-foreground" />
-                                <span>
-                                  {leadFounder?.name}
-                                  {app.founders.length > 1 && ` +${app.founders.length - 1}`}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm">
-                                <Badge variant="outline">{stageLabel}</Badge>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Calendar className="h-4 w-4" />
-                                <span>
-                                  Submitted {app.submittedAt
-                                    ? new Date(app.submittedAt).toLocaleDateString()
-                                    : 'N/A'}
-                                </span>
-                              </div>
-                            </div>
+                    <div className="mt-4 flex flex-wrap gap-6 text-[10px] font-mono uppercase text-[var(--cream)]/60">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">person</span>
+                        {leadFounder?.name}
+                        {app.founders.length > 1 && ` +${app.founders.length - 1}`}
+                      </div>
+                      <div>
+                        <span className="px-2 py-0.5 border border-[var(--cream)]/20">
+                          {stageLabel.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">calendar_today</span>
+                        SUBMITTED: {app.submittedAt
+                          ? new Date(app.submittedAt).toLocaleDateString().toUpperCase()
+                          : 'N/A'}
+                      </div>
+                    </div>
 
-                            {app.biggestChallenge && (
-                              <div className="mt-3 p-3 rounded-lg bg-muted">
-                                <p className="text-xs font-medium text-muted-foreground mb-1">Biggest Challenge</p>
-                                <p className="text-sm line-clamp-2">{app.biggestChallenge}</p>
-                              </div>
-                            )}
+                    {app.biggestChallenge && (
+                      <div className="mt-4 p-4 border border-[var(--grid-line)]">
+                        <p className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2">
+                          BIGGEST_CHALLENGE
+                        </p>
+                        <p className="text-sm text-[var(--cream)]/80 line-clamp-2">{app.biggestChallenge}</p>
+                      </div>
+                    )}
 
-                            <div className="mt-4 flex gap-2">
-                              <Button variant="outline" size="sm" asChild>
-                                <Link href={`/interview/${app.id}`}>
-                                  View Interview
-                                  <ArrowRight className="ml-2 h-4 w-4" />
-                                </Link>
-                              </Button>
-                              {['assessment_generated', 'under_review'].includes(app.status) && (
-                                <Button size="sm">
-                                  Review Assessment
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )
-                })
-              ) : (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No applications in this category</p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
+                    <div className="mt-4 flex gap-4">
+                      <Link
+                        href={`/founder/interview/${app.id}`}
+                        className="text-[10px] font-mono uppercase tracking-widest px-4 py-2 border border-[var(--cream)]/20 text-[var(--cream)]/60 hover:border-[var(--olive)] hover:text-[var(--olive)] transition-colors flex items-center gap-2"
+                      >
+                        VIEW_INTERVIEW
+                        <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                      </Link>
+                      {['assessment_generated', 'under_review'].includes(app.status) && (
+                        <button className="text-[10px] font-mono uppercase tracking-widest px-4 py-2 bg-[var(--olive)] text-[var(--deep-black)] hover:bg-[var(--cream)] transition-colors">
+                          REVIEW_ASSESSMENT
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })
+        ) : (
+          <div className="bg-[var(--deep-black)] p-16 text-center">
+            <span className="material-symbols-outlined text-4xl text-[var(--cream)]/20 mb-4">
+              assignment
+            </span>
+            <p className="text-[var(--cream)]/40 font-mono uppercase text-sm">
+              NO_APPLICATIONS_FOUND
+            </p>
+            <p className="text-[10px] text-[var(--cream)]/20 font-mono uppercase mt-2">
+              No applications in this category
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

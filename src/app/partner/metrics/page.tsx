@@ -5,13 +5,13 @@ import { PortfolioMetrics } from '@/components/metrics'
 
 export default function PartnerMetricsPage() {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-[var(--deep-black)]">
       <PartnerHeader
-        title="Portfolio Metrics"
-        description="Track MRR, user growth, and retention across your portfolio"
+        title="ANALYTICS_ENGINE"
+        breadcrumb={['Metrics']}
       />
 
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-10">
         <PortfolioMetrics />
       </div>
     </div>

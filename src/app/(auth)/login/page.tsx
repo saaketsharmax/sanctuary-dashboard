@@ -4,12 +4,6 @@ import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
-import { Building2, Loader2, Github, Mail } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 
 function LoginForm() {
   const router = useRouter()
@@ -36,14 +30,14 @@ function LoginForm() {
       })
 
       if (result?.error) {
-        setError('Invalid email or password. Try partner@sanctuary.vc')
+        setError('Invalid credentials. Try partner@sanctuary.vc')
         setIsLoading(false)
       } else {
         router.push(callbackUrl)
         router.refresh()
       }
     } catch {
-      setError('An error occurred. Please try again.')
+      setError('System error. Please retry.')
       setIsLoading(false)
     }
   }
@@ -53,7 +47,7 @@ function LoginForm() {
     try {
       await signIn(provider, { callbackUrl })
     } catch {
-      setError('Failed to sign in. Please try again.')
+      setError('OAuth connection failed.')
       setLoadingProvider(null)
     }
   }
@@ -71,195 +65,236 @@ function LoginForm() {
       })
 
       if (result?.error) {
-        setError('Demo login failed. Please try again.')
+        setError('Demo access failed.')
         setIsLoading(false)
       } else {
-        // Demo users have roles already set, redirect to appropriate dashboard
         const redirectUrl = role === 'partner' ? '/partner/dashboard' : '/founder/dashboard'
         router.push(redirectUrl)
         router.refresh()
       }
     } catch {
-      setError('An error occurred. Please try again.')
+      setError('System error. Please retry.')
       setIsLoading(false)
     }
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-          <Building2 className="h-7 w-7 text-primary-foreground" />
+    <div className="min-h-screen flex flex-col bg-[#000000]">
+      {/* Header */}
+      <header className="p-8 md:p-12">
+        <div className="flex items-center gap-2 border-b border-white/10 pb-4">
+          <div className="w-2 h-2 bg-[var(--olive)]" />
+          <span className="text-xs uppercase tracking-[0.3em] font-bold font-mono text-[var(--cream)]">
+            Terminal Access
+          </span>
         </div>
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>Sign in to access your Sanctuary dashboard</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* OAuth Buttons */}
-        <div className="space-y-3">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={() => handleOAuthSignIn('google')}
-            disabled={isLoading || loadingProvider !== null}
-          >
-            {loadingProvider === 'google' ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                <path
-                  fill="currentColor"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                />
-              </svg>
-            )}
-            Continue with Google
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={() => handleOAuthSignIn('github')}
-            disabled={isLoading || loadingProvider !== null}
-          >
-            {loadingProvider === 'github' ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Github className="mr-2 h-4 w-4" />
-            )}
-            Continue with GitHub
-          </Button>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+        <div className="w-full max-w-4xl">
+          {/* Massive Title */}
+          <h1 className="text-[12vw] md:text-[10rem] font-black leading-[0.85] tracking-tighter text-[var(--cream)] mb-16 md:mb-24 text-center md:text-left font-mono">
+            SANCTUARY
+          </h1>
+
+          <div className="flex flex-col md:flex-row gap-12 md:gap-24 items-start">
+            {/* Login Form */}
+            <div className="w-full max-w-md space-y-8">
+              <div className="space-y-2">
+                <label className="block text-xs uppercase tracking-widest text-[var(--cream)]/60 font-bold font-mono">
+                  Authentication Protocol
+                </label>
+                <p className="text-sm text-[var(--cream)]/40 italic font-mono">
+                  // Enter credentials to access system
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-[var(--cream)] text-[var(--deep-black)] border-none h-16 px-6 text-lg font-bold placeholder:text-[var(--deep-black)]/30 focus:ring-4 focus:ring-[var(--olive)] outline-none transition-all uppercase font-mono"
+                    placeholder="IDENTIFIER@ACCESS.IO"
+                    required
+                    disabled={isLoading || loadingProvider !== null}
+                  />
+                </div>
+                <div className="relative">
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-[var(--cream)] text-[var(--deep-black)] border-none h-16 px-6 text-lg font-bold placeholder:text-[var(--deep-black)]/30 focus:ring-4 focus:ring-[var(--olive)] outline-none transition-all uppercase font-mono"
+                    placeholder="ACCESS_KEY"
+                    required
+                    disabled={isLoading || loadingProvider !== null}
+                  />
+                </div>
+
+                {error && (
+                  <p className="text-[10px] uppercase tracking-widest text-[var(--warning)] font-mono">
+                    [ERROR]: {error}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isLoading || loadingProvider !== null}
+                  className="w-full bg-[var(--olive)] hover:bg-[var(--dark-olive)] text-[var(--deep-black)] font-black uppercase tracking-widest h-16 transition-colors flex items-center justify-center gap-3 font-mono disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <span>AUTHENTICATING...</span>
+                  ) : (
+                    <>
+                      <span>Initialize_Session</span>
+                      <span className="material-symbols-outlined font-black">arrow_right_alt</span>
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {/* OAuth Options */}
+              <div className="space-y-3">
+                <p className="text-[10px] uppercase tracking-widest text-[var(--cream)]/40 font-mono text-center">
+                  // Alternative Protocols
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleOAuthSignIn('google')}
+                    disabled={isLoading || loadingProvider !== null}
+                    className="h-12 border border-[var(--cream)]/20 hover:bg-[var(--cream)] hover:text-[var(--deep-black)] text-[var(--cream)] text-[10px] font-bold uppercase tracking-widest transition-colors font-mono disabled:opacity-50"
+                  >
+                    {loadingProvider === 'google' ? '...' : 'Google_SSO'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOAuthSignIn('github')}
+                    disabled={isLoading || loadingProvider !== null}
+                    className="h-12 border border-[var(--cream)]/20 hover:bg-[var(--cream)] hover:text-[var(--deep-black)] text-[var(--cream)] text-[10px] font-bold uppercase tracking-widest transition-colors font-mono disabled:opacity-50"
+                  >
+                    {loadingProvider === 'github' ? '...' : 'GitHub_SSO'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/10">
+                <p className="text-[10px] uppercase tracking-widest text-[var(--cream)]/40 leading-relaxed font-mono">
+                  No credentials?{' '}
+                  <Link href="/signup" className="text-[var(--olive)] hover:text-[var(--cream)] transition-colors">
+                    Initialize_New_Account
+                  </Link>
+                </p>
+              </div>
+
+              {/* Demo Access */}
+              <div className="pt-4 border-t border-white/10 space-y-4">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-[var(--cream)]/40 font-mono">
+                  Demo_Access_Protocols
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleDemoLogin('partner')}
+                    disabled={isLoading || loadingProvider !== null}
+                    className="h-12 border border-[var(--olive)] text-[var(--olive)] hover:bg-[var(--olive)] hover:text-[var(--deep-black)] text-[10px] font-bold uppercase tracking-widest transition-colors font-mono disabled:opacity-50"
+                  >
+                    Partner_Mode
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDemoLogin('founder')}
+                    disabled={isLoading || loadingProvider !== null}
+                    className="h-12 border border-[var(--olive)] text-[var(--olive)] hover:bg-[var(--olive)] hover:text-[var(--deep-black)] text-[10px] font-bold uppercase tracking-widest transition-colors font-mono disabled:opacity-50"
+                  >
+                    Founder_Mode
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* System Status Panel */}
+            <div className="hidden md:block flex-1 border-l border-white/10 pl-12 space-y-8">
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--olive)] font-mono">
+                  System_Status
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="border border-white/10 p-4">
+                    <div className="text-[10px] uppercase text-[var(--cream)]/40 font-mono">Portfolio_Data</div>
+                    <div className="text-xl font-bold font-mono text-[var(--cream)]">99.9%</div>
+                  </div>
+                  <div className="border border-white/10 p-4">
+                    <div className="text-[10px] uppercase text-[var(--cream)]/40 font-mono">Network_Node</div>
+                    <div className="text-xl font-bold font-mono text-[var(--olive)]">SECURE</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--olive)] font-mono">
+                  Active_Metrics
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="border border-white/10 p-4">
+                    <div className="text-[10px] uppercase text-[var(--cream)]/40 font-mono">Entities</div>
+                    <div className="text-xl font-bold font-mono text-[var(--cream)]">42</div>
+                  </div>
+                  <div className="border border-white/10 p-4">
+                    <div className="text-[10px] uppercase text-[var(--cream)]/40 font-mono">Cohorts</div>
+                    <div className="text-xl font-bold font-mono text-[var(--cream)]">3</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-[10px] font-mono text-[var(--cream)]/20 uppercase leading-loose">
+                [LOG]: SYSTEM_INITIALIZED<br />
+                [LOG]: ENCRYPTION_ACTIVE<br />
+                [LOG]: WAITING_FOR_USER_INPUT...
+              </div>
+            </div>
+          </div>
         </div>
+      </main>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
-          </div>
+      {/* Footer */}
+      <footer className="p-8 md:p-12 flex flex-col md:flex-row justify-between items-end gap-6 border-t border-white/5">
+        <div className="text-[10px] uppercase tracking-[0.2em] text-[var(--cream)]/30 font-mono">
+          &copy; 2024 SANCTUARY LTD / PORTFOLIO_INTEL
         </div>
-
-        {/* Email/Password Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isLoading || loadingProvider !== null}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={isLoading || loadingProvider !== null}
-            />
-          </div>
-
-          {error && <p className="text-sm text-destructive">{error}</p>}
-
-          <Button type="submit" className="w-full" disabled={isLoading || loadingProvider !== null}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              <>
-                <Mail className="mr-2 h-4 w-4" />
-                Sign in with Email
-              </>
-            )}
-          </Button>
-        </form>
-
-        <div className="text-center text-sm">
-          <span className="text-muted-foreground">Don&apos;t have an account? </span>
-          <Link href="/signup" className="text-primary hover:underline font-medium">
-            Sign up
-          </Link>
-        </div>
-
-        <Separator />
-
-        {/* Demo Access */}
-        <div className="space-y-3">
-          <p className="text-center text-xs text-muted-foreground uppercase tracking-wider">
-            Demo Access
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => handleDemoLogin('partner')}
-              disabled={isLoading || loadingProvider !== null}
-            >
-              Partner View
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => handleDemoLogin('founder')}
-              disabled={isLoading || loadingProvider !== null}
-            >
-              Founder View
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        <nav className="flex gap-8 text-[10px] uppercase tracking-[0.2em] font-bold font-mono">
+          <a className="text-[var(--cream)]/50 hover:text-[var(--olive)] transition-colors" href="#">
+            Support
+          </a>
+          <a className="text-[var(--cream)]/50 hover:text-[var(--olive)] transition-colors" href="#">
+            Privacy
+          </a>
+          <a className="text-[var(--cream)]/50 hover:text-[var(--olive)] transition-colors" href="#">
+            Terms
+          </a>
+        </nav>
+      </footer>
+    </div>
   )
 }
 
 function LoginSkeleton() {
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-          <Building2 className="h-7 w-7 text-primary-foreground" />
-        </div>
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>Sign in to access your Sanctuary dashboard</CardDescription>
-      </CardHeader>
-      <CardContent className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </CardContent>
-    </Card>
+    <div className="min-h-screen flex items-center justify-center bg-[#000000]">
+      <div className="text-[var(--cream)]/40 font-mono text-sm uppercase tracking-widest">
+        INITIALIZING_TERMINAL...
+      </div>
+    </div>
   )
 }
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Suspense fallback={<LoginSkeleton />}>
-        <LoginForm />
-      </Suspense>
-    </div>
+    <Suspense fallback={<LoginSkeleton />}>
+      <LoginForm />
+    </Suspense>
   )
 }

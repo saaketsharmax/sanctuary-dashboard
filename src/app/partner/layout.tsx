@@ -1,6 +1,7 @@
-import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth/auth-config'
+import { redirect } from 'next/navigation'
 import { PartnerSidebar } from '@/components/partner/layout/partner-sidebar'
+import { Toaster } from '@/components/ui/sonner'
 
 export default async function PartnerLayout({
   children,
@@ -9,27 +10,21 @@ export default async function PartnerLayout({
 }) {
   const session = await auth()
 
-  // Redirect to login if not authenticated
   if (!session?.user) {
     redirect('/login')
   }
 
-  // Redirect to role selection if no user type
-  if (!session.user.userType) {
-    redirect('/auth/role-select')
-  }
-
-  // Redirect founders to their dashboard
   if (session.user.userType !== 'partner') {
     redirect('/founder/dashboard')
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="min-h-screen bg-[var(--deep-black)]">
       <PartnerSidebar />
-      <main className="flex-1 overflow-y-auto bg-background">
+      <main className="ml-16">
         {children}
       </main>
+      <Toaster />
     </div>
   )
 }

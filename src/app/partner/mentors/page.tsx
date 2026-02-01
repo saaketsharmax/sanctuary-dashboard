@@ -2,33 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import {
-  Search,
-  Filter,
-  Users,
-  Handshake,
-  AlertCircle,
-  TrendingUp,
-  DollarSign,
-  Plus,
-  Building2,
-} from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { PartnerHeader } from '@/components/partner/layout/partner-header'
-import { MentorCard, ExpertiseBadge } from '@/components/mentors'
-import { MatchCard } from '@/components/matching'
+import { ExpertiseBadge } from '@/components/mentors'
 import {
   getActiveMentors,
   bottlenecks,
@@ -40,9 +15,12 @@ import {
 } from '@/lib/mock-data'
 import { PROBLEM_ARCHETYPES, getStageInfo } from '@/types'
 
+type TabValue = 'dashboard' | 'mentors' | 'matches' | 'needs'
+
 export default function PartnerMentorMatchingPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [expertiseFilter, setExpertiseFilter] = useState<string>('all')
+  const [activeTab, setActiveTab] = useState<TabValue>('dashboard')
 
   const mentors = getActiveMentors()
   const stats = getMatchStats()
@@ -71,326 +49,438 @@ export default function PartnerMentorMatchingPage() {
       mentor.bio.toLowerCase().includes(searchQuery.toLowerCase())
 
     const matchesExpertise =
-      expertiseFilter === 'all' || mentor.expertise.includes(expertiseFilter as any)
+      expertiseFilter === 'all' || mentor.expertise.includes(expertiseFilter as never)
 
     return matchesSearch && matchesExpertise
   })
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-[var(--deep-black)]">
       <PartnerHeader
-        title="Mentor Matching"
-        description="Connect founders with mentors who've solved similar problems"
+        title="MENTOR_NETWORK"
+        breadcrumb={['Mentors']}
         action={{
           label: 'Add Mentor',
           onClick: () => {},
         }}
       />
 
-      <div className="flex-1 overflow-auto p-6 space-y-6">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-blue-600" />
-                <span className="text-sm text-muted-foreground">Mentors</span>
-              </div>
-              <p className="text-2xl font-bold mt-1">{mentors.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-yellow-600" />
-                <span className="text-sm text-muted-foreground">Needs Help</span>
-              </div>
-              <p className="text-2xl font-bold mt-1">{startupsNeedingHelp.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2">
-                <Handshake className="h-4 w-4 text-purple-600" />
-                <span className="text-sm text-muted-foreground">Pending</span>
-              </div>
-              <p className="text-2xl font-bold mt-1">{stats.pending}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-                <span className="text-sm text-muted-foreground">Completed</span>
-              </div>
-              <p className="text-2xl font-bold mt-1">{stats.completed + stats.introsSent}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-emerald-600" />
-                <span className="text-sm text-muted-foreground">Investors</span>
-              </div>
-              <p className="text-2xl font-bold mt-1">{investorMentors.length}</p>
-            </CardContent>
-          </Card>
+      {/* Stats Bar */}
+      <section className="grid grid-cols-2 md:grid-cols-5 border-b border-[var(--grid-line)]">
+        <div className="p-6 border-r border-[var(--grid-line)]">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--olive)] mb-2">
+            ACTIVE_MENTORS
+          </p>
+          <p className="text-3xl font-black font-mono text-[var(--cream)]">{mentors.length}</p>
         </div>
+        <div className="p-6 border-r border-[var(--grid-line)]">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-500 mb-2">
+            NEEDS_HELP
+          </p>
+          <p className="text-3xl font-black font-mono text-amber-500">{startupsNeedingHelp.length}</p>
+        </div>
+        <div className="p-6 border-r border-[var(--grid-line)]">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-purple-400 mb-2">
+            PENDING_MATCHES
+          </p>
+          <p className="text-3xl font-black font-mono text-purple-400">{stats.pending}</p>
+        </div>
+        <div className="p-6 border-r border-[var(--grid-line)]">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--olive)] mb-2">
+            COMPLETED
+          </p>
+          <p className="text-3xl font-black font-mono text-[var(--olive)]">{stats.completed + stats.introsSent}</p>
+        </div>
+        <div className="p-6">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-emerald-400 mb-2">
+            INVESTOR_MENTORS
+          </p>
+          <p className="text-3xl font-black font-mono text-emerald-400">{investorMentors.length}</p>
+        </div>
+      </section>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="dashboard" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="mentors">Mentors ({mentors.length})</TabsTrigger>
-            <TabsTrigger value="matches">Matches ({stats.total})</TabsTrigger>
-            <TabsTrigger value="needs">Startups Needing Help ({startupsNeedingHelp.length})</TabsTrigger>
-          </TabsList>
+      {/* Tab Navigation */}
+      <div className="border-b border-[var(--grid-line)] px-10 flex gap-8">
+        {[
+          { value: 'dashboard', label: 'DASHBOARD' },
+          { value: 'mentors', label: `MENTORS_${mentors.length}` },
+          { value: 'matches', label: `MATCHES_${stats.total}` },
+          { value: 'needs', label: `NEEDS_HELP_${startupsNeedingHelp.length}` },
+        ].map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => setActiveTab(tab.value as TabValue)}
+            className={`py-4 text-xs font-bold tracking-widest font-mono uppercase transition-colors border-b-2 -mb-px ${
+              activeTab === tab.value
+                ? 'border-[var(--olive)] text-[var(--olive)]'
+                : 'border-transparent text-[var(--cream)]/40 hover:text-[var(--cream)]'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-          {/* Dashboard Tab */}
-          <TabsContent value="dashboard" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="flex-1 overflow-auto p-10">
+        {/* Dashboard Tab */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            <div className="grid lg:grid-cols-2 gap-px bg-[var(--grid-line)]">
               {/* Startups Needing Help */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-medium flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-yellow-600" />
-                    Startups Needing Mentor Help
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
+              <div className="bg-[var(--deep-black)]">
+                <div className="px-6 py-4 border-b border-[var(--grid-line)] flex items-center gap-3">
+                  <span className="material-symbols-outlined text-amber-500">warning</span>
+                  <h3 className="font-bold font-mono uppercase tracking-wider text-[var(--cream)]">
+                    STARTUPS_NEEDING_HELP
+                  </h3>
+                </div>
+                <div className="p-4 space-y-px bg-[var(--grid-line)]">
                   {startupsNeedingHelp.slice(0, 4).map(({ bottleneck, startup }) => (
                     <Link
                       key={bottleneck.id}
                       href={`/partner/portfolio/${startup!.id}`}
-                      className="flex items-center justify-between p-3 rounded-lg hover:bg-accent transition-colors"
+                      className="block bg-[var(--deep-black)] p-4 hover:bg-[#0a0a0a] transition-colors"
                     >
-                      <div className="flex items-center gap-3">
-                        <Building2 className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium text-sm">{startup!.name}</p>
-                          <p className="text-xs text-muted-foreground line-clamp-1">
-                            {bottleneck.rawBlocker.slice(0, 60)}...
-                          </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="size-10 border border-[var(--grid-line)] flex items-center justify-center">
+                            <span className="text-[var(--cream)]/60 font-bold font-mono">
+                              {startup!.name.charAt(0)}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-bold font-mono uppercase text-sm tracking-tight text-[var(--cream)]">
+                              {startup!.name.replace(/ /g, '_').toUpperCase()}
+                            </p>
+                            <p className="text-[10px] text-[var(--cream)]/40 font-mono line-clamp-1 max-w-xs">
+                              {bottleneck.rawBlocker.slice(0, 60)}...
+                            </p>
+                          </div>
                         </div>
+                        <ExpertiseBadge archetype={bottleneck.problemArchetype} size="sm" />
                       </div>
-                      <ExpertiseBadge archetype={bottleneck.problemArchetype} size="sm" />
                     </Link>
                   ))}
                   {startupsNeedingHelp.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No startups currently need help
-                    </p>
+                    <div className="bg-[var(--deep-black)] p-8 text-center">
+                      <p className="text-[var(--cream)]/40 font-mono uppercase text-sm">
+                        NO_STARTUPS_NEED_HELP
+                      </p>
+                    </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Pending Matches */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-medium flex items-center gap-2">
-                    <Handshake className="h-4 w-4 text-purple-600" />
-                    Pending Matches to Review
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {pendingMatches.slice(0, 3).map((match) => {
+              <div className="bg-[var(--deep-black)]">
+                <div className="px-6 py-4 border-b border-[var(--grid-line)] flex items-center gap-3">
+                  <span className="material-symbols-outlined text-purple-400">handshake</span>
+                  <h3 className="font-bold font-mono uppercase tracking-wider text-[var(--cream)]">
+                    PENDING_MATCHES
+                  </h3>
+                </div>
+                <div className="p-4 space-y-px bg-[var(--grid-line)]">
+                  {pendingMatches.slice(0, 4).map((match) => {
                     const mentor = getMentorById(match.mentorId)
                     const isInvestor = mentor?.investedStartupIds.includes(match.startup.id)
                     return (
                       <Link
                         key={match.id}
                         href={`/partner/matches/${match.id}`}
-                        className="flex items-center justify-between p-3 rounded-lg hover:bg-accent transition-colors"
+                        className="block bg-[var(--deep-black)] p-4 hover:bg-[#0a0a0a] transition-colors"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold">
-                            {match.score}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-sm">{match.mentor.name}</p>
-                              {isInvestor && (
-                                <Badge variant="secondary" className="text-[10px] bg-emerald-100 text-emerald-700">
-                                  Investor
-                                </Badge>
-                              )}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="score-block size-10 flex items-center justify-center font-black font-mono">
+                              {match.score}
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                              → {match.startup.name}
-                            </p>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="font-bold font-mono uppercase text-sm tracking-tight text-[var(--cream)]">
+                                  {match.mentor.name.replace(/ /g, '_').toUpperCase()}
+                                </p>
+                                {isInvestor && (
+                                  <span className="text-[8px] font-mono uppercase px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400">
+                                    INVESTOR
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[10px] text-[var(--cream)]/40 font-mono">
+                                → {match.startup.name.toUpperCase()}
+                              </p>
+                            </div>
                           </div>
+                          <span className="text-[10px] font-mono uppercase px-2 py-0.5 border border-[var(--olive)] text-[var(--olive)]">
+                            {match.confidence}
+                          </span>
                         </div>
-                        <Badge variant="outline">{match.confidence}</Badge>
                       </Link>
                     )
                   })}
                   {pendingMatches.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No pending matches
-                    </p>
+                    <div className="bg-[var(--deep-black)] p-8 text-center">
+                      <p className="text-[var(--cream)]/40 font-mono uppercase text-sm">
+                        NO_PENDING_MATCHES
+                      </p>
+                    </div>
                   )}
-                  {pendingMatches.length > 0 && (
-                    <Link href="/partner/matches">
-                      <Button variant="outline" size="sm" className="w-full mt-2">
-                        View All Matches
-                      </Button>
-                    </Link>
-                  )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
 
-            {/* Mentor-Investors */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-emerald-600" />
-                  Mentors Available to Invest
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {investorMentors.slice(0, 4).map((mentor) => {
-                    const initials = mentor.name.split(' ').map((n) => n[0]).join('').toUpperCase()
-                    return (
-                      <Link
-                        key={mentor.id}
-                        href={`/partner/mentors/${mentor.id}`}
-                        className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent transition-colors"
-                      >
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={mentor.photoUrl || undefined} />
-                          <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                          <p className="font-medium text-sm truncate">{mentor.name}</p>
-                          <p className="text-xs text-emerald-600">{mentor.checkSize}</p>
+            {/* Investor Mentors */}
+            <div className="bg-[var(--deep-black)] border border-[var(--grid-line)]">
+              <div className="px-6 py-4 border-b border-[var(--grid-line)] flex items-center gap-3">
+                <span className="material-symbols-outlined text-emerald-400">attach_money</span>
+                <h3 className="font-bold font-mono uppercase tracking-wider text-[var(--cream)]">
+                  INVESTOR_MENTORS
+                </h3>
+              </div>
+              <div className="p-4 grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-[var(--grid-line)]">
+                {investorMentors.slice(0, 4).map((mentor) => (
+                  <Link
+                    key={mentor.id}
+                    href={`/partner/mentors/${mentor.id}`}
+                    className="bg-[var(--deep-black)] p-4 hover:bg-[#0a0a0a] transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      {mentor.photoUrl ? (
+                        <div
+                          className="size-10 border border-[var(--grid-line)] bg-cover bg-center"
+                          style={{ backgroundImage: `url("${mentor.photoUrl}")` }}
+                        />
+                      ) : (
+                        <div className="size-10 border border-[var(--grid-line)] flex items-center justify-center">
+                          <span className="text-sm font-bold font-mono text-[var(--olive)]">
+                            {mentor.name.charAt(0)}
+                          </span>
                         </div>
-                      </Link>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                      )}
+                      <div>
+                        <p className="font-bold font-mono uppercase text-sm tracking-tight text-[var(--cream)]">
+                          {mentor.name}
+                        </p>
+                        <p className="text-[10px] text-emerald-400 font-mono">
+                          {mentor.checkSize}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
-          {/* Mentors Tab */}
-          <TabsContent value="mentors" className="space-y-4">
+        {/* Mentors Tab */}
+        {activeTab === 'mentors' && (
+          <div className="space-y-6">
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search mentors..."
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--cream)]/40">
+                  search
+                </span>
+                <input
+                  type="text"
+                  placeholder="SEARCH_MENTORS"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
+                  className="w-full bg-transparent border border-[var(--grid-line)] py-2 pl-10 pr-4 text-xs tracking-widest font-mono uppercase focus:ring-0 focus:outline-none focus:border-[var(--olive)] placeholder:text-[var(--cream)]/30 text-[var(--cream)]"
                 />
               </div>
-              <Select value={expertiseFilter} onValueChange={setExpertiseFilter}>
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="All Expertise" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Expertise</SelectItem>
-                  {PROBLEM_ARCHETYPES.map((archetype) => (
-                    <SelectItem key={archetype.value} value={archetype.value}>
-                      {archetype.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <select
+                value={expertiseFilter}
+                onChange={(e) => setExpertiseFilter(e.target.value)}
+                className="bg-transparent border border-[var(--grid-line)] px-3 py-2 text-xs font-mono uppercase focus:ring-0 focus:outline-none focus:border-[var(--olive)] text-[var(--cream)] sm:w-[200px]"
+              >
+                <option value="all" className="bg-[var(--deep-black)]">ALL_EXPERTISE</option>
+                {PROBLEM_ARCHETYPES.map((archetype) => (
+                  <option key={archetype.value} value={archetype.value} className="bg-[var(--deep-black)]">
+                    {archetype.label.toUpperCase()}
+                  </option>
+                ))}
+              </select>
               {(searchQuery || expertiseFilter !== 'all') && (
-                <Button
-                  variant="ghost"
+                <button
                   onClick={() => {
                     setSearchQuery('')
                     setExpertiseFilter('all')
                   }}
+                  className="text-[10px] font-mono uppercase tracking-widest text-[var(--cream)]/60 hover:text-[var(--cream)]"
                 >
-                  Clear
-                </Button>
+                  CLEAR
+                </button>
               )}
             </div>
 
-            <div className="text-sm text-muted-foreground">
-              Showing {filteredMentors.length} of {mentors.length} mentors
-            </div>
+            <p className="text-[10px] font-mono uppercase text-[var(--cream)]/40">
+              SHOWING {filteredMentors.length} OF {mentors.length} MENTORS
+            </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-[var(--grid-line)]">
               {filteredMentors.map((mentor) => (
-                <MentorCard key={mentor.id} mentor={mentor} linkPrefix="/partner/mentors" />
+                <Link
+                  key={mentor.id}
+                  href={`/partner/mentors/${mentor.id}`}
+                  className="bg-[var(--deep-black)] p-6 hover:bg-[#0a0a0a] transition-colors group"
+                >
+                  <div className="flex items-start gap-4">
+                    {mentor.photoUrl ? (
+                      <div
+                        className="size-16 border border-[var(--grid-line)] bg-cover bg-center grayscale group-hover:grayscale-0 transition-all"
+                        style={{ backgroundImage: `url("${mentor.photoUrl}")` }}
+                      />
+                    ) : (
+                      <div className="size-16 border border-[var(--grid-line)] flex items-center justify-center">
+                        <span className="text-2xl font-bold font-mono text-[var(--olive)]">
+                          {mentor.name.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <h4 className="font-bold font-mono uppercase tracking-tight text-[var(--cream)] group-hover:text-[var(--olive)] transition-colors">
+                        {mentor.name.replace(/ /g, '_').toUpperCase()}
+                      </h4>
+                      <p className="text-[10px] text-[var(--cream)]/40 font-mono mt-1 line-clamp-2">
+                        {mentor.bio}
+                      </p>
+                      <div className="flex flex-wrap gap-1 mt-3">
+                        {mentor.expertise.slice(0, 2).map((exp) => (
+                          <span key={exp} className="text-[8px] font-mono uppercase px-1.5 py-0.5 border border-[var(--cream)]/20 text-[var(--cream)]/60">
+                            {exp}
+                          </span>
+                        ))}
+                        {mentor.expertise.length > 2 && (
+                          <span className="text-[8px] font-mono uppercase px-1.5 py-0.5 text-[var(--cream)]/40">
+                            +{mentor.expertise.length - 2}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {mentor.availableForInvestment && (
+                      <span className="text-[8px] font-mono uppercase px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400">
+                        INVESTOR
+                      </span>
+                    )}
+                  </div>
+                </Link>
               ))}
             </div>
-          </TabsContent>
+          </div>
+        )}
 
-          {/* Matches Tab */}
-          <TabsContent value="matches" className="space-y-4">
+        {/* Matches Tab */}
+        {activeTab === 'matches' && (
+          <div className="space-y-px bg-[var(--grid-line)]">
             {matches
               .sort((a, b) => b.score - a.score)
               .map((match) => {
                 const details = getMatchWithDetails(match.id)
                 if (!details) return null
-                return <MatchCard key={match.id} match={details} linkPrefix="/partner/matches" />
+                return (
+                  <Link
+                    key={match.id}
+                    href={`/partner/matches/${match.id}`}
+                    className="bg-[var(--deep-black)] p-6 block hover:bg-[#0a0a0a] transition-colors group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-6">
+                        <div className="score-block size-14 flex items-center justify-center font-black font-mono text-xl">
+                          {details.score}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <p className="font-bold font-mono uppercase tracking-tight text-[var(--cream)]">
+                              {details.mentor.name.replace(/ /g, '_').toUpperCase()}
+                            </p>
+                            <span className="text-[var(--cream)]/40">→</span>
+                            <p className="font-bold font-mono uppercase tracking-tight text-[var(--olive)]">
+                              {details.startup.name.replace(/ /g, '_').toUpperCase()}
+                            </p>
+                          </div>
+                          <p className="text-[10px] text-[var(--cream)]/40 font-mono mt-1">
+                            {details.explanation}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className={`text-[10px] font-mono uppercase px-2 py-0.5 border ${
+                          details.status === 'completed'
+                            ? 'border-[var(--olive)] text-[var(--olive)]'
+                            : details.status === 'pending'
+                            ? 'border-purple-400 text-purple-400'
+                            : 'border-[var(--cream)]/20 text-[var(--cream)]/60'
+                        }`}>
+                          {details.status.toUpperCase()}
+                        </span>
+                        <span className="text-[10px] font-mono uppercase px-2 py-0.5 border border-[var(--olive)] text-[var(--olive)]">
+                          {details.confidence}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                )
               })}
-          </TabsContent>
+          </div>
+        )}
 
-          {/* Startups Needing Help Tab */}
-          <TabsContent value="needs" className="space-y-4">
+        {/* Needs Help Tab */}
+        {activeTab === 'needs' && (
+          <div className="space-y-px bg-[var(--grid-line)]">
             {startupsNeedingHelp.map(({ bottleneck, startup }) => {
               const stageInfo = getStageInfo(startup!.stage)
               const matchCount = matches.filter((m) => m.bottleneckId === bottleneck.id).length
               return (
-                <Card key={bottleneck.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Link href={`/partner/portfolio/${startup!.id}`} className="font-semibold hover:underline">
-                            {startup!.name}
-                          </Link>
-                          <Badge variant="outline">{stageInfo.label}</Badge>
-                          <ExpertiseBadge archetype={bottleneck.problemArchetype} />
-                        </div>
-
-                        <div className="space-y-3 mt-4">
-                          <div>
-                            <p className="text-sm font-medium">What&apos;s blocking them?</p>
-                            <p className="text-sm text-muted-foreground">{bottleneck.rawBlocker}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">What have they tried?</p>
-                            <p className="text-sm text-muted-foreground">{bottleneck.rawAttempts}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">Success criteria</p>
-                            <p className="text-sm text-muted-foreground">{bottleneck.rawSuccessCriteria}</p>
-                          </div>
-                        </div>
+                <div key={bottleneck.id} className="bg-[var(--deep-black)] p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-4">
+                        <Link
+                          href={`/partner/portfolio/${startup!.id}`}
+                          className="font-bold font-mono uppercase tracking-tight text-[var(--cream)] hover:text-[var(--olive)] transition-colors"
+                        >
+                          {startup!.name.replace(/ /g, '_').toUpperCase()}
+                        </Link>
+                        <span className="text-[10px] font-mono uppercase px-2 py-0.5 border border-[var(--cream)]/20 text-[var(--cream)]/60">
+                          {stageInfo.label}
+                        </span>
+                        <ExpertiseBadge archetype={bottleneck.problemArchetype} />
                       </div>
 
-                      <div className="text-right">
-                        <p className="text-2xl font-bold">{matchCount}</p>
-                        <p className="text-xs text-muted-foreground">matches found</p>
-                        <Badge
-                          variant="secondary"
-                          className={
-                            bottleneck.status === 'matched'
-                              ? 'bg-green-100 text-green-700 mt-2'
-                              : 'bg-yellow-100 text-yellow-700 mt-2'
-                          }
-                        >
-                          {bottleneck.status}
-                        </Badge>
+                      <div className="space-y-4">
+                        <div>
+                          <p className="text-[10px] font-mono uppercase text-[var(--olive)] mb-1">BLOCKING_ISSUE</p>
+                          <p className="text-sm text-[var(--cream)]/80">{bottleneck.rawBlocker}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-mono uppercase text-[var(--olive)] mb-1">ATTEMPTED_SOLUTIONS</p>
+                          <p className="text-sm text-[var(--cream)]/80">{bottleneck.rawAttempts}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-mono uppercase text-[var(--olive)] mb-1">SUCCESS_CRITERIA</p>
+                          <p className="text-sm text-[var(--cream)]/80">{bottleneck.rawSuccessCriteria}</p>
+                        </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+
+                    <div className="text-right ml-8">
+                      <p className="text-4xl font-black font-mono text-[var(--cream)]">{matchCount}</p>
+                      <p className="text-[10px] text-[var(--cream)]/40 font-mono uppercase">MATCHES_FOUND</p>
+                      <span className={`inline-block mt-2 text-[10px] font-mono uppercase px-2 py-0.5 ${
+                        bottleneck.status === 'matched'
+                          ? 'bg-[var(--olive)]/20 text-[var(--olive)]'
+                          : 'bg-amber-500/20 text-amber-500'
+                      }`}>
+                        {bottleneck.status.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               )
             })}
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
       </div>
     </div>
   )
