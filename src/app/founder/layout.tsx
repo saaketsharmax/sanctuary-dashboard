@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth/auth-config'
 import { FounderSidebar } from '@/components/founder/layout/founder-sidebar'
+import { Toaster } from '@/components/ui/sonner'
 
 export default async function FounderLayout({
   children,
@@ -25,11 +26,12 @@ export default async function FounderLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="min-h-screen bg-[var(--deep-black)]">
       <FounderSidebar />
-      <main className="flex-1 overflow-y-auto bg-background">
+      <main className="ml-16">
         {children}
       </main>
+      <Toaster />
     </div>
   )
 }

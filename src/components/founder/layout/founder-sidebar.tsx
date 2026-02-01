@@ -2,190 +2,98 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { signOut, useSession } from 'next-auth/react'
-import {
-  LayoutDashboard,
-  Building2,
-  FileText,
-  MessageSquare,
-  BarChart3,
-  CheckCircle2,
-  Settings,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-  Rocket,
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { useState } from 'react'
+import { signOut } from 'next-auth/react'
 
-const navigation = [
-  {
-    name: 'Dashboard',
-    href: '/founder/dashboard',
-    icon: LayoutDashboard,
-    description: 'Your startup overview',
-  },
-  {
-    name: 'My Company',
-    href: '/founder/company',
-    icon: Building2,
-    description: 'Company profile',
-  },
-  {
-    name: 'Documents',
-    href: '/founder/documents',
-    icon: FileText,
-    description: 'Upload & manage docs',
-  },
-  {
-    name: 'Requests',
-    href: '/founder/requests',
-    icon: MessageSquare,
-    description: 'Request help or features',
-  },
-  {
-    name: 'Shared Metrics',
-    href: '/founder/metrics',
-    icon: BarChart3,
-    description: 'View partner insights',
-  },
-  {
-    name: 'Progress',
-    href: '/founder/progress',
-    icon: CheckCircle2,
-    description: 'Track milestones',
-  },
-]
+// Sanctuary Logo SVG
+function SanctuaryLogo({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <path
+        clipRule="evenodd"
+        d="M24 4H42V17.3333V30.6667H24V44H6V30.6667V17.3333H24V4Z"
+        fill="currentColor"
+        fillRule="evenodd"
+      />
+    </svg>
+  )
+}
 
-const secondaryNavigation = [
-  {
-    name: 'Settings',
-    href: '/founder/settings',
-    icon: Settings,
-  },
+const navItems = [
+  { href: '/founder/dashboard', icon: 'dashboard', label: 'Dashboard' },
+  { href: '/founder/company', icon: 'apartment', label: 'Company' },
+  { href: '/founder/documents', icon: 'description', label: 'Documents' },
+  { href: '/founder/requests', icon: 'support_agent', label: 'Requests' },
+  { href: '/founder/metrics', icon: 'analytics', label: 'Metrics' },
+  { href: '/founder/progress', icon: 'checklist', label: 'Progress' },
 ]
 
 export function FounderSidebar() {
   const pathname = usePathname()
-  const { data: session } = useSession()
-  const [collapsed, setCollapsed] = useState(false)
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: '/login' })
+  const isActive = (href: string) => {
+    if (href === '/founder/dashboard') {
+      return pathname === '/founder/dashboard'
+    }
+    return pathname.startsWith(href)
   }
 
   return (
-    <aside
-      className={cn(
-        'flex flex-col border-r bg-card transition-all duration-300',
-        collapsed ? 'w-16' : 'w-64'
-      )}
-    >
+    <aside className="fixed left-0 top-0 h-full w-16 border-r border-[var(--grid-line)] flex flex-col items-center py-8 z-50 bg-[var(--deep-black)]">
       {/* Logo */}
-      <div className="flex h-16 items-center justify-between border-b px-4">
-        {!collapsed && (
-          <Link href="/founder/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-              <Rocket className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <span className="font-semibold">Sanctuary</span>
-              <span className="ml-1 text-xs text-muted-foreground">Founder</span>
-            </div>
-          </Link>
-        )}
-        {collapsed && (
-          <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-            <Rocket className="h-5 w-5 text-white" />
-          </div>
-        )}
+      <div className="mb-12">
+        <Link href="/founder/dashboard">
+          <SanctuaryLogo className="size-8 text-[var(--olive)]" />
+        </Link>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-2">
-        {navigation.map((item) => {
-          const isActive = pathname === item.href ||
-            (item.href !== '/founder/dashboard' && pathname.startsWith(item.href))
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-blue-600 text-white'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-              )}
-              title={collapsed ? item.name : undefined}
-            >
-              <item.icon className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>{item.name}</span>}
-            </Link>
-          )
-        })}
+      <nav className="flex flex-col gap-6 flex-1">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            title={item.label}
+            className={`
+              material-symbols-outlined cursor-pointer transition-colors
+              ${isActive(item.href)
+                ? 'text-[var(--olive)]'
+                : 'text-[var(--cream)]/40 hover:text-[var(--olive)]'
+              }
+            `}
+          >
+            {item.icon}
+          </Link>
+        ))}
       </nav>
 
-      {/* Secondary navigation */}
-      <div className="p-2">
-        <Separator className="my-2" />
-        {secondaryNavigation.map((item) => {
-          const isActive = pathname.startsWith(item.href)
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-blue-600 text-white'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-              )}
-              title={collapsed ? item.name : undefined}
-            >
-              <item.icon className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>{item.name}</span>}
-            </Link>
-          )
-        })}
-      </div>
-
-      {/* User section */}
-      <div className="border-t p-2">
-        {session?.user && !collapsed && (
-          <div className="mb-2 rounded-lg bg-blue-50 dark:bg-blue-950/50 px-3 py-2">
-            <p className="text-sm font-medium">{session.user.name}</p>
-            <p className="text-xs text-muted-foreground">Founder</p>
-          </div>
-        )}
-        <Button
-          variant="ghost"
-          size={collapsed ? 'icon' : 'default'}
-          className={cn('w-full', !collapsed && 'justify-start')}
-          onClick={handleLogout}
-          title={collapsed ? 'Logout' : undefined}
+      {/* Bottom Actions */}
+      <div className="mt-auto flex flex-col gap-6 items-center">
+        <Link
+          href="/founder/settings"
+          title="Settings"
+          className={`
+            material-symbols-outlined cursor-pointer transition-colors
+            ${pathname === '/founder/settings'
+              ? 'text-[var(--olive)]'
+              : 'text-[var(--cream)]/40 hover:text-[var(--olive)]'
+            }
+          `}
         >
-          <LogOut className="h-5 w-5 shrink-0" />
-          {!collapsed && <span className="ml-3">Logout</span>}
-        </Button>
-      </div>
-
-      {/* Collapse toggle */}
-      <div className="border-t p-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-full"
-          onClick={() => setCollapsed(!collapsed)}
+          settings
+        </Link>
+        <button
+          onClick={() => signOut({ callbackUrl: '/login' })}
+          title="Logout"
+          className="material-symbols-outlined cursor-pointer text-[var(--cream)]/40 hover:text-[var(--warning)] transition-colors"
         >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )}
-        </Button>
+          logout
+        </button>
+        <div
+          className="size-8 border border-[var(--grid-line)] bg-center bg-cover"
+          style={{
+            backgroundImage: `url("https://api.dicebear.com/7.x/initials/svg?seed=Founder&backgroundColor=808000&textColor=050505")`,
+          }}
+        />
       </div>
     </aside>
   )

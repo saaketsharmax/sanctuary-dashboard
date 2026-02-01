@@ -1,161 +1,228 @@
-import { auth } from '@/lib/auth/auth-config'
+'use client'
+
+import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import { FounderHeader } from '@/components/founder/layout/founder-header'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Separator } from '@/components/ui/separator'
-import {
-  User,
-  Bell,
-  Shield,
-  Mail,
-} from 'lucide-react'
+import { useState } from 'react'
 
-export default async function FounderSettingsPage() {
-  const session = await auth()
+export default function FounderSettingsPage() {
+  const { data: session, status } = useSession()
+  const [emailNotifications, setEmailNotifications] = useState(true)
+  const [checkpointReminders, setCheckpointReminders] = useState(true)
+  const [partnerMessages, setPartnerMessages] = useState(true)
+  const [shareMetrics, setShareMetrics] = useState(true)
+  const [shareDocuments, setShareDocuments] = useState(false)
+  const [benchmarkParticipation, setBenchmarkParticipation] = useState(true)
+
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center h-full bg-[var(--deep-black)]">
+        <div className="animate-pulse text-[var(--cream)]/40 font-mono uppercase">LOADING...</div>
+      </div>
+    )
+  }
 
   if (!session?.user) {
     redirect('/login')
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full bg-[var(--deep-black)]">
       <FounderHeader
-        title="Settings"
-        description="Manage your account and preferences"
+        title="CONFIGURATION"
+        breadcrumb={['Settings']}
       />
 
-      <div className="flex-1 p-6 space-y-6 max-w-3xl">
+      <div className="flex-1 overflow-auto p-10 max-w-3xl">
         {/* Profile */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <User className="h-5 w-5 text-blue-600" />
-              <CardTitle>Profile</CardTitle>
-            </div>
-            <CardDescription>Your personal information</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input id="name" defaultValue={session.user.name || ''} />
+        <section className="mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="material-symbols-outlined text-xl text-blue-500">person</span>
+            <h2 className="font-bold font-mono uppercase tracking-tight text-lg text-[var(--cream)]">
+              PROFILE
+            </h2>
+          </div>
+          <div className="border border-[var(--grid-line)] p-6 space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                  FULL_NAME
+                </label>
+                <input
+                  type="text"
+                  defaultValue={session.user.name || ''}
+                  className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors"
+                />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" defaultValue={session.user.email || ''} disabled />
-                <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+              <div>
+                <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                  EMAIL
+                </label>
+                <input
+                  type="email"
+                  defaultValue={session.user.email || ''}
+                  disabled
+                  className="w-full bg-[var(--grid-line)]/20 border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)]/40 font-mono text-sm cursor-not-allowed"
+                />
+                <p className="text-[10px] text-[var(--cream)]/40 font-mono mt-1">EMAIL_CANNOT_BE_CHANGED</p>
               </div>
             </div>
-            <Button>Save Changes</Button>
-          </CardContent>
-        </Card>
+            <button className="bg-[var(--olive)] text-[var(--deep-black)] px-6 py-3 text-xs font-bold tracking-widest font-mono uppercase hover:bg-[var(--cream)] transition-colors">
+              SAVE_CHANGES
+            </button>
+          </div>
+        </section>
 
         {/* Notifications */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-yellow-600" />
-              <CardTitle>Notifications</CardTitle>
-            </div>
-            <CardDescription>Manage how you receive updates</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Email Notifications</Label>
-                <p className="text-sm text-muted-foreground">
+        <section className="mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="material-symbols-outlined text-xl text-amber-500">notifications</span>
+            <h2 className="font-bold font-mono uppercase tracking-tight text-lg text-[var(--cream)]">
+              NOTIFICATIONS
+            </h2>
+          </div>
+          <div className="border border-[var(--grid-line)] divide-y divide-[var(--grid-line)]">
+            <div className="p-6 flex items-center justify-between">
+              <div>
+                <p className="font-mono text-sm text-[var(--cream)]">EMAIL_NOTIFICATIONS</p>
+                <p className="text-[10px] text-[var(--cream)]/60 font-mono uppercase mt-1">
                   Receive updates about your startup via email
                 </p>
               </div>
-              <Switch defaultChecked />
+              <button
+                onClick={() => setEmailNotifications(!emailNotifications)}
+                className={`w-12 h-6 border transition-colors ${
+                  emailNotifications ? 'bg-[var(--olive)] border-[var(--olive)]' : 'bg-transparent border-[var(--grid-line)]'
+                }`}
+              >
+                <div className={`size-4 transition-transform ${
+                  emailNotifications ? 'translate-x-6 bg-[var(--deep-black)]' : 'translate-x-1 bg-[var(--cream)]/40'
+                }`} />
+              </button>
             </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Checkpoint Reminders</Label>
-                <p className="text-sm text-muted-foreground">
+            <div className="p-6 flex items-center justify-between">
+              <div>
+                <p className="font-mono text-sm text-[var(--cream)]">CHECKPOINT_REMINDERS</p>
+                <p className="text-[10px] text-[var(--cream)]/60 font-mono uppercase mt-1">
                   Get reminded about upcoming checkpoints
                 </p>
               </div>
-              <Switch defaultChecked />
+              <button
+                onClick={() => setCheckpointReminders(!checkpointReminders)}
+                className={`w-12 h-6 border transition-colors ${
+                  checkpointReminders ? 'bg-[var(--olive)] border-[var(--olive)]' : 'bg-transparent border-[var(--grid-line)]'
+                }`}
+              >
+                <div className={`size-4 transition-transform ${
+                  checkpointReminders ? 'translate-x-6 bg-[var(--deep-black)]' : 'translate-x-1 bg-[var(--cream)]/40'
+                }`} />
+              </button>
             </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Partner Messages</Label>
-                <p className="text-sm text-muted-foreground">
+            <div className="p-6 flex items-center justify-between">
+              <div>
+                <p className="font-mono text-sm text-[var(--cream)]">PARTNER_MESSAGES</p>
+                <p className="text-[10px] text-[var(--cream)]/60 font-mono uppercase mt-1">
                   Notifications when partners share insights
                 </p>
               </div>
-              <Switch defaultChecked />
+              <button
+                onClick={() => setPartnerMessages(!partnerMessages)}
+                className={`w-12 h-6 border transition-colors ${
+                  partnerMessages ? 'bg-[var(--olive)] border-[var(--olive)]' : 'bg-transparent border-[var(--grid-line)]'
+                }`}
+              >
+                <div className={`size-4 transition-transform ${
+                  partnerMessages ? 'translate-x-6 bg-[var(--deep-black)]' : 'translate-x-1 bg-[var(--cream)]/40'
+                }`} />
+              </button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
         {/* Privacy */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-green-600" />
-              <CardTitle>Privacy & Data Sharing</CardTitle>
-            </div>
-            <CardDescription>Control what data is shared with partners</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Share Metrics with Partners</Label>
-                <p className="text-sm text-muted-foreground">
+        <section className="mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="material-symbols-outlined text-xl text-[var(--olive)]">shield</span>
+            <h2 className="font-bold font-mono uppercase tracking-tight text-lg text-[var(--cream)]">
+              PRIVACY_&_DATA_SHARING
+            </h2>
+          </div>
+          <div className="border border-[var(--grid-line)] divide-y divide-[var(--grid-line)]">
+            <div className="p-6 flex items-center justify-between">
+              <div>
+                <p className="font-mono text-sm text-[var(--cream)]">SHARE_METRICS_WITH_PARTNERS</p>
+                <p className="text-[10px] text-[var(--cream)]/60 font-mono uppercase mt-1">
                   Allow partners to view your startup metrics
                 </p>
               </div>
-              <Switch defaultChecked />
+              <button
+                onClick={() => setShareMetrics(!shareMetrics)}
+                className={`w-12 h-6 border transition-colors ${
+                  shareMetrics ? 'bg-[var(--olive)] border-[var(--olive)]' : 'bg-transparent border-[var(--grid-line)]'
+                }`}
+              >
+                <div className={`size-4 transition-transform ${
+                  shareMetrics ? 'translate-x-6 bg-[var(--deep-black)]' : 'translate-x-1 bg-[var(--cream)]/40'
+                }`} />
+              </button>
             </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Share Documents by Default</Label>
-                <p className="text-sm text-muted-foreground">
+            <div className="p-6 flex items-center justify-between">
+              <div>
+                <p className="font-mono text-sm text-[var(--cream)]">SHARE_DOCUMENTS_BY_DEFAULT</p>
+                <p className="text-[10px] text-[var(--cream)]/60 font-mono uppercase mt-1">
                   New documents are automatically shared with partners
                 </p>
               </div>
-              <Switch />
+              <button
+                onClick={() => setShareDocuments(!shareDocuments)}
+                className={`w-12 h-6 border transition-colors ${
+                  shareDocuments ? 'bg-[var(--olive)] border-[var(--olive)]' : 'bg-transparent border-[var(--grid-line)]'
+                }`}
+              >
+                <div className={`size-4 transition-transform ${
+                  shareDocuments ? 'translate-x-6 bg-[var(--deep-black)]' : 'translate-x-1 bg-[var(--cream)]/40'
+                }`} />
+              </button>
             </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Benchmark Participation</Label>
-                <p className="text-sm text-muted-foreground">
+            <div className="p-6 flex items-center justify-between">
+              <div>
+                <p className="font-mono text-sm text-[var(--cream)]">BENCHMARK_PARTICIPATION</p>
+                <p className="text-[10px] text-[var(--cream)]/60 font-mono uppercase mt-1">
                   Include your data in anonymized cohort benchmarks
                 </p>
               </div>
-              <Switch defaultChecked />
+              <button
+                onClick={() => setBenchmarkParticipation(!benchmarkParticipation)}
+                className={`w-12 h-6 border transition-colors ${
+                  benchmarkParticipation ? 'bg-[var(--olive)] border-[var(--olive)]' : 'bg-transparent border-[var(--grid-line)]'
+                }`}
+              >
+                <div className={`size-4 transition-transform ${
+                  benchmarkParticipation ? 'translate-x-6 bg-[var(--deep-black)]' : 'translate-x-1 bg-[var(--cream)]/40'
+                }`} />
+              </button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
         {/* Contact */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-purple-600" />
-              <CardTitle>Need Help?</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
+        <section>
+          <div className="flex items-center gap-3 mb-6">
+            <span className="material-symbols-outlined text-xl text-purple-500">mail</span>
+            <h2 className="font-bold font-mono uppercase tracking-tight text-lg text-[var(--cream)]">
+              NEED_HELP?
+            </h2>
+          </div>
+          <div className="border border-[var(--grid-line)] p-6">
+            <p className="text-sm text-[var(--cream)]/60 mb-4">
               If you have questions or need support, reach out to the Sanctuary team.
             </p>
-            <Button variant="outline">
-              <Mail className="mr-2 h-4 w-4" />
-              Contact Support
-            </Button>
-          </CardContent>
-        </Card>
+            <button className="border border-[var(--cream)]/20 text-[var(--cream)] px-6 py-3 text-xs font-bold tracking-widest font-mono uppercase hover:border-[var(--olive)] hover:text-[var(--olive)] transition-colors flex items-center gap-2">
+              <span className="material-symbols-outlined text-sm">mail</span>
+              CONTACT_SUPPORT
+            </button>
+          </div>
+        </section>
       </div>
     </div>
   )

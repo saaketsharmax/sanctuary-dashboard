@@ -1,20 +1,6 @@
 import { auth } from '@/lib/auth/auth-config'
 import { redirect } from 'next/navigation'
 import { FounderHeader } from '@/components/founder/layout/founder-header'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import {
-  Building2,
-  Globe,
-  MapPin,
-  Users,
-  Calendar,
-  ExternalLink,
-  Briefcase,
-  Target,
-  Lightbulb,
-} from 'lucide-react'
 import Link from 'next/link'
 import { getStartupWithFounders } from '@/lib/mock-data'
 import { getStageInfo } from '@/types'
@@ -41,240 +27,249 @@ export default async function FounderCompanyPage() {
   const stageInfo = getStageInfo(startup.stage)
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full bg-[var(--deep-black)]">
       <FounderHeader
-        title="Company Profile"
-        description="Your startup information and team"
+        title="COMPANY_PROFILE"
+        breadcrumb={['Company']}
+        description={startup.name}
       />
 
-      <div className="flex-1 p-6 space-y-6">
-        {/* Company Overview */}
-        <Card>
-          <CardHeader className="flex flex-row items-start gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-muted">
-              {startup.logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={startup.logoUrl} alt={startup.name} className="h-14 w-14 rounded" />
-              ) : (
-                <Building2 className="h-8 w-8" />
-              )}
+      {/* Company Overview */}
+      <section className="border-b border-[var(--grid-line)] p-10">
+        <div className="flex items-start gap-6">
+          {startup.logoUrl ? (
+            <div
+              className="size-24 border border-[var(--grid-line)] bg-cover bg-center"
+              style={{ backgroundImage: `url("${startup.logoUrl}")` }}
+            />
+          ) : (
+            <div className="size-24 border border-[var(--grid-line)] flex items-center justify-center">
+              <span className="text-4xl font-bold font-mono text-[var(--olive)]">
+                {startup.name.charAt(0)}
+              </span>
             </div>
-            <div className="flex-1">
+          )}
+          <div className="flex-1">
+            <div className="flex items-center gap-4">
+              <h2 className="text-3xl font-bold font-mono uppercase tracking-tight text-[var(--cream)]">
+                {startup.name.replace(/ /g, '_').toUpperCase()}
+              </h2>
+              <span className="text-[10px] font-mono uppercase px-3 py-1 border border-[var(--olive)] text-[var(--olive)]">
+                {stageInfo.label.toUpperCase()}_STAGE
+              </span>
+            </div>
+            <p className="text-sm text-[var(--cream)]/60 mt-2 max-w-2xl">{startup.oneLiner}</p>
+            <div className="mt-4 flex flex-wrap gap-6 text-[10px] font-mono uppercase text-[var(--cream)]/60">
               <div className="flex items-center gap-2">
-                <CardTitle className="text-2xl">{startup.name}</CardTitle>
-                <Badge variant="outline" className="capitalize">
-                  {stageInfo.label}
-                </Badge>
+                <span className="material-symbols-outlined text-sm text-[var(--olive)]">location_on</span>
+                {startup.city}, {startup.country}
               </div>
-              <CardDescription className="mt-1 text-base">{startup.oneLiner}</CardDescription>
-              <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  {startup.city}, {startup.country}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Briefcase className="h-4 w-4" />
-                  {startup.industry}
-                </div>
-                {startup.website && (
-                  <Link
-                    href={startup.website}
-                    target="_blank"
-                    className="flex items-center gap-1 hover:text-foreground"
-                  >
-                    <Globe className="h-4 w-4" />
-                    Website
-                    <ExternalLink className="h-3 w-3" />
-                  </Link>
-                )}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {startup.description && (
-              <p className="text-muted-foreground">{startup.description}</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Problem & Solution */}
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
               <div className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-red-500" />
-                <CardTitle className="text-lg">Problem</CardTitle>
+                <span className="material-symbols-outlined text-sm text-[var(--olive)]">category</span>
+                {startup.industry}
               </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                {startup.problemStatement || 'No problem statement defined yet.'}
-              </p>
-              {startup.targetCustomer && (
-                <>
-                  <Separator className="my-4" />
-                  <div>
-                    <p className="text-sm font-medium mb-1">Target Customer</p>
-                    <p className="text-sm text-muted-foreground">{startup.targetCustomer}</p>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Lightbulb className="h-5 w-5 text-yellow-500" />
-                <CardTitle className="text-lg">Solution</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                {startup.solutionDescription || 'No solution description defined yet.'}
-              </p>
-              <Separator className="my-4" />
-              <div>
-                <p className="text-sm font-medium mb-1">Business Model</p>
-                <Badge variant="secondary">{startup.businessModel}</Badge>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Programme Info */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-blue-500" />
-              <CardTitle className="text-lg">Programme Status</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div>
-                <p className="text-sm font-medium mb-1">Status</p>
-                <Badge variant={startup.status === 'active' ? 'default' : 'secondary'} className="capitalize">
-                  {startup.status}
-                </Badge>
-              </div>
-              {startup.residencyStart && (
-                <div>
-                  <p className="text-sm font-medium mb-1">Residency Start</p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(startup.residencyStart).toLocaleDateString()}
-                  </p>
-                </div>
-              )}
-              {startup.residencyEnd && (
-                <div>
-                  <p className="text-sm font-medium mb-1">Residency End</p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(startup.residencyEnd).toLocaleDateString()}
-                  </p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Team */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-green-500" />
-              <CardTitle className="text-lg">Founding Team</CardTitle>
-            </div>
-            <CardDescription>{startup.founders.length} team members</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              {startup.founders.map((founder) => (
-                <div
-                  key={founder.id}
-                  className="flex items-start gap-4 rounded-lg border p-4"
+              {startup.website && (
+                <Link
+                  href={startup.website}
+                  target="_blank"
+                  className="flex items-center gap-2 hover:text-[var(--olive)] transition-colors"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                    {founder.photoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={founder.photoUrl}
-                        alt={founder.name}
-                        className="h-12 w-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-lg font-semibold">
-                        {founder.name.charAt(0).toUpperCase()}
+                  <span className="material-symbols-outlined text-sm text-[var(--olive)]">language</span>
+                  WEBSITE
+                  <span className="material-symbols-outlined text-xs">arrow_outward</span>
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+        {startup.description && (
+          <div className="mt-6 p-4 border border-[var(--grid-line)]">
+            <p className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2">DESCRIPTION</p>
+            <p className="text-sm text-[var(--cream)]/80">{startup.description}</p>
+          </div>
+        )}
+      </section>
+
+      <div className="flex-1 overflow-auto">
+        {/* Problem & Solution */}
+        <section className="grid md:grid-cols-2 border-b border-[var(--grid-line)]">
+          <div className="p-8 border-r border-[var(--grid-line)]">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="material-symbols-outlined text-2xl text-[var(--warning)]">target</span>
+              <h3 className="font-bold font-mono uppercase tracking-tight text-lg text-[var(--cream)]">
+                PROBLEM
+              </h3>
+            </div>
+            <p className="text-sm text-[var(--cream)]/80 mb-6">
+              {startup.problemStatement || 'No problem statement defined yet.'}
+            </p>
+            {startup.targetCustomer && (
+              <div className="p-4 border border-[var(--grid-line)]">
+                <p className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2">TARGET_CUSTOMER</p>
+                <p className="text-sm text-[var(--cream)]/80">{startup.targetCustomer}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="p-8">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="material-symbols-outlined text-2xl text-[var(--olive)]">lightbulb</span>
+              <h3 className="font-bold font-mono uppercase tracking-tight text-lg text-[var(--cream)]">
+                SOLUTION
+              </h3>
+            </div>
+            <p className="text-sm text-[var(--cream)]/80 mb-6">
+              {startup.solutionDescription || 'No solution description defined yet.'}
+            </p>
+            <div className="p-4 border border-[var(--grid-line)]">
+              <p className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2">BUSINESS_MODEL</p>
+              <span className="text-[10px] font-mono uppercase px-2 py-1 border border-[var(--cream)]/20 text-[var(--cream)]/60">
+                {startup.businessModel.toUpperCase()}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Programme Status */}
+        <section className="border-b border-[var(--grid-line)] p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="material-symbols-outlined text-2xl text-blue-500">calendar_month</span>
+            <h3 className="font-bold font-mono uppercase tracking-tight text-lg text-[var(--cream)]">
+              PROGRAMME_STATUS
+            </h3>
+          </div>
+          <div className="grid md:grid-cols-3 gap-px bg-[var(--grid-line)]">
+            <div className="bg-[var(--deep-black)] p-6">
+              <p className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2">STATUS</p>
+              <span className={`text-[10px] font-mono uppercase px-2 py-1 ${
+                startup.status === 'active'
+                  ? 'bg-[var(--olive)] text-[var(--deep-black)]'
+                  : 'border border-[var(--cream)]/20 text-[var(--cream)]/60'
+              }`}>
+                {startup.status.toUpperCase()}
+              </span>
+            </div>
+            {startup.residencyStart && (
+              <div className="bg-[var(--deep-black)] p-6">
+                <p className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2">RESIDENCY_START</p>
+                <p className="text-lg font-mono text-[var(--cream)]">
+                  {new Date(startup.residencyStart).toLocaleDateString().toUpperCase()}
+                </p>
+              </div>
+            )}
+            {startup.residencyEnd && (
+              <div className="bg-[var(--deep-black)] p-6">
+                <p className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2">RESIDENCY_END</p>
+                <p className="text-lg font-mono text-[var(--cream)]">
+                  {new Date(startup.residencyEnd).toLocaleDateString().toUpperCase()}
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Founding Team */}
+        <section className="border-b border-[var(--grid-line)] p-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-2xl text-[var(--olive)]">group</span>
+              <h3 className="font-bold font-mono uppercase tracking-tight text-lg text-[var(--cream)]">
+                FOUNDING_TEAM
+              </h3>
+            </div>
+            <span className="text-[10px] font-mono uppercase px-2 py-1 border border-[var(--cream)]/20 text-[var(--cream)]/60">
+              {startup.founders.length}_MEMBERS
+            </span>
+          </div>
+          <div className="grid md:grid-cols-2 gap-px bg-[var(--grid-line)]">
+            {startup.founders.map((founder) => (
+              <div key={founder.id} className="bg-[var(--deep-black)] p-6 flex items-start gap-4">
+                <div className="size-14 border border-[var(--grid-line)] flex items-center justify-center">
+                  {founder.photoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={founder.photoUrl}
+                      alt={founder.name}
+                      className="size-14 object-cover"
+                    />
+                  ) : (
+                    <span className="text-xl font-bold font-mono text-[var(--olive)]">
+                      {founder.name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold font-mono uppercase text-[var(--cream)]">{founder.name}</p>
+                    {founder.isLead && (
+                      <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 bg-[var(--olive)] text-[var(--deep-black)]">
+                        LEAD
                       </span>
                     )}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{founder.name}</p>
-                      {founder.isLead && (
-                        <Badge variant="secondary" className="text-xs">
-                          Lead
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{founder.role}</p>
-                    <p className="text-sm text-muted-foreground">{founder.email}</p>
-                    {founder.linkedin && (
-                      <Link
-                        href={founder.linkedin}
-                        target="_blank"
-                        className="text-xs text-blue-600 hover:underline"
-                      >
-                        LinkedIn Profile
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Scores */}
-        {startup.overallScore !== null && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Evaluation Scores</CardTitle>
-              <CardDescription>Partner assessment scores (read-only)</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-5">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">
-                    {startup.founderScore ?? '--'}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Founder</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600">
-                    {startup.problemScore ?? '--'}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Problem</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">
-                    {startup.userValueScore ?? '--'}
-                  </div>
-                  <p className="text-sm text-muted-foreground">User Value</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-orange-600">
-                    {startup.executionScore ?? '--'}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Execution</p>
-                </div>
-                <div className="text-center border-l">
-                  <div className="text-3xl font-bold">{startup.overallScore ?? '--'}</div>
-                  <p className="text-sm text-muted-foreground">Overall</p>
+                  <p className="text-[10px] font-mono uppercase text-[var(--cream)]/60 mt-1">{founder.role}</p>
+                  <p className="text-[10px] text-[var(--cream)]/40 mt-1">{founder.email}</p>
+                  {founder.linkedin && (
+                    <Link
+                      href={founder.linkedin}
+                      target="_blank"
+                      className="text-[10px] font-mono uppercase text-[var(--olive)] hover:text-[var(--cream)] transition-colors mt-2 inline-flex items-center gap-1"
+                    >
+                      LINKEDIN
+                      <span className="material-symbols-outlined text-xs">arrow_outward</span>
+                    </Link>
+                  )}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Evaluation Scores */}
+        {startup.overallScore !== null && (
+          <section className="p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="material-symbols-outlined text-2xl text-purple-500">analytics</span>
+              <h3 className="font-bold font-mono uppercase tracking-tight text-lg text-[var(--cream)]">
+                EVALUATION_SCORES
+              </h3>
+              <span className="text-[10px] font-mono uppercase px-2 py-1 border border-[var(--cream)]/20 text-[var(--cream)]/40">
+                READ_ONLY
+              </span>
+            </div>
+            <div className="grid grid-cols-5 gap-px bg-[var(--grid-line)]">
+              <div className="bg-[var(--deep-black)] p-6 text-center">
+                <p className="text-4xl font-black font-mono text-blue-500">
+                  {startup.founderScore ?? '--'}
+                </p>
+                <p className="text-[10px] font-mono uppercase text-[var(--cream)]/60 mt-2">FOUNDER</p>
+              </div>
+              <div className="bg-[var(--deep-black)] p-6 text-center">
+                <p className="text-4xl font-black font-mono text-purple-500">
+                  {startup.problemScore ?? '--'}
+                </p>
+                <p className="text-[10px] font-mono uppercase text-[var(--cream)]/60 mt-2">PROBLEM</p>
+              </div>
+              <div className="bg-[var(--deep-black)] p-6 text-center">
+                <p className="text-4xl font-black font-mono text-[var(--olive)]">
+                  {startup.userValueScore ?? '--'}
+                </p>
+                <p className="text-[10px] font-mono uppercase text-[var(--cream)]/60 mt-2">USER_VALUE</p>
+              </div>
+              <div className="bg-[var(--deep-black)] p-6 text-center">
+                <p className="text-4xl font-black font-mono text-amber-500">
+                  {startup.executionScore ?? '--'}
+                </p>
+                <p className="text-[10px] font-mono uppercase text-[var(--cream)]/60 mt-2">EXECUTION</p>
+              </div>
+              <div className="bg-[var(--deep-black)] p-6 text-center border-l-2 border-[var(--olive)]">
+                <p className="text-4xl font-black font-mono text-[var(--cream)]">
+                  {startup.overallScore ?? '--'}
+                </p>
+                <p className="text-[10px] font-mono uppercase text-[var(--olive)] mt-2">OVERALL</p>
+              </div>
+            </div>
+          </section>
         )}
       </div>
     </div>

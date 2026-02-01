@@ -1,125 +1,107 @@
-import { auth } from '@/lib/auth/auth-config'
+'use client'
+
+import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import { FounderHeader } from '@/components/founder/layout/founder-header'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import {
-  MessageSquare,
-  Plus,
-  GraduationCap,
-  Lightbulb,
-  MessageCircle,
-  HelpCircle,
-  Clock,
-  CheckCircle2,
-  XCircle,
-} from 'lucide-react'
+
+type RequestStatus = 'pending' | 'in_review' | 'approved' | 'completed' | 'declined'
 
 // Mock requests for demo
-const mockRequests = [
+const mockRequests: Array<{
+  id: string
+  requestType: 'mentor' | 'feature' | 'feedback'
+  title: string
+  description: string
+  priority: 'high' | 'medium' | 'low'
+  status: RequestStatus
+  createdAt: string
+  responseNotes: string | null
+}> = [
   {
     id: 'req-1',
-    requestType: 'mentor' as const,
+    requestType: 'mentor',
     title: 'Need help with sales strategy',
     description: 'Looking for a mentor with B2B SaaS sales experience to help refine our outbound strategy.',
-    priority: 'high' as const,
-    status: 'in_review' as const,
+    priority: 'high',
+    status: 'in_review',
     createdAt: '2026-01-20T10:00:00Z',
     responseNotes: null,
   },
   {
     id: 'req-2',
-    requestType: 'feature' as const,
+    requestType: 'feature',
     title: 'Request: Export metrics to CSV',
     description: 'Would be helpful to export our metrics data for board presentations.',
-    priority: 'medium' as const,
-    status: 'approved' as const,
+    priority: 'medium',
+    status: 'approved',
     createdAt: '2026-01-15T14:30:00Z',
     responseNotes: 'Added to the roadmap for Q2!',
   },
   {
     id: 'req-3',
-    requestType: 'feedback' as const,
+    requestType: 'feedback',
     title: 'Dashboard loading slowly',
     description: 'The metrics dashboard takes a long time to load when there is a lot of data.',
-    priority: 'low' as const,
-    status: 'completed' as const,
+    priority: 'low',
+    status: 'completed',
     createdAt: '2026-01-10T09:15:00Z',
     responseNotes: 'Fixed in the latest update. Please refresh and let us know if the issue persists.',
   },
 ]
 
-function getRequestTypeIcon(type: string) {
+function getRequestTypeConfig(type: string) {
   switch (type) {
     case 'mentor':
-      return <GraduationCap className="h-5 w-5" />
+      return { icon: 'school', label: 'MENTOR', color: 'text-purple-500' }
     case 'feature':
-      return <Lightbulb className="h-5 w-5" />
+      return { icon: 'lightbulb', label: 'FEATURE', color: 'text-amber-500' }
     case 'feedback':
-      return <MessageCircle className="h-5 w-5" />
+      return { icon: 'chat', label: 'FEEDBACK', color: 'text-blue-500' }
     default:
-      return <HelpCircle className="h-5 w-5" />
+      return { icon: 'help', label: 'OTHER', color: 'text-[var(--cream)]/60' }
   }
 }
 
-function getStatusBadge(status: string) {
+function getStatusConfig(status: string) {
   switch (status) {
     case 'pending':
-      return (
-        <Badge variant="secondary">
-          <Clock className="mr-1 h-3 w-3" />
-          Pending
-        </Badge>
-      )
+      return { label: 'PENDING', borderClass: 'border-[var(--cream)]/20', textClass: 'text-[var(--cream)]/40' }
     case 'in_review':
-      return (
-        <Badge variant="outline" className="border-blue-500 text-blue-600">
-          <Clock className="mr-1 h-3 w-3" />
-          In Review
-        </Badge>
-      )
+      return { label: 'IN_REVIEW', borderClass: 'border-blue-500', textClass: 'text-blue-500' }
     case 'approved':
-      return (
-        <Badge variant="outline" className="border-green-500 text-green-600">
-          <CheckCircle2 className="mr-1 h-3 w-3" />
-          Approved
-        </Badge>
-      )
+      return { label: 'APPROVED', borderClass: 'border-[var(--olive)]', textClass: 'text-[var(--olive)]' }
     case 'completed':
-      return (
-        <Badge className="bg-green-600">
-          <CheckCircle2 className="mr-1 h-3 w-3" />
-          Completed
-        </Badge>
-      )
+      return { label: 'COMPLETED', borderClass: 'border-[var(--olive)]', textClass: 'text-[var(--olive)]' }
     case 'declined':
-      return (
-        <Badge variant="destructive">
-          <XCircle className="mr-1 h-3 w-3" />
-          Declined
-        </Badge>
-      )
+      return { label: 'DECLINED', borderClass: 'border-[var(--warning)]', textClass: 'text-[var(--warning)]' }
     default:
-      return <Badge variant="secondary">{status}</Badge>
+      return { label: status.toUpperCase(), borderClass: 'border-[var(--cream)]/20', textClass: 'text-[var(--cream)]/40' }
   }
 }
 
-function getPriorityColor(priority: string) {
+function getPriorityConfig(priority: string) {
   switch (priority) {
     case 'high':
-      return 'text-red-600 bg-red-100 dark:bg-red-900/50'
+      return { label: 'HIGH', color: 'text-[var(--warning)]', bgColor: 'bg-[var(--warning)]/10' }
     case 'medium':
-      return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/50'
+      return { label: 'MEDIUM', color: 'text-amber-500', bgColor: 'bg-amber-500/10' }
     case 'low':
-      return 'text-green-600 bg-green-100 dark:bg-green-900/50'
+      return { label: 'LOW', color: 'text-[var(--olive)]', bgColor: 'bg-[var(--olive)]/10' }
     default:
-      return 'text-gray-600 bg-gray-100'
+      return { label: 'NORMAL', color: 'text-[var(--cream)]/60', bgColor: 'bg-[var(--cream)]/5' }
   }
 }
 
-export default async function FounderRequestsPage() {
-  const session = await auth()
+export default function FounderRequestsPage() {
+  const { data: session, status } = useSession()
+
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center h-full bg-[var(--deep-black)]">
+        <div className="animate-pulse text-[var(--cream)]/40 font-mono uppercase">LOADING...</div>
+      </div>
+    )
+  }
 
   if (!session?.user) {
     redirect('/login')
@@ -132,119 +114,150 @@ export default async function FounderRequestsPage() {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full bg-[var(--deep-black)]">
       <FounderHeader
-        title="Requests"
-        description="Request mentor help, features, or provide feedback"
+        title="SUPPORT_CENTER"
+        breadcrumb={['Requests']}
       />
 
-      <div className="flex-1 p-6 space-y-6">
-        {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card className="hover:border-blue-500 transition-colors cursor-pointer">
-            <CardHeader>
-              <GraduationCap className="h-8 w-8 text-purple-600 mb-2" />
-              <CardTitle className="text-lg">Request a Mentor</CardTitle>
-              <CardDescription>Get matched with an expert in a specific area</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full">
-                <Plus className="mr-2 h-4 w-4" />
-                New Request
-              </Button>
-            </CardContent>
-          </Card>
+      {/* Quick Actions */}
+      <section className="grid md:grid-cols-3 border-b border-[var(--grid-line)]">
+        <button className="p-8 border-r border-[var(--grid-line)] hover:bg-[#0a0a0a] transition-colors group text-left">
+          <span className="material-symbols-outlined text-3xl text-purple-500 mb-4">school</span>
+          <h3 className="font-bold font-mono uppercase tracking-tight text-lg text-[var(--cream)] group-hover:text-[var(--olive)] transition-colors">
+            REQUEST_MENTOR
+          </h3>
+          <p className="text-[10px] text-[var(--cream)]/40 font-mono uppercase mt-2">
+            Get matched with an expert in a specific area
+          </p>
+          <div className="mt-4 flex items-center gap-2 text-[10px] font-mono uppercase text-[var(--olive)]">
+            <span className="material-symbols-outlined text-sm">add</span>
+            NEW_REQUEST
+          </div>
+        </button>
 
-          <Card className="hover:border-blue-500 transition-colors cursor-pointer">
-            <CardHeader>
-              <Lightbulb className="h-8 w-8 text-yellow-600 mb-2" />
-              <CardTitle className="text-lg">Suggest a Feature</CardTitle>
-              <CardDescription>Help us improve the platform for founders</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                <Plus className="mr-2 h-4 w-4" />
-                New Suggestion
-              </Button>
-            </CardContent>
-          </Card>
+        <button className="p-8 border-r border-[var(--grid-line)] hover:bg-[#0a0a0a] transition-colors group text-left">
+          <span className="material-symbols-outlined text-3xl text-amber-500 mb-4">lightbulb</span>
+          <h3 className="font-bold font-mono uppercase tracking-tight text-lg text-[var(--cream)] group-hover:text-[var(--olive)] transition-colors">
+            SUGGEST_FEATURE
+          </h3>
+          <p className="text-[10px] text-[var(--cream)]/40 font-mono uppercase mt-2">
+            Help us improve the platform for founders
+          </p>
+          <div className="mt-4 flex items-center gap-2 text-[10px] font-mono uppercase text-[var(--olive)]">
+            <span className="material-symbols-outlined text-sm">add</span>
+            NEW_SUGGESTION
+          </div>
+        </button>
 
-          <Card className="hover:border-blue-500 transition-colors cursor-pointer">
-            <CardHeader>
-              <MessageCircle className="h-8 w-8 text-blue-600 mb-2" />
-              <CardTitle className="text-lg">Give Feedback</CardTitle>
-              <CardDescription>Report issues or share your thoughts</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                <Plus className="mr-2 h-4 w-4" />
-                Send Feedback
-              </Button>
-            </CardContent>
-          </Card>
+        <button className="p-8 hover:bg-[#0a0a0a] transition-colors group text-left">
+          <span className="material-symbols-outlined text-3xl text-blue-500 mb-4">chat</span>
+          <h3 className="font-bold font-mono uppercase tracking-tight text-lg text-[var(--cream)] group-hover:text-[var(--olive)] transition-colors">
+            GIVE_FEEDBACK
+          </h3>
+          <p className="text-[10px] text-[var(--cream)]/40 font-mono uppercase mt-2">
+            Report issues or share your thoughts
+          </p>
+          <div className="mt-4 flex items-center gap-2 text-[10px] font-mono uppercase text-[var(--olive)]">
+            <span className="material-symbols-outlined text-sm">add</span>
+            SEND_FEEDBACK
+          </div>
+        </button>
+      </section>
+
+      {/* Stats */}
+      <section className="grid grid-cols-4 border-b border-[var(--grid-line)]">
+        <div className="p-6 border-r border-[var(--grid-line)]">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--olive)] mb-2">
+            TOTAL_REQUESTS
+          </p>
+          <p className="text-3xl font-black font-mono text-[var(--cream)]">{mockRequests.length}</p>
         </div>
+        <div className="p-6 border-r border-[var(--grid-line)]">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-blue-400 mb-2">
+            IN_REVIEW
+          </p>
+          <p className="text-3xl font-black font-mono text-blue-400">
+            {mockRequests.filter(r => r.status === 'in_review').length}
+          </p>
+        </div>
+        <div className="p-6 border-r border-[var(--grid-line)]">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--olive)] mb-2">
+            APPROVED
+          </p>
+          <p className="text-3xl font-black font-mono text-[var(--olive)]">
+            {mockRequests.filter(r => r.status === 'approved' || r.status === 'completed').length}
+          </p>
+        </div>
+        <div className="p-6">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--warning)] mb-2">
+            DECLINED
+          </p>
+          <p className="text-3xl font-black font-mono text-[var(--warning)]">
+            {mockRequests.filter(r => r.status === 'declined').length}
+          </p>
+        </div>
+      </section>
 
-        {/* Requests List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Requests</CardTitle>
-            <CardDescription>
-              {mockRequests.length} requests submitted
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {mockRequests.map((request) => (
-                <div
-                  key={request.id}
-                  className="flex items-start gap-4 rounded-lg border p-4"
-                >
-                  <div className={`rounded-lg p-2 ${getPriorityColor(request.priority)}`}>
-                    {getRequestTypeIcon(request.requestType)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-medium">{request.title}</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {request.description}
-                        </p>
-                      </div>
-                      {getStatusBadge(request.status)}
-                    </div>
-                    <div className="flex items-center gap-2 mt-3">
-                      <Badge variant="outline" className="text-xs capitalize">
-                        {request.requestType}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs capitalize">
-                        {request.priority} priority
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(request.createdAt).toLocaleDateString()}
+      {/* Requests List */}
+      <div className="flex-1 overflow-auto">
+        {mockRequests.length > 0 ? (
+          <div className="divide-y divide-[var(--grid-line)]">
+            {mockRequests.map((request) => {
+              const typeConfig = getRequestTypeConfig(request.requestType)
+              const statusConfig = getStatusConfig(request.status)
+              const priorityConfig = getPriorityConfig(request.priority)
+
+              return (
+                <div key={request.id} className="p-6 hover:bg-[#0a0a0a] transition-colors">
+                  <div className="flex items-start gap-4">
+                    <div className={`size-12 border border-[var(--grid-line)] flex items-center justify-center ${priorityConfig.bgColor}`}>
+                      <span className={`material-symbols-outlined text-xl ${typeConfig.color}`}>
+                        {typeConfig.icon}
                       </span>
                     </div>
-                    {request.responseNotes && (
-                      <div className="mt-3 rounded-lg bg-muted p-3">
-                        <p className="text-sm font-medium">Response:</p>
-                        <p className="text-sm text-muted-foreground">{request.responseNotes}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h3 className="font-bold font-mono text-[var(--cream)]">{request.title}</h3>
+                          <p className="text-sm text-[var(--cream)]/60 mt-1">{request.description}</p>
+                        </div>
+                        <span className={`text-[10px] font-mono uppercase px-2 py-0.5 border ${statusConfig.borderClass} ${statusConfig.textClass}`}>
+                          {statusConfig.label}
+                        </span>
                       </div>
-                    )}
+                      <div className="flex items-center gap-4 mt-3">
+                        <span className="text-[10px] font-mono uppercase px-2 py-0.5 border border-[var(--cream)]/20 text-[var(--cream)]/60">
+                          {typeConfig.label}
+                        </span>
+                        <span className={`text-[10px] font-mono uppercase px-2 py-0.5 border border-[var(--cream)]/20 ${priorityConfig.color}`}>
+                          {priorityConfig.label}_PRIORITY
+                        </span>
+                        <span className="text-[10px] font-mono text-[var(--cream)]/40">
+                          {new Date(request.createdAt).toLocaleDateString().toUpperCase()}
+                        </span>
+                      </div>
+                      {request.responseNotes && (
+                        <div className="mt-4 p-4 border border-[var(--olive)]/30 bg-[var(--olive)]/5">
+                          <p className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2">RESPONSE</p>
+                          <p className="text-sm text-[var(--cream)]/80">{request.responseNotes}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            {mockRequests.length === 0 && (
-              <div className="text-center py-10">
-                <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No requests yet</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Use the cards above to submit your first request
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-20">
+            <span className="material-symbols-outlined text-5xl text-[var(--cream)]/20 mb-4">inbox</span>
+            <p className="text-[var(--cream)]/40 font-mono uppercase text-sm">NO_REQUESTS_YET</p>
+            <p className="text-[10px] text-[var(--cream)]/20 font-mono uppercase mt-2">
+              Use the options above to submit your first request
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

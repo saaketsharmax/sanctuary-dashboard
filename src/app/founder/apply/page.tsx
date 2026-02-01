@@ -5,32 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import {
-  Building2,
-  Users,
-  Lightbulb,
-  TrendingUp,
-  Heart,
-  CheckCircle2,
-  Plus,
-  Trash2,
-  ArrowRight,
-  ArrowLeft,
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
 import { FounderHeader } from '@/components/founder/layout/founder-header'
 import { APPLICATION_STAGES } from '@/types'
 
@@ -74,12 +48,12 @@ const applicationSchema = z.object({
 type ApplicationFormData = z.infer<typeof applicationSchema>
 
 const STEPS = [
-  { id: 'company', label: 'Company', icon: Building2 },
-  { id: 'founders', label: 'Founders', icon: Users },
-  { id: 'problem', label: 'Problem', icon: Lightbulb },
-  { id: 'traction', label: 'Traction', icon: TrendingUp },
-  { id: 'sanctuary', label: 'Why Us', icon: Heart },
-  { id: 'review', label: 'Review', icon: CheckCircle2 },
+  { id: 'company', label: 'COMPANY', icon: 'apartment' },
+  { id: 'founders', label: 'FOUNDERS', icon: 'group' },
+  { id: 'problem', label: 'PROBLEM', icon: 'lightbulb' },
+  { id: 'traction', label: 'TRACTION', icon: 'trending_up' },
+  { id: 'sanctuary', label: 'WHY_US', icon: 'favorite' },
+  { id: 'review', label: 'REVIEW', icon: 'check_circle' },
 ]
 
 export default function FounderApplyPage() {
@@ -163,101 +137,113 @@ export default function FounderApplyPage() {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full bg-[var(--deep-black)]">
       <FounderHeader
-        title="Application"
+        title="APPLICATION_FORM"
+        breadcrumb={['Apply']}
         description="Tell us about your startup"
       />
 
-      <div className="flex-1 p-6">
-        <div className="max-w-3xl mx-auto space-y-8">
-          {/* Progress Steps */}
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            {STEPS.map((step, index) => {
-              const Icon = step.icon
-              const isActive = index === currentStep
-              const isCompleted = index < currentStep
+      {/* Progress Steps */}
+      <section className="border-b border-[var(--grid-line)] px-10 py-6">
+        <div className="flex items-center justify-center gap-2 flex-wrap">
+          {STEPS.map((step, index) => {
+            const isActive = index === currentStep
+            const isCompleted = index < currentStep
 
-              return (
-                <button
-                  key={step.id}
-                  onClick={() => goToStep(index)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-blue-600 text-white'
-                      : isCompleted
-                      ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{step.label}</span>
-                </button>
-              )
-            })}
-          </div>
+            return (
+              <button
+                key={step.id}
+                onClick={() => goToStep(index)}
+                className={`flex items-center gap-2 px-4 py-2 text-[10px] font-mono uppercase tracking-widest transition-colors border ${
+                  isActive
+                    ? 'bg-[var(--olive)] border-[var(--olive)] text-[var(--deep-black)]'
+                    : isCompleted
+                    ? 'bg-[var(--olive)]/10 border-[var(--olive)] text-[var(--olive)]'
+                    : 'bg-transparent border-[var(--grid-line)] text-[var(--cream)]/40 hover:border-[var(--cream)]/40 hover:text-[var(--cream)]'
+                }`}
+              >
+                <span className="material-symbols-outlined text-sm">{step.icon}</span>
+                <span className="hidden sm:inline">{step.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
 
-          {/* Form */}
+      {/* Form */}
+      <div className="flex-1 overflow-auto p-10">
+        <div className="max-w-3xl mx-auto">
           <form onSubmit={handleSubmit(onSubmit)}>
-            <Card>
-              <CardHeader>
-                <CardTitle>{STEPS[currentStep].label}</CardTitle>
-                <CardDescription>
-                  {currentStep === 0 && 'Tell us about your company'}
-                  {currentStep === 1 && 'Who is building this?'}
-                  {currentStep === 2 && 'What problem are you solving?'}
-                  {currentStep === 3 && 'Where are you now?'}
-                  {currentStep === 4 && 'Why Sanctuary?'}
-                  {currentStep === 5 && 'Review your application'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+            <div className="border border-[var(--grid-line)]">
+              {/* Step Header */}
+              <div className="border-b border-[var(--grid-line)] p-6">
+                <h2 className="text-xl font-bold font-mono uppercase tracking-tight text-[var(--cream)]">
+                  {STEPS[currentStep].label}
+                </h2>
+                <p className="text-[10px] font-mono uppercase text-[var(--cream)]/60 mt-1">
+                  {currentStep === 0 && 'TELL_US_ABOUT_YOUR_COMPANY'}
+                  {currentStep === 1 && 'WHO_IS_BUILDING_THIS?'}
+                  {currentStep === 2 && 'WHAT_PROBLEM_ARE_YOU_SOLVING?'}
+                  {currentStep === 3 && 'WHERE_ARE_YOU_NOW?'}
+                  {currentStep === 4 && 'WHY_SANCTUARY?'}
+                  {currentStep === 5 && 'REVIEW_YOUR_APPLICATION'}
+                </p>
+              </div>
+
+              {/* Step Content */}
+              <div className="p-6 space-y-6">
                 {/* Step 1: Company */}
                 {currentStep === 0 && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="companyName">Company Name *</Label>
-                      <Input
-                        id="companyName"
+                  <div className="space-y-6">
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                        COMPANY_NAME *
+                      </label>
+                      <input
                         {...register('companyName')}
                         placeholder="Acme Inc"
+                        className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20"
                       />
                       {errors.companyName && (
-                        <p className="text-xs text-destructive">{errors.companyName.message}</p>
+                        <p className="text-[10px] text-[var(--warning)] mt-1 font-mono">{errors.companyName.message}</p>
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="companyOneLiner">One-liner *</Label>
-                      <Input
-                        id="companyOneLiner"
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                        ONE_LINER *
+                      </label>
+                      <input
                         {...register('companyOneLiner')}
                         placeholder="We help X do Y by doing Z"
+                        className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20"
                       />
                       {errors.companyOneLiner && (
-                        <p className="text-xs text-destructive">{errors.companyOneLiner.message}</p>
+                        <p className="text-[10px] text-[var(--warning)] mt-1 font-mono">{errors.companyOneLiner.message}</p>
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="companyWebsite">Website</Label>
-                      <Input
-                        id="companyWebsite"
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                        WEBSITE
+                      </label>
+                      <input
                         {...register('companyWebsite')}
                         placeholder="https://example.com"
+                        className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20"
                       />
-                      {errors.companyWebsite && (
-                        <p className="text-xs text-destructive">{errors.companyWebsite.message}</p>
-                      )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="companyDescription">Description</Label>
-                      <Textarea
-                        id="companyDescription"
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                        DESCRIPTION
+                      </label>
+                      <textarea
                         {...register('companyDescription')}
                         placeholder="Tell us more about what you're building..."
                         rows={4}
+                        className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20 resize-none"
                       />
                     </div>
                   </div>
@@ -267,100 +253,123 @@ export default function FounderApplyPage() {
                 {currentStep === 1 && (
                   <div className="space-y-6">
                     {founderFields.map((field, index) => (
-                      <div key={field.id} className="p-4 border rounded-lg space-y-4">
+                      <div key={field.id} className="border border-[var(--grid-line)] p-6 space-y-4">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-medium">Founder {index + 1}</h4>
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[var(--olive)] text-[var(--deep-black)]">
+                              FOUNDER_{index + 1}
+                            </span>
                             {formData.founders[index]?.isLead && (
-                              <Badge variant="secondary">Lead</Badge>
+                              <span className="text-[10px] font-mono uppercase px-2 py-0.5 border border-[var(--olive)] text-[var(--olive)]">
+                                LEAD
+                              </span>
                             )}
                           </div>
                           {founderFields.length > 1 && (
-                            <Button
+                            <button
                               type="button"
-                              variant="ghost"
-                              size="sm"
                               onClick={() => removeFounder(index)}
+                              className="size-8 border border-[var(--grid-line)] flex items-center justify-center text-[var(--warning)] hover:border-[var(--warning)] transition-colors"
                             >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                              <span className="material-symbols-outlined text-lg">delete</span>
+                            </button>
                           )}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label>Name *</Label>
-                            <Input
+                          <div>
+                            <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                              NAME *
+                            </label>
+                            <input
                               {...register(`founders.${index}.name`)}
                               placeholder="Full name"
+                              className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20"
                             />
                             {errors.founders?.[index]?.name && (
-                              <p className="text-xs text-destructive">
+                              <p className="text-[10px] text-[var(--warning)] mt-1 font-mono">
                                 {errors.founders[index]?.name?.message}
                               </p>
                             )}
                           </div>
 
-                          <div className="space-y-2">
-                            <Label>Email *</Label>
-                            <Input
+                          <div>
+                            <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                              EMAIL *
+                            </label>
+                            <input
                               type="email"
                               {...register(`founders.${index}.email`)}
                               placeholder="email@example.com"
+                              className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20"
                             />
                             {errors.founders?.[index]?.email && (
-                              <p className="text-xs text-destructive">
+                              <p className="text-[10px] text-[var(--warning)] mt-1 font-mono">
                                 {errors.founders[index]?.email?.message}
                               </p>
                             )}
                           </div>
 
-                          <div className="space-y-2">
-                            <Label>Role</Label>
-                            <Input
+                          <div>
+                            <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                              ROLE
+                            </label>
+                            <input
                               {...register(`founders.${index}.role`)}
                               placeholder="CEO, CTO, etc."
+                              className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20"
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <Label>LinkedIn</Label>
-                            <Input
+                          <div>
+                            <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                              LINKEDIN
+                            </label>
+                            <input
                               {...register(`founders.${index}.linkedin`)}
                               placeholder="https://linkedin.com/in/..."
+                              className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20"
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <Label>Years of Experience</Label>
-                            <Input
+                          <div>
+                            <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                              YEARS_EXPERIENCE
+                            </label>
+                            <input
                               type="number"
                               {...register(`founders.${index}.yearsExperience`, {
                                 valueAsNumber: true,
                               })}
                               placeholder="0"
+                              className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20"
                             />
                           </div>
 
-                          <div className="flex items-center gap-2 pt-6">
-                            <Checkbox
-                              id={`founder-${index}-started`}
-                              checked={formData.founders[index]?.hasStartedBefore}
-                              onCheckedChange={(checked) =>
-                                setValue(`founders.${index}.hasStartedBefore`, !!checked)
-                              }
-                            />
-                            <Label htmlFor={`founder-${index}-started`} className="text-sm">
-                              Has started a company before
-                            </Label>
+                          <div className="flex items-center gap-3 pt-6">
+                            <button
+                              type="button"
+                              onClick={() => setValue(`founders.${index}.hasStartedBefore`, !formData.founders[index]?.hasStartedBefore)}
+                              className={`size-5 border flex items-center justify-center transition-colors ${
+                                formData.founders[index]?.hasStartedBefore
+                                  ? 'border-[var(--olive)] bg-[var(--olive)]'
+                                  : 'border-[var(--cream)]/20'
+                              }`}
+                            >
+                              {formData.founders[index]?.hasStartedBefore && (
+                                <span className="material-symbols-outlined text-sm text-[var(--deep-black)]">check</span>
+                              )}
+                            </button>
+                            <label className="text-[10px] font-mono uppercase text-[var(--cream)]/60">
+                              HAS_STARTED_COMPANY_BEFORE
+                            </label>
                           </div>
                         </div>
                       </div>
                     ))}
 
-                    <Button
+                    <button
                       type="button"
-                      variant="outline"
                       onClick={() =>
                         appendFounder({
                           name: '',
@@ -372,53 +381,59 @@ export default function FounderApplyPage() {
                           hasStartedBefore: false,
                         })
                       }
-                      className="w-full"
+                      className="w-full border border-dashed border-[var(--grid-line)] py-4 text-[10px] font-mono uppercase tracking-widest text-[var(--cream)]/60 hover:border-[var(--olive)] hover:text-[var(--olive)] transition-colors flex items-center justify-center gap-2"
                     >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Another Founder
-                    </Button>
+                      <span className="material-symbols-outlined text-sm">add</span>
+                      ADD_ANOTHER_FOUNDER
+                    </button>
                   </div>
                 )}
 
                 {/* Step 3: Problem & Solution */}
                 {currentStep === 2 && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="problemDescription">What problem are you solving? *</Label>
-                      <Textarea
-                        id="problemDescription"
+                  <div className="space-y-6">
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                        WHAT_PROBLEM_ARE_YOU_SOLVING? *
+                      </label>
+                      <textarea
                         {...register('problemDescription')}
                         placeholder="Describe the problem in detail. Who has this problem? How painful is it?"
                         rows={4}
+                        className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20 resize-none"
                       />
                       {errors.problemDescription && (
-                        <p className="text-xs text-destructive">{errors.problemDescription.message}</p>
+                        <p className="text-[10px] text-[var(--warning)] mt-1 font-mono">{errors.problemDescription.message}</p>
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="targetCustomer">Who is your target customer? *</Label>
-                      <Textarea
-                        id="targetCustomer"
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                        TARGET_CUSTOMER *
+                      </label>
+                      <textarea
                         {...register('targetCustomer')}
                         placeholder="Be specific. Who exactly are you building for?"
                         rows={3}
+                        className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20 resize-none"
                       />
                       {errors.targetCustomer && (
-                        <p className="text-xs text-destructive">{errors.targetCustomer.message}</p>
+                        <p className="text-[10px] text-[var(--warning)] mt-1 font-mono">{errors.targetCustomer.message}</p>
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="solutionDescription">How are you solving it? *</Label>
-                      <Textarea
-                        id="solutionDescription"
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                        HOW_ARE_YOU_SOLVING_IT? *
+                      </label>
+                      <textarea
                         {...register('solutionDescription')}
                         placeholder="Describe your solution. What makes it unique?"
                         rows={4}
+                        className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20 resize-none"
                       />
                       {errors.solutionDescription && (
-                        <p className="text-xs text-destructive">{errors.solutionDescription.message}</p>
+                        <p className="text-[10px] text-[var(--warning)] mt-1 font-mono">{errors.solutionDescription.message}</p>
                       )}
                     </div>
                   </div>
@@ -426,61 +441,70 @@ export default function FounderApplyPage() {
 
                 {/* Step 4: Traction */}
                 {currentStep === 3 && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>What stage are you at? *</Label>
-                      <Select
-                        value={formData.stage}
-                        onValueChange={(value) => setValue('stage', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your stage" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {APPLICATION_STAGES.map((stage) => (
-                            <SelectItem key={stage.value} value={stage.value}>
-                              {stage.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  <div className="space-y-6">
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                        CURRENT_STAGE *
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {APPLICATION_STAGES.map((stage) => (
+                          <button
+                            key={stage.value}
+                            type="button"
+                            onClick={() => setValue('stage', stage.value)}
+                            className={`px-4 py-3 text-[10px] font-mono uppercase transition-colors border ${
+                              formData.stage === stage.value
+                                ? 'bg-[var(--olive)] border-[var(--olive)] text-[var(--deep-black)]'
+                                : 'bg-transparent border-[var(--grid-line)] text-[var(--cream)]/60 hover:border-[var(--cream)]/40'
+                            }`}
+                          >
+                            {stage.label}
+                          </button>
+                        ))}
+                      </div>
                       {errors.stage && (
-                        <p className="text-xs text-destructive">{errors.stage.message}</p>
+                        <p className="text-[10px] text-[var(--warning)] mt-1 font-mono">{errors.stage.message}</p>
                       )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="userCount">Number of users</Label>
-                        <Input
-                          id="userCount"
+                      <div>
+                        <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                          NUMBER_OF_USERS
+                        </label>
+                        <input
                           type="number"
                           {...register('userCount', { valueAsNumber: true })}
                           placeholder="0"
+                          className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20"
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="mrr">Monthly Recurring Revenue ($)</Label>
-                        <Input
-                          id="mrr"
+                      <div>
+                        <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                          MRR_($)
+                        </label>
+                        <input
                           type="number"
                           {...register('mrr', { valueAsNumber: true })}
                           placeholder="0"
+                          className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20"
                         />
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="biggestChallenge">What is your biggest challenge right now? *</Label>
-                      <Textarea
-                        id="biggestChallenge"
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                        BIGGEST_CHALLENGE *
+                      </label>
+                      <textarea
                         {...register('biggestChallenge')}
                         placeholder="What's the #1 thing holding you back?"
                         rows={3}
+                        className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20 resize-none"
                       />
                       {errors.biggestChallenge && (
-                        <p className="text-xs text-destructive">{errors.biggestChallenge.message}</p>
+                        <p className="text-[10px] text-[var(--warning)] mt-1 font-mono">{errors.biggestChallenge.message}</p>
                       )}
                     </div>
                   </div>
@@ -488,30 +512,34 @@ export default function FounderApplyPage() {
 
                 {/* Step 5: Why Sanctuary */}
                 {currentStep === 4 && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="whySanctuary">Why do you want to join Sanctuary? *</Label>
-                      <Textarea
-                        id="whySanctuary"
+                  <div className="space-y-6">
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                        WHY_DO_YOU_WANT_TO_JOIN_SANCTUARY? *
+                      </label>
+                      <textarea
                         {...register('whySanctuary')}
                         placeholder="What drew you to apply? What do you hope to gain?"
                         rows={4}
+                        className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20 resize-none"
                       />
                       {errors.whySanctuary && (
-                        <p className="text-xs text-destructive">{errors.whySanctuary.message}</p>
+                        <p className="text-[10px] text-[var(--warning)] mt-1 font-mono">{errors.whySanctuary.message}</p>
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="whatTheyWant">What specific help do you need? *</Label>
-                      <Textarea
-                        id="whatTheyWant"
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2 block">
+                        WHAT_SPECIFIC_HELP_DO_YOU_NEED? *
+                      </label>
+                      <textarea
                         {...register('whatTheyWant')}
                         placeholder="What skills, connections, or resources would be most valuable?"
                         rows={4}
+                        className="w-full bg-transparent border border-[var(--grid-line)] px-4 py-3 text-[var(--cream)] font-mono text-sm focus:border-[var(--olive)] focus:outline-none transition-colors placeholder:text-[var(--cream)]/20 resize-none"
                       />
                       {errors.whatTheyWant && (
-                        <p className="text-xs text-destructive">{errors.whatTheyWant.message}</p>
+                        <p className="text-[10px] text-[var(--warning)] mt-1 font-mono">{errors.whatTheyWant.message}</p>
                       )}
                     </div>
                   </div>
@@ -520,76 +548,94 @@ export default function FounderApplyPage() {
                 {/* Step 6: Review */}
                 {currentStep === 5 && (
                   <div className="space-y-6">
-                    <div className="p-4 border rounded-lg space-y-2">
-                      <h4 className="font-medium">Company</h4>
-                      <p className="text-lg font-semibold">{formData.companyName || 'Not provided'}</p>
-                      <p className="text-sm text-muted-foreground">{formData.companyOneLiner}</p>
+                    <div className="border border-[var(--grid-line)] p-4">
+                      <p className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2">COMPANY</p>
+                      <p className="text-lg font-bold font-mono text-[var(--cream)]">{formData.companyName || 'NOT_PROVIDED'}</p>
+                      <p className="text-sm text-[var(--cream)]/60 mt-1">{formData.companyOneLiner}</p>
                       {formData.companyWebsite && (
-                        <p className="text-sm text-blue-600">{formData.companyWebsite}</p>
+                        <p className="text-sm text-[var(--olive)] mt-1">{formData.companyWebsite}</p>
                       )}
                     </div>
 
-                    <div className="p-4 border rounded-lg space-y-2">
-                      <h4 className="font-medium">Founders ({formData.founders.length})</h4>
+                    <div className="border border-[var(--grid-line)] p-4">
+                      <p className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2">
+                        FOUNDERS ({formData.founders.length})
+                      </p>
                       <div className="space-y-1">
                         {formData.founders.map((founder, i) => (
-                          <p key={i} className="text-sm">
-                            {founder.name || 'Unnamed'} - {founder.role || 'No role'}
-                            {founder.isLead && ' (Lead)'}
+                          <p key={i} className="text-sm text-[var(--cream)]/80 font-mono">
+                            {founder.name || 'UNNAMED'} — {founder.role || 'NO_ROLE'}
+                            {founder.isLead && ' (LEAD)'}
                           </p>
                         ))}
                       </div>
                     </div>
 
-                    <div className="p-4 border rounded-lg space-y-2">
-                      <h4 className="font-medium">Stage</h4>
-                      <p className="text-sm">
-                        {APPLICATION_STAGES.find((s) => s.value === formData.stage)?.label || 'Not selected'}
+                    <div className="border border-[var(--grid-line)] p-4">
+                      <p className="text-[10px] font-mono uppercase text-[var(--olive)] mb-2">STAGE</p>
+                      <p className="text-sm text-[var(--cream)]/80 font-mono">
+                        {APPLICATION_STAGES.find((s) => s.value === formData.stage)?.label || 'NOT_SELECTED'}
                       </p>
                       {((formData.userCount ?? 0) > 0 || (formData.mrr ?? 0) > 0) && (
-                        <p className="text-sm text-muted-foreground">
-                          {(formData.userCount ?? 0) > 0 && `${formData.userCount} users`}
+                        <p className="text-sm text-[var(--cream)]/60 mt-1 font-mono">
+                          {(formData.userCount ?? 0) > 0 && `${formData.userCount} USERS`}
                           {(formData.userCount ?? 0) > 0 && (formData.mrr ?? 0) > 0 && ' | '}
                           {(formData.mrr ?? 0) > 0 && `$${formData.mrr} MRR`}
                         </p>
                       )}
                     </div>
 
-                    <div className="p-4 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900 rounded-lg space-y-2">
-                      <h4 className="font-medium text-blue-700 dark:text-blue-400">Next: AI Interview</h4>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="border border-[var(--olive)]/30 bg-[var(--olive)]/5 p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="material-symbols-outlined text-[var(--olive)]">smart_toy</span>
+                        <p className="font-bold font-mono uppercase text-[var(--olive)]">NEXT: AI_INTERVIEW</p>
+                      </div>
+                      <p className="text-sm text-[var(--cream)]/60">
                         After submitting, you will proceed to a short AI-powered interview to help us
                         understand your startup better. This takes about 45 minutes.
                       </p>
                     </div>
                   </div>
                 )}
+              </div>
 
-                {/* Navigation */}
-                <div className="flex items-center justify-between pt-6 border-t">
-                  <Button
+              {/* Navigation */}
+              <div className="border-t border-[var(--grid-line)] p-6 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  disabled={currentStep === 0}
+                  className={`px-6 py-3 text-[10px] font-mono uppercase tracking-widest flex items-center gap-2 transition-colors ${
+                    currentStep === 0
+                      ? 'text-[var(--cream)]/20 cursor-not-allowed'
+                      : 'text-[var(--cream)]/60 hover:text-[var(--cream)] border border-[var(--grid-line)] hover:border-[var(--cream)]/40'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-sm">arrow_back</span>
+                  BACK
+                </button>
+
+                {currentStep < STEPS.length - 1 ? (
+                  <button
                     type="button"
-                    variant="ghost"
-                    onClick={prevStep}
-                    disabled={currentStep === 0}
+                    onClick={nextStep}
+                    className="bg-[var(--olive)] text-[var(--deep-black)] px-6 py-3 text-[10px] font-bold tracking-widest font-mono uppercase hover:bg-[var(--cream)] transition-colors flex items-center gap-2"
                   >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back
-                  </Button>
-
-                  {currentStep < STEPS.length - 1 ? (
-                    <Button type="button" onClick={nextStep}>
-                      Next
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  ) : (
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? 'Submitting...' : 'Submit & Start Interview'}
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                    NEXT
+                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-[var(--olive)] text-[var(--deep-black)] px-6 py-3 text-[10px] font-bold tracking-widest font-mono uppercase hover:bg-[var(--cream)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isSubmitting ? 'SUBMITTING...' : 'SUBMIT_&_START_INTERVIEW'}
+                    <span className="material-symbols-outlined text-sm">send</span>
+                  </button>
+                )}
+              </div>
+            </div>
           </form>
         </div>
       </div>
