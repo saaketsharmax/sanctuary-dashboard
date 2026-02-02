@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Partner Portfolio Dashboard | Sanctuary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --deep-black: #050505;
+            --cream: #F5F5F0;
+            --olive: #808000;
+            --olive-muted: #3d3d00;
+            --grid-line: rgba(245, 245, 240, 0.15);
+        }
+        body {
+            background-color: var(--deep-black);
+            color: var(--cream);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .technical-border {
+            border: 1px solid var(--grid-line);
+        }
+        .score-block {
+            background-color: var(--cream);
+            color: var(--deep-black);
+        }
+        .status-dot {
+            background-color: var(--olive);
+        }
+        .nav-link:hover {
+            color: var(--olive);
+        }
+        .active-tab {
+            border-bottom: 2px solid var(--olive);
+            color: var(--olive);
+        }::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--deep-black);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--grid-line);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+<aside class="fixed left-0 top-0 h-full w-16 technical-border border-l-0 border-t-0 border-b-0 flex flex-col items-center py-8 z-50 bg-[#050505]">
+<div class="mb-12">
+<svg class="size-8 text-[var(--olive)]" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 4H42V17.3333V30.6667H24V44H6V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<div class="flex flex-col gap-8 flex-1">
+<span class="material-symbols-outlined cursor-pointer text-[var(--olive)]">dashboard</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-[var(--olive)] transition-colors">analytics</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-[var(--olive)] transition-colors">group</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-[var(--olive)] transition-colors">layers</span>
+</div>
+<div class="mt-auto flex flex-col gap-6">
+<span class="material-symbols-outlined cursor-pointer hover:text-[var(--olive)]">settings</span>
+<div class="size-8 technical-border rounded-none bg-center bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAVvpo-Xit_5t_e0_Y7IZoUNtHsvrJ7kvHxwYrPzUpry3E9C-VseG_K0KgRW7n6zt3NWx5EoFejBxMPb-QXUjFfU8h6gXdKycQs3CV-mFJPxx7r84p0Qt5jbal-tfA6ACFDfDk84FAQDxP2fQ5cOE_Ba1AVCb4DATqG2VbMzfwSguqL9ymqqpFK6hcjLjL5QA5uJ3p_Fj97eQgQd5O6_cN1acP2Ex6HNPe-CMguAheoGBxzwBQRClyoGl4U2ny68hJzpqg4V5Cx3lQ");'></div>
+</div>
+</aside>
+<main class="ml-16">
+<header class="technical-border border-t-0 border-l-0 border-r-0 px-10 py-6 flex justify-between items-center">
+<div class="flex flex-col">
+<h1 class="text-xs uppercase tracking-[0.3em] font-light opacity-60">System // Portfolio</h1>
+<h2 class="text-2xl font-bold tracking-tighter">SANCTUARY_MGMT_V.4.2</h2>
+</div>
+<div class="flex items-center gap-8">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm opacity-50">search</span>
+<input class="bg-transparent technical-border py-2 pl-10 pr-4 text-xs tracking-widest focus:ring-0 focus:outline-none focus:border-[var(--olive)] w-64 placeholder:opacity-30" placeholder="QUERY_STARTUP_DB" type="text"/>
+</div>
+<button class="bg-[var(--olive)] text-black px-6 py-2 text-xs font-bold tracking-widest hover:bg-[var(--cream)] transition-all">
+                ADD_NEW_ENTITY
+            </button>
+</div>
+</header>
+<section class="grid grid-cols-1 md:grid-cols-3 technical-border border-t-0 border-l-0 border-r-0">
+<div class="p-10 technical-border border-t-0 border-l-0 border-b-0">
+<div class="text-[8rem] leading-[0.8] font-black tracking-tighter opacity-10 absolute pointer-events-none">42</div>
+<div class="relative z-10">
+<p class="text-[var(--olive)] text-xs font-bold tracking-[0.2em] mb-4">ACTIVE_ENTITIES</p>
+<p class="text-4xl font-extrabold">42<span class="text-sm opacity-40 ml-2">/60</span></p>
+<p class="text-[10px] mt-2 opacity-50 font-light">SYSTEM LOAD: OPTIMAL</p>
+</div>
+</div>
+<div class="p-10 technical-border border-t-0 border-l-0 border-b-0">
+<div class="text-[8rem] leading-[0.8] font-black tracking-tighter opacity-10 absolute pointer-events-none">03</div>
+<div class="relative z-10">
+<p class="text-[var(--olive)] text-xs font-bold tracking-[0.2em] mb-4">COHORT_CYCLES</p>
+<p class="text-4xl font-extrabold">SUMMER_24</p>
+<p class="text-[10px] mt-2 opacity-50 font-light">PHASE: EXECUTION</p>
+</div>
+</div>
+<div class="p-10 border-0">
+<div class="text-[8rem] leading-[0.8] font-black tracking-tighter opacity-10 absolute pointer-events-none">94</div>
+<div class="relative z-10">
+<p class="text-[var(--olive)] text-xs font-bold tracking-[0.2em] mb-4">AVG_PORTFOLIO_HEALTH</p>
+<div class="flex items-end gap-2">
+<p class="text-4xl font-extrabold">94.2</p>
+<span class="text-[var(--olive)] material-symbols-outlined mb-1">trending_up</span>
+</div>
+<p class="text-[10px] mt-2 opacity-50 font-light">CONFIDENCE_INTERVAL: 0.98</p>
+</div>
+</div>
+</section>
+<section class="px-10 py-4 flex flex-wrap items-center justify-between technical-border border-t-0 border-l-0 border-r-0">
+<div class="flex gap-10">
+<button class="active-tab text-xs font-bold tracking-widest pb-4 pt-2">GRID_VISUALIZER</button>
+<button class="text-xs font-bold tracking-widest pb-4 pt-2 opacity-40 hover:opacity-100 transition-opacity">TABLE_VIEW</button>
+<button class="text-xs font-bold tracking-widest pb-4 pt-2 opacity-40 hover:opacity-100 transition-opacity">CHRONO_LOG</button>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2 technical-border px-3 py-1.5 cursor-pointer hover:bg-[var(--olive)] hover:text-black transition-all">
+<span class="text-[10px] font-bold">STAGE: ALL</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</div>
+<div class="flex items-center gap-2 technical-border px-3 py-1.5 cursor-pointer hover:bg-[var(--olive)] hover:text-black transition-all">
+<span class="text-[10px] font-bold">STATUS: ON_TRACK</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</div>
+</div>
+</section>
+<section class="p-10 space-y-px bg-[var(--grid-line)]">
+<div class="bg-[var(--deep-black)] grid grid-cols-12 items-center p-6 gap-6 hover:bg-[#0a0a0a] transition-all group">
+<div class="col-span-1">
+<div class="size-12 technical-border bg-black flex items-center justify-center grayscale group-hover:grayscale-0 transition-all">
+<img alt="Logo" class="w-8 h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoxbJ8_pzE-b_JTzDRhsfOrf46MORqaeonmrTT8-2zM4Bo-RbHUBX2Xg-8ZRg-tFQiY3a06x4ee3mBZcEw5Q2NHM5vUAnU5h9gEp_sePpU6RYeKKCqxqrDpc_nr_4AfPrldHMmd6ysLoeI0_dAocpPZuORkQZE06oh2s-7zi-gpsgRU6qvMs7L0SLDje7nT1QpCDy8GvRG2-uAsO7EkmyzGTGnwbmmua8fZmSo9eAzmcPugMz9UXHb7jcsVBZ2ZKgCZjEC_td0tD4"/>
+</div>
+</div>
+<div class="col-span-3">
+<h3 class="font-bold text-lg tracking-tight">ECOFLOW_SYS</h3>
+<p class="text-[10px] opacity-40 tracking-wider">AI SUSTAINABLE ENERGY</p>
+</div>
+<div class="col-span-2">
+<span class="text-[10px] technical-border px-2 py-0.5 border-[var(--olive)] text-[var(--olive)]">GROWTH_STAGE</span>
+</div>
+<div class="col-span-3">
+<div class="flex items-center gap-3">
+<div class="size-2 rounded-full status-dot"></div>
+<span class="text-xs tracking-widest">STATUS_STABLE</span>
+</div>
+</div>
+<div class="col-span-1 flex flex-col items-center">
+<div class="score-block w-full py-1 text-center font-black text-xl">92</div>
+<span class="text-[8px] mt-1 opacity-40 tracking-tighter">IDX_SCORE</span>
+</div>
+<div class="col-span-2 flex justify-end">
+<button class="material-symbols-outlined text-[var(--cream)] opacity-20 group-hover:opacity-100 hover:text-[var(--olive)] transition-all">open_in_new</button>
+</div>
+</div>
+<div class="bg-[var(--deep-black)] grid grid-cols-12 items-center p-6 gap-6 hover:bg-[#0a0a0a] transition-all group">
+<div class="col-span-1">
+<div class="size-12 technical-border bg-black flex items-center justify-center grayscale group-hover:grayscale-0 transition-all">
+<img alt="Logo" class="w-8 h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAys5NeJFectEUInmNgOAG6FIjdaAqZXgv4HDnHE8UUH2h6JMWQhOzLotyvicwjN_uF0EWx6fwqOzMSHYJCzIlgxZqk2-rbp6cbPr7JWrv8rJJcVFfx2kqVfwD2rl-Kmk36oGvtegQ5hl3-4Y7UuxAqkc9FODYLx8K67uTXUFMCdA6YOHGzldYSS5aSwNfs-00QCAL588EYCgOFWUC7Ri3-nnSqlXttC0vZTRhWbjJJfug0Oinu9qZCFETU-VzBHX-0xDgV0rclZyk"/>
+</div>
+</div>
+<div class="col-span-3">
+<h3 class="font-bold text-lg tracking-tight">VELO_PAY_X</h3>
+<p class="text-[10px] opacity-40 tracking-wider">B2B FINTECH STACK</p>
+</div>
+<div class="col-span-2">
+<span class="text-[10px] technical-border px-2 py-0.5 opacity-60">EARLY_TRACTION</span>
+</div>
+<div class="col-span-3">
+<div class="flex items-center gap-3">
+<div class="size-2 rounded-full bg-amber-600"></div>
+<span class="text-xs tracking-widest opacity-60">AT_RISK_WARN</span>
+</div>
+</div>
+<div class="col-span-1 flex flex-col items-center">
+<div class="score-block w-full py-1 text-center font-black text-xl">64</div>
+<span class="text-[8px] mt-1 opacity-40 tracking-tighter">IDX_SCORE</span>
+</div>
+<div class="col-span-2 flex justify-end">
+<button class="material-symbols-outlined text-[var(--cream)] opacity-20 group-hover:opacity-100 hover:text-[var(--olive)] transition-all">open_in_new</button>
+</div>
+</div>
+<div class="bg-[var(--deep-black)] grid grid-cols-12 items-center p-6 gap-6 hover:bg-[#0a0a0a] transition-all group">
+<div class="col-span-1">
+<div class="size-12 technical-border bg-black flex items-center justify-center grayscale group-hover:grayscale-0 transition-all">
+<img alt="Logo" class="w-8 h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgDFhGmrUHGRrcmpoEKIxzsZ6Mx5w-wXUWt7vVJpyd8WpQkCWtbAa0j0gCWpVxe2Lji0dxWhzV6u60YWDzgrNhPASofQeZUmIO_OXBHE6Xgm4VL0jCN3UwAVwUK3LC7sO0IhjPhAhSkn79jyERMripZs3zY8NbbKzVimNJDKC8-P4YyDTofmI7tZspa3lc3qLm5pn5F1g1ppi8w1rj93vLbl35a22C6pLtUiVVPH4skgTXXTUeL6fDTaqi17o4o6eED7B5m2XAnQE"/>
+</div>
+</div>
+<div class="col-span-3">
+<h3 class="font-bold text-lg tracking-tight">GENBIO_LABS</h3>
+<p class="text-[10px] opacity-40 tracking-wider">PERSONALIZED ONCOLOGY</p>
+</div>
+<div class="col-span-2">
+<span class="text-[10px] technical-border px-2 py-0.5 opacity-60">MVP_PHASE</span>
+</div>
+<div class="col-span-3">
+<div class="flex items-center gap-3">
+<div class="size-2 rounded-full bg-red-800"></div>
+<span class="text-xs tracking-widest opacity-60">CRIT_BLOCKED</span>
+</div>
+</div>
+<div class="col-span-1 flex flex-col items-center">
+<div class="score-block w-full py-1 text-center font-black text-xl">41</div>
+<span class="text-[8px] mt-1 opacity-40 tracking-tighter">IDX_SCORE</span>
+</div>
+<div class="col-span-2 flex justify-end">
+<button class="material-symbols-outlined text-[var(--cream)] opacity-20 group-hover:opacity-100 hover:text-[var(--olive)] transition-all">open_in_new</button>
+</div>
+</div>
+<div class="bg-[var(--deep-black)] grid grid-cols-12 items-center p-6 gap-6 hover:bg-[#0a0a0a] transition-all group">
+<div class="col-span-1">
+<div class="size-12 technical-border bg-black flex items-center justify-center grayscale group-hover:grayscale-0 transition-all">
+<img alt="Logo" class="w-8 h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDaDhKnVfDFiQuje0Cq5zN7iUPxdBymm1xCILs9JmUa3gQY0nCR8ovT4Cb_oBVf71cv4PnK9pCxbDqfGzWNCB5GFxHLcykGHh3i2nTk1_BD3yT0tX5-knYuLvH_CyCVs1hDC4O9Y5mTUaBrtquL3R06OkGfnJwA37t-xMDi310uDECBCQTj1ulEuKZVf1tPqsAunk9aTAfCnNG7CYUisN4al4hGx7Al9WatcrXveoY1iJ00Io8EWkwen5a18qS0wGvdVwXa7PYrOs"/>
+</div>
+</div>
+<div class="col-span-3">
+<h3 class="font-bold text-lg tracking-tight">LOOM_HEALTH</h3>
+<p class="text-[10px] opacity-40 tracking-wider">DECENTRALIZED RECORDS</p>
+</div>
+<div class="col-span-2">
+<span class="text-[10px] technical-border px-2 py-0.5 border-[var(--olive)] text-[var(--olive)]">GROWTH_STAGE</span>
+</div>
+<div class="col-span-3">
+<div class="flex items-center gap-3">
+<div class="size-2 rounded-full status-dot"></div>
+<span class="text-xs tracking-widest">STATUS_STABLE</span>
+</div>
+</div>
+<div class="col-span-1 flex flex-col items-center">
+<div class="score-block w-full py-1 text-center font-black text-xl">88</div>
+<span class="text-[8px] mt-1 opacity-40 tracking-tighter">IDX_SCORE</span>
+</div>
+<div class="col-span-2 flex justify-end">
+<button class="material-symbols-outlined text-[var(--cream)] opacity-20 group-hover:opacity-100 hover:text-[var(--olive)] transition-all">open_in_new</button>
+</div>
+</div>
+<div class="bg-[var(--deep-black)] grid grid-cols-12 items-center p-6 gap-6 hover:bg-[#0a0a0a] transition-all group">
+<div class="col-span-1">
+<div class="size-12 technical-border bg-black flex items-center justify-center grayscale group-hover:grayscale-0 transition-all">
+<img alt="Logo" class="w-8 h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4rEmEEijSuC9eVN2fDUk_eilnj5cC_H1SyR9ejI_IOqwxQwP6sKmzIEANtGRuV-8obyu0Cs906wdERS31KsGojxuIkLfP6JFfT3zePaKY4kbuKuV6QNDLkyLOXItyMzFz1srTkC5KuZRy3o5lJ7acWAUrDTRtoruQiZywRJ_MAej5rFx9vwmREs-o2TH5zfivpKMR8wVwq_H8lKMuCiLd9XBrvC7u2hutd8eB-1iXMg4nMFT7K66GBoFtSJnUARkO7In0VVYk0Yk"/>
+</div>
+</div>
+<div class="col-span-3">
+<h3 class="font-bold text-lg tracking-tight">RIVER_LABS_01</h3>
+<p class="text-[10px] opacity-40 tracking-wider">WATER QUALITY SENSORS</p>
+</div>
+<div class="col-span-2">
+<span class="text-[10px] technical-border px-2 py-0.5 border-[var(--olive)] text-[var(--olive)]">GROWTH_STAGE</span>
+</div>
+<div class="col-span-3">
+<div class="flex items-center gap-3">
+<div class="size-2 rounded-full status-dot"></div>
+<span class="text-xs tracking-widest">STATUS_STABLE</span>
+</div>
+</div>
+<div class="col-span-1 flex flex-col items-center">
+<div class="score-block w-full py-1 text-center font-black text-xl">79</div>
+<span class="text-[8px] mt-1 opacity-40 tracking-tighter">IDX_SCORE</span>
+</div>
+<div class="col-span-2 flex justify-end">
+<button class="material-symbols-outlined text-[var(--cream)] opacity-20 group-hover:opacity-100 hover:text-[var(--olive)] transition-all">open_in_new</button>
+</div>
+</div>
+</section>
+<footer class="p-10 flex justify-between items-center technical-border border-b-0 border-l-0 border-r-0">
+<div class="flex gap-4 items-center">
+<span class="text-[10px] opacity-40">SYSTEM_UPTIME: 99.9%</span>
+<div class="w-24 h-px bg-[var(--grid-line)]"></div>
+<span class="text-[10px] opacity-40">LATENCY: 14MS</span>
+</div>
+<div class="flex gap-2">
+<button class="technical-border size-10 flex items-center justify-center hover:bg-[var(--olive)] hover:text-black transition-all">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="technical-border size-10 flex items-center justify-center bg-[var(--cream)] text-black font-bold text-xs">01</button>
+<button class="technical-border size-10 flex items-center justify-center hover:bg-[var(--olive)] hover:text-black transition-all text-xs">02</button>
+<button class="technical-border size-10 flex items-center justify-center hover:bg-[var(--olive)] hover:text-black transition-all text-xs">03</button>
+<button class="technical-border size-10 flex items-center justify-center hover:bg-[var(--olive)] hover:text-black transition-all">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</footer>
+</main>
+
+</body></html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sanctuary Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&amp;family=Space+Grotesk:wght@300;400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "deep-black": "#000000",
+                        "off-white": "#F5F5F0",
+                        "olive-green": "#808000",
+                        "dark-olive": "#556B2F",
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"],
+                        "display": ["Inter", "sans-serif"],
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-deep-black text-off-white selection:bg-olive-green selection:text-deep-black;
+                font-family: 'Inter', sans-serif;
+            }
+        }
+        .sharp-edge {
+            border-radius: 0px !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased">
+<header class="p-8 md:p-12">
+<div class="flex items-center gap-2 border-b border-white/10 pb-4">
+<div class="w-2 h-2 bg-olive-green"></div>
+<span class="text-xs uppercase tracking-[0.3em] font-bold">Terminal Access</span>
+</div>
+</header>
+<main class="flex-1 flex flex-col items-center justify-center px-6 py-12">
+<div class="w-full max-w-4xl">
+<h1 class="text-[12vw] md:text-[10rem] font-black leading-[0.85] tracking-tighter text-off-white mb-16 md:mb-24 text-center md:text-left">
+                SANCTUARY
+            </h1>
+<div class="flex flex-col md:flex-row gap-12 md:gap-24 items-start">
+<div class="w-full max-w-md space-y-8">
+<div class="space-y-2">
+<label class="block text-xs uppercase tracking-widest text-off-white/60 font-bold">Authentication Method: Magic Link</label>
+<p class="text-sm text-off-white/40 italic">// Enter email to receive secure entry token</p>
+</div>
+<form class="space-y-4" onsubmit="return false;">
+<div class="relative">
+<input class="w-full bg-off-white text-deep-black sharp-edge border-none h-16 px-6 text-lg font-bold placeholder:text-deep-black/30 focus:ring-4 focus:ring-olive-green outline-none transition-all uppercase" placeholder="IDENTIFIER@ACCESS.IO" type="email"/>
+</div>
+<button class="w-full bg-olive-green hover:bg-dark-olive text-deep-black font-black uppercase tracking-widest h-16 sharp-edge transition-colors flex items-center justify-center gap-3">
+<span>Send Magic Link</span>
+<span class="material-symbols-outlined font-black">arrow_right_alt</span>
+</button>
+</form>
+<div class="pt-4 border-t border-white/10">
+<p class="text-[10px] uppercase tracking-widest text-off-white/40 leading-relaxed">
+                            Secured via AES-256 Protocol. <br/>
+                            Unauthorized access is strictly monitored.
+                        </p>
+</div>
+</div>
+<div class="hidden md:block flex-1 border-l border-white/10 pl-12 space-y-8">
+<div class="space-y-4">
+<h3 class="text-xs font-bold uppercase tracking-widest text-olive-green">System Status</h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="border border-white/10 p-4">
+<div class="text-[10px] uppercase text-off-white/40">Portfolio Data</div>
+<div class="text-xl font-bold">99.9%</div>
+</div>
+<div class="border border-white/10 p-4">
+<div class="text-[10px] uppercase text-off-white/40">Network Node</div>
+<div class="text-xl font-bold">SECURE</div>
+</div>
+</div>
+</div>
+<div class="text-[10px] font-mono text-off-white/20 uppercase leading-loose">
+                        [LOG]: SYSTEM_INITIALIZED<br/>
+                        [LOG]: ENCRYPTION_ACTIVE<br/>
+                        [LOG]: WAITING_FOR_USER_INPUT...
+                    </div>
+</div>
+</div>
+</div>
+</main>
+<footer class="p-8 md:p-12 flex flex-col md:flex-row justify-between items-end gap-6 border-t border-white/5">
+<div class="text-[10px] uppercase tracking-[0.2em] text-off-white/30">
+            © 2024 SANCTUARY LTD / PORTFOLIO INTEL
+        </div>
+<nav class="flex gap-8 text-[10px] uppercase tracking-[0.2em] font-bold">
+<a class="text-off-white/50 hover:text-olive-green transition-colors" href="#">Support</a>
+<a class="text-off-white/50 hover:text-olive-green transition-colors" href="#">Privacy</a>
+<a class="text-off-white/50 hover:text-olive-green transition-colors" href="#">Terms</a>
+</nav>
+</footer>
+
+</body></html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sanctuary | Programme Timeline Overview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --cream: #F5F5DC;
+            --olive: #808000;
+            --warning: #FF3B30;
+            --background: #000000;
+        }
+        .timeline-grid-overlay {
+            background-size: 50px 100%;
+            background-image: linear-gradient(to right, rgba(245, 245, 220, 0.1) 1px, transparent 1px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "cream": "#F5F5DC",
+                        "olive": "#808000",
+                        "warning": "#FF3B30",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-black font-display text-cream antialiased">
+<div class="flex h-screen flex-col overflow-hidden">
+<header class="flex items-center justify-between border-b border-cream/20 bg-black px-6 py-4 z-20">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="size-6 text-cream">
+<svg fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 4H42V17.3333V30.6667H24V44H6V30.6667V17.3333H24V4Z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-cream text-2xl font-black tracking-tighter uppercase">Sanctuary</h2>
+</div>
+<label class="flex flex-col min-w-40 h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch border border-cream/20 bg-transparent">
+<div class="text-cream/50 flex items-center justify-center pl-4">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 border-none bg-transparent focus:ring-0 text-sm placeholder:text-cream/30 px-3" placeholder="SEARCH SYSTEM"/>
+</div>
+</label>
+</div>
+<div class="flex flex-1 justify-end gap-6 items-center">
+<nav class="flex items-center gap-8">
+<a class="text-cream/60 text-xs font-bold tracking-widest hover:text-cream transition-colors uppercase" href="#">Portfolio</a>
+<a class="text-cream text-xs font-bold tracking-widest border-b-2 border-cream pb-1 uppercase" href="#">Programme</a>
+<a class="text-cream/60 text-xs font-bold tracking-widest hover:text-cream transition-colors uppercase" href="#">Network</a>
+<a class="text-cream/60 text-xs font-bold tracking-widest hover:text-cream transition-colors uppercase" href="#">Reports</a>
+</nav>
+<div class="bg-center bg-no-repeat aspect-square bg-cover grayscale size-10 border border-cream/20" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB5qP6tcdXiiDQUAOLEgQ9Fs2HTHf3MNVIvrCfwS0eKO4x3F0tQ9BnENiIlLlXI9MLXxmuWZaJ4Prk5j6QFXtwZmhmafavwOQwPVZV5q5YugU8VBcuFbr6VfDcfwNy2N7epvAOTlVKD_HkuJVCeKDduvMD68ApMRa_OL6rv-GjEArui0XyBHOd8zZfVOQhXSUF_F1FYhBHZjD6MDFWl8OjBCub4NmMvm4SjeZ4_v-P7BJ0tD8xfbBxQuK6Lfx4mwwjJYyCxw5FBOUY");'></div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<main class="flex-1 overflow-y-auto bg-black scroll-smooth">
+<div class="max-w-[1400px] mx-auto p-10">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-0 border border-cream/20 mb-12">
+<div class="p-8 border-r border-cream/20">
+<p class="text-cream/50 text-[10px] font-black uppercase tracking-[0.2em] mb-4">Total Startups</p>
+<p class="text-cream text-7xl font-black tracking-tighter">24</p>
+</div>
+<div class="p-8 border-r border-cream/20 bg-cream/5">
+<p class="text-cream/50 text-[10px] font-black uppercase tracking-[0.2em] mb-4">Current Week</p>
+<p class="text-cream text-7xl font-black tracking-tighter">12<span class="text-2xl text-cream/30">/20</span></p>
+</div>
+<div class="p-8 border-r border-cream/20">
+<p class="text-warning text-[10px] font-black uppercase tracking-[0.2em] mb-4">Overdue Tasks</p>
+<div class="flex items-baseline gap-4">
+<p class="text-warning text-7xl font-black tracking-tighter">08</p>
+<span class="material-symbols-outlined text-warning text-4xl" style="font-variation-settings: 'FILL' 1">warning</span>
+</div>
+</div>
+<div class="p-8">
+<p class="text-cream/50 text-[10px] font-black uppercase tracking-[0.2em] mb-4">Cohort Health</p>
+<p class="text-cream text-7xl font-black tracking-tighter">84<span class="text-2xl text-cream/30">%</span></p>
+</div>
+</div>
+<div class="border border-cream/20">
+<div class="flex items-center justify-between border-b border-cream/20 px-6 py-4">
+<h2 class="text-sm font-black uppercase tracking-widest">Programme Timeline</h2>
+<div class="flex gap-4">
+<button class="text-[10px] font-bold border border-cream/20 px-3 py-1 hover:bg-cream hover:text-black transition-colors uppercase">Filter</button>
+<button class="text-[10px] font-bold border border-cream/20 px-3 py-1 hover:bg-cream hover:text-black transition-colors uppercase">Export</button>
+</div>
+</div>
+<div class="overflow-x-auto relative">
+<div class="flex border-b border-cream/20 sticky top-0 bg-black z-10">
+<div class="w-64 p-4 shrink-0 font-black text-[10px] tracking-widest text-cream/40 border-r border-cream/20 uppercase">Cohort Member</div>
+<div class="flex-1 flex min-w-[1000px]">
+<div class="grid grid-cols-20 w-full">
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W01</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W02</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W03</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W04</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W05</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W06</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W07</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W08</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W09</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W10</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W11</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-black bg-cream border-r border-cream">W12</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W13</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W14</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W15</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W16</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W17</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W18</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40 border-r border-cream/10">W19</div>
+<div class="w-[50px] py-4 text-center text-[9px] font-black text-cream/40">W20</div>
+</div>
+</div>
+</div>
+<div class="min-w-[1256px]">
+<div class="flex border-b border-cream/20 group hover:bg-cream/5 transition-colors">
+<div class="w-64 p-6 shrink-0 flex items-center gap-4 border-r border-cream/20">
+<div class="size-2 bg-olive"></div>
+<div class="flex flex-col">
+<span class="text-xs font-black uppercase tracking-wider">Lumina Health</span>
+<span class="text-[9px] text-cream/40 font-bold uppercase">Phase: Growth</span>
+</div>
+</div>
+<div class="flex-1 timeline-grid-overlay relative flex items-center px-0">
+<div class="h-6 bg-olive w-[600px] flex items-center justify-end px-2" title="W12 Progress">
+<span class="text-[9px] font-black text-black">ON TRACK</span>
+</div>
+</div>
+</div>
+<div class="flex border-b border-cream/20 group hover:bg-cream/5 transition-colors">
+<div class="w-64 p-6 shrink-0 flex items-center gap-4 border-r border-cream/20">
+<div class="size-2 bg-warning"></div>
+<div class="flex flex-col">
+<span class="text-xs font-black uppercase tracking-wider">Orbit Logistics</span>
+<span class="text-[9px] text-warning font-black uppercase">CRITICAL: 2 OVERDUE</span>
+</div>
+</div>
+<div class="flex-1 timeline-grid-overlay relative flex items-center px-0">
+<div class="h-6 bg-olive w-[450px]"></div>
+<div class="absolute left-[450px] flex gap-1 ml-2">
+<div class="size-6 bg-warning flex items-center justify-center" title="Cap Table Review Overdue">
+<span class="material-symbols-outlined text-[16px] text-black font-black" style="font-variation-settings: 'FILL' 1">priority_high</span>
+</div>
+<div class="size-6 bg-warning flex items-center justify-center" title="Legal Docs Overdue">
+<span class="material-symbols-outlined text-[16px] text-black font-black" style="font-variation-settings: 'FILL' 1">priority_high</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex border-b border-cream/20 group hover:bg-cream/5 transition-colors">
+<div class="w-64 p-6 shrink-0 flex items-center gap-4 border-r border-cream/20">
+<div class="size-2 bg-olive"></div>
+<div class="flex flex-col">
+<span class="text-xs font-black uppercase tracking-wider">AeroSustain</span>
+<span class="text-[9px] text-cream/40 font-bold uppercase">Phase: Seed</span>
+</div>
+</div>
+<div class="flex-1 timeline-grid-overlay relative flex items-center px-0">
+<div class="h-6 bg-olive w-[550px]"></div>
+<div class="absolute left-[560px] size-6 border border-warning flex items-center justify-center" title="Risk: Mentor Feedback">
+<span class="material-symbols-outlined text-[14px] text-warning" style="font-variation-settings: 'FILL' 1">priority_high</span>
+</div>
+</div>
+</div>
+<div class="flex border-b border-cream/20 group hover:bg-cream/5 transition-colors">
+<div class="w-64 p-6 shrink-0 flex items-center gap-4 border-r border-cream/20">
+<div class="size-2 bg-olive"></div>
+<div class="flex flex-col">
+<span class="text-xs font-black uppercase tracking-wider">EcoVault</span>
+<span class="text-[9px] text-cream/40 font-bold uppercase">Phase: Scaling</span>
+</div>
+</div>
+<div class="flex-1 timeline-grid-overlay relative flex items-center px-0">
+<div class="h-6 bg-olive w-[600px]"></div>
+</div>
+</div>
+<div class="flex border-b border-cream/20 group hover:bg-cream/5 transition-colors">
+<div class="w-64 p-6 shrink-0 flex items-center gap-4 border-r border-cream/20">
+<div class="size-2 bg-olive"></div>
+<div class="flex flex-col">
+<span class="text-xs font-black uppercase tracking-wider">Synthetix AI</span>
+<span class="text-[9px] text-cream/40 font-bold uppercase">Phase: Beta</span>
+</div>
+</div>
+<div class="flex-1 timeline-grid-overlay relative flex items-center px-0">
+<div class="h-6 bg-olive w-[580px]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+<div>
+<h3 class="text-xs font-black uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-warning" style="font-variation-settings: 'FILL' 1">warning</span>
+                            Urgent Checkpoints
+                        </h3>
+<div class="space-y-4">
+<div class="border border-warning p-4 flex justify-between items-center bg-warning/5">
+<div>
+<p class="text-xs font-black uppercase tracking-tighter">Orbit Logistics</p>
+<p class="text-[10px] text-warning/80 uppercase">Cap Table &amp; Legal Docs Review</p>
+</div>
+<p class="text-[10px] font-black text-warning uppercase">5D OVERDUE</p>
+</div>
+<div class="border border-cream/20 p-4 flex justify-between items-center">
+<div>
+<p class="text-xs font-black uppercase tracking-tighter">AeroSustain</p>
+<p class="text-[10px] text-cream/50 uppercase">Mentor Match Survey</p>
+</div>
+<p class="text-[10px] font-black text-warning uppercase">2D OVERDUE</p>
+</div>
+</div>
+</div>
+<div>
+<h3 class="text-xs font-black uppercase tracking-[0.2em] mb-6">Cohort Milestones</h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="border border-cream/20 p-6">
+<p class="text-[10px] text-cream/40 font-black uppercase mb-2">Next Event</p>
+<p class="text-xl font-black uppercase tracking-tighter">Pitch Deck Review</p>
+<p class="text-[10px] text-olive font-black uppercase mt-4">MARCH 18 • 10:00 AM</p>
+</div>
+<div class="border border-cream/20 p-6">
+<p class="text-[10px] text-cream/40 font-black uppercase mb-2">Major Goal</p>
+<p class="text-xl font-black uppercase tracking-tighter">Series A Demo Day</p>
+<p class="text-[10px] text-cream/50 font-black uppercase mt-4">APRIL 12 • WEEK 20</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+</body></html>

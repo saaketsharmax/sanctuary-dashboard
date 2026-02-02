@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth/auth-config'
-import { updateUserType } from '@/lib/auth/auth-config'
+import { auth, updateUserType } from '@/lib/auth/auth-config'
 import type { UserType, PartnerSubType } from '@/types'
 
 export async function POST(request: NextRequest) {
@@ -27,7 +26,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const updatedUser = updateUserType(
+    // Update user type - this now handles Supabase persistence if configured
+    const updatedUser = await updateUserType(
       session.user.email,
       userType,
       userType === 'partner' ? partnerSubType : undefined

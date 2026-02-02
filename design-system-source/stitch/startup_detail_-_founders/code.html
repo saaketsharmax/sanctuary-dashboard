@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Founders: Technical Skill Assessment | Sanctuary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&amp;family=Inter:wght@300;400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --bg-deep-black: #000000;
+            --cream-line: #F5F5DC;
+            --olive-green: #808000;
+            --off-white: #FAF9F6;
+            --text-muted: #888888;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep-black);
+            color: var(--off-white);
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .radar-chart-container {
+            position: relative;
+            width: 240px;
+            height: 240px;
+        }
+        .radar-shape {
+            fill: rgba(128, 128, 0, 0.15);
+            stroke: var(--olive-green);
+            stroke-width: 1.5;
+        }
+        .radar-grid {
+            stroke: var(--off-white);
+            stroke-opacity: 0.15;
+            stroke-width: 1px;
+        }* {
+            border-radius: 0 !important;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#808000",
+                        "cream": "#F5F5DC",
+                        "deep-black": "#000000",
+                        "off-white": "#FAF9F6"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen">
+<nav class="border-b border-cream/20 bg-black">
+<div class="max-w-[1600px] mx-auto px-8 h-20 flex items-center justify-between">
+<div class="flex items-center gap-12">
+<div class="flex items-center gap-3">
+<span class="material-icons text-primary text-3xl">terminal</span>
+<span class="text-2xl font-bold tracking-tighter uppercase mono">Sanctuary</span>
+</div>
+<div class="hidden md:flex gap-8 text-[11px] font-bold uppercase tracking-[0.2em] text-muted">
+<a class="hover:text-off-white transition-colors" href="#">Portfolio</a>
+<a class="hover:text-off-white transition-colors" href="#">Intelligence</a>
+<a class="text-off-white border-b border-primary pb-1" href="#">Founders</a>
+<a class="hover:text-off-white transition-colors" href="#">Capital</a>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3">
+<img alt="User profile" class="w-8 h-8 grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeyrspwUsbdBMiXqlFuZvwvtSsvza7G4PUrw_I_AHwk0teAgXopEsdrrPFPEmHTMu8tPj7HgynlTBq-AGMDAPVqbh5CDb0ThZNMPu6LpDLJEEFFfSsZZX9hZM-qrmUO0MvMsoU4YEkSaALmZlaSDhudFQr5-hGTSgmZPNOmmwasP1oDRwJlFkYqRxSXoEtvYPeZSr1XXthcPBzxzBjeuQlLFEpiUSwl6t-tMdH2d3RWFadRUiMZp86_p22sGktK7LoJd4335UeW5c"/>
+<span class="material-symbols-outlined text-muted cursor-pointer hover:text-off-white">settings</span>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-[1600px] mx-auto px-8 py-12">
+<header class="mb-16 border-b border-cream/10 pb-12">
+<div class="flex items-start justify-between">
+<div class="flex gap-8 items-center">
+<div class="w-24 h-24 border border-cream/20 p-2 grayscale">
+<img alt="Velocis AI" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkiWPVV6ysfOrFiOnFascoMz5FUJGHSm11cTw-cyfKSjlG405arunHuWjEet5F2p2MqRUt_oxRiI_f28b4wmveTrLihenhyhPI4gRlgnmcUppQPWIpi4livcEgWDI_ZtyG_aqLWB_32uP-Q85C9VCK78nilbxe0SIBXN-85UgQckql13_Mw0x3EdTErFfOLjykKiceXqnK4TQRQSvE4_er-MaU_hyMJTPyOVn3gKbKxrmsnEOSNKeL8iJJYra9UPCUPcCclwyFWJM"/>
+</div>
+<div>
+<div class="flex items-center gap-3 text-[10px] font-bold mono uppercase tracking-[0.3em] text-primary mb-2">
+<span>Portfolio.Node_042</span>
+<span class="text-muted">/</span>
+<span>Founders</span>
+</div>
+<h1 class="text-5xl font-bold tracking-tighter uppercase mono">Velocis AI</h1>
+<p class="text-muted mt-3 mono text-sm uppercase tracking-widest">Core Technical Infrastructure &amp; Founding Team</p>
+</div>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-3 border border-cream/20 text-[11px] font-bold uppercase tracking-widest hover:bg-cream hover:text-black transition-all mono">Export_Report</button>
+<button class="px-6 py-3 bg-primary text-black text-[11px] font-bold uppercase tracking-widest hover:bg-white transition-all mono flex items-center gap-2">
+<span class="material-icons text-sm">add</span>
+                    Add_Founder
+                </button>
+</div>
+</div>
+</header>
+<div class="grid grid-cols-1 border-t border-cream/20">
+<div class="grid grid-cols-12 border-b border-cream/20 group hover:bg-white/[0.02] transition-colors">
+<div class="col-span-12 lg:col-span-7 p-10 border-r border-cream/20">
+<div class="flex gap-10">
+<div class="flex-shrink-0">
+<img alt="Sarah Jenkins" class="w-32 h-32 grayscale object-cover border border-cream/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-dIb_xJzRFcgwkW8OmuM_bq0S3xqWXHvLSnRSlijJpRjaJSSZ4_WKqmOvGt0ozOE0ZlcEbRfsKqgtOLyTJqfNn2N7voYbSlO0z2zcYbeHKAgS28_6nVRmpaKA5mNLG0MHrcFlBzuCd8VjCwDD_ATVAUjnHYgcXmy4Ex2i_y-0zIYwo52w834_VJWCWhN-g-GWjES37kuwm7jaovuJmC9wz1jsX6CzONywaGxod6Ya4GhGj9rwTHa0pSGcf1_fMWricUnZOKcOIbs"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="text-3xl font-bold mono uppercase tracking-tight">Sarah Jenkins</h3>
+<p class="text-primary text-xs mono mt-1 font-bold uppercase tracking-[0.2em]">CEO &amp; Co-founder</p>
+</div>
+<span class="material-icons text-muted hover:text-off-white cursor-pointer">open_in_new</span>
+</div>
+<p class="text-sm text-muted leading-relaxed mb-8 max-w-xl mono">
+                            Former Operations Lead at Amazon Robotics with 12+ years experience in logistics and automation. Stanford MBA. Named 30 under 30 in Enterprise Tech. Specialized in large-scale system deployments.
+                        </p>
+<div class="flex flex-wrap gap-4">
+<span class="px-3 py-1 border border-cream/10 text-[10px] mono text-muted uppercase tracking-wider">EX_AMAZON</span>
+<span class="px-3 py-1 border border-cream/10 text-[10px] mono text-muted uppercase tracking-wider">ROBOTICS_EXP</span>
+<span class="px-3 py-1 border border-cream/10 text-[10px] mono text-muted uppercase tracking-wider">OPERATIONS</span>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-5 p-10 flex items-center justify-between gap-8">
+<div class="radar-chart-container">
+<svg class="w-full h-full" viewBox="0 0 100 100">
+<polygon class="radar-grid" fill="none" points="50,5 95,35 80,90 20,90 5,35"></polygon>
+<polygon class="radar-grid" fill="none" points="50,27.5 72.5,42.5 65,70 35,70 27.5,42.5"></polygon>
+<line class="radar-grid" x1="50" x2="50" y1="50" y2="5"></line>
+<line class="radar-grid" x1="50" x2="95" y1="50" y2="35"></line>
+<line class="radar-grid" x1="50" x2="80" y1="50" y2="90"></line>
+<line class="radar-grid" x1="50" x2="20" y1="50" y2="90"></line>
+<line class="radar-grid" x1="50" x2="5" y1="50" y2="35"></line>
+<polygon class="radar-shape" points="50,15 85,35 75,80 30,85 15,40"></polygon>
+</svg>
+</div>
+<div class="flex-grow grid grid-cols-2 gap-y-6">
+<div>
+<div class="text-[9px] mono text-muted uppercase tracking-[0.2em]">Leadership</div>
+<div class="text-3xl font-bold mono">8.8</div>
+</div>
+<div>
+<div class="text-[9px] mono text-muted uppercase tracking-[0.2em]">Product</div>
+<div class="text-3xl font-bold mono">7.5</div>
+</div>
+<div>
+<div class="text-[9px] mono text-muted uppercase tracking-[0.2em]">Sales</div>
+<div class="text-3xl font-bold mono">9.2</div>
+</div>
+<div>
+<div class="text-[9px] mono text-muted uppercase tracking-[0.2em]">Technical</div>
+<div class="text-3xl font-bold mono">6.4</div>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-12 border-b border-cream/20 group hover:bg-white/[0.02] transition-colors">
+<div class="col-span-12 lg:col-span-7 p-10 border-r border-cream/20">
+<div class="flex gap-10">
+<div class="flex-shrink-0">
+<img alt="David Chen" class="w-32 h-32 grayscale object-cover border border-cream/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3qUDjSTHqYYVBADm0RVdCUjLehVwb9hqZOivQhNU23lGNVIF59zpsYMX-7hrBpyGQ01ScY4SRACE-PbCw1ORWPzENkl8JRFS4cjSSYJJN_L0qXE6xj_Hraq6UCpAVad4RTPOYtTBzak-dlJhMUav2o1rrVRDb7pPe-hX1C_rS3YaxkpjVzNv3fkaaGwKjwYRKYTRPk6nsZUOpxU9m9CR-zZzDZqFR1kPgLgVhjfuY182Cjr31GLyhREpS3mtHD2rRoxagYj1SNDk"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="text-3xl font-bold mono uppercase tracking-tight">David Chen</h3>
+<p class="text-primary text-xs mono mt-1 font-bold uppercase tracking-[0.2em]">CTO &amp; Co-founder</p>
+</div>
+<span class="material-icons text-muted hover:text-off-white cursor-pointer">open_in_new</span>
+</div>
+<p class="text-sm text-muted leading-relaxed mb-8 max-w-xl mono">
+                            PhD in AI from MIT. Previously Lead Engineer at OpenAI working on LLM optimization. Holder of 8 patents in neural network efficiency. Lead architect of the core proprietary engine.
+                        </p>
+<div class="flex flex-wrap gap-4">
+<span class="px-3 py-1 border border-cream/10 text-[10px] mono text-muted uppercase tracking-wider">PHD_AI</span>
+<span class="px-3 py-1 border border-cream/10 text-[10px] mono text-muted uppercase tracking-wider">EX_OPENAI</span>
+<span class="px-3 py-1 border border-cream/10 text-[10px] mono text-muted uppercase tracking-wider">FULL_STACK</span>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-5 p-10 flex items-center justify-between gap-8">
+<div class="radar-chart-container">
+<svg class="w-full h-full" viewBox="0 0 100 100">
+<polygon class="radar-grid" fill="none" points="50,5 95,35 80,90 20,90 5,35"></polygon>
+<polygon class="radar-grid" fill="none" points="50,27.5 72.5,42.5 65,70 35,70 27.5,42.5"></polygon>
+<line class="radar-grid" x1="50" x2="50" y1="50" y2="5"></line>
+<line class="radar-grid" x1="50" x2="95" y1="50" y2="35"></line>
+<line class="radar-grid" x1="50" x2="80" y1="50" y2="90"></line>
+<line class="radar-grid" x1="50" x2="20" y1="50" y2="90"></line>
+<line class="radar-grid" x1="50" x2="5" y1="50" y2="35"></line>
+<polygon class="radar-shape" points="50,30 60,45 65,85 35,90 10,15"></polygon>
+</svg>
+</div>
+<div class="flex-grow grid grid-cols-2 gap-y-6">
+<div>
+<div class="text-[9px] mono text-muted uppercase tracking-[0.2em]">Leadership</div>
+<div class="text-3xl font-bold mono">7.2</div>
+</div>
+<div>
+<div class="text-[9px] mono text-muted uppercase tracking-[0.2em]">Product</div>
+<div class="text-3xl font-bold mono">8.1</div>
+</div>
+<div>
+<div class="text-[9px] mono text-muted uppercase tracking-[0.2em]">Sales</div>
+<div class="text-3xl font-bold mono">4.5</div>
+</div>
+<div>
+<div class="text-[9px] mono text-muted uppercase tracking-[0.2em]">Technical</div>
+<div class="text-3xl font-bold mono">9.8</div>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-12 border-b border-cream/20 group hover:bg-white/[0.02] transition-colors">
+<div class="col-span-12 lg:col-span-7 p-10 border-r border-cream/20">
+<div class="flex gap-10">
+<div class="flex-shrink-0">
+<img alt="Marcus Thorne" class="w-32 h-32 grayscale object-cover border border-cream/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5PjvL4nmv_K-EFUo8du2SlXeuhs_Afjd3It03uah8s_KgeyrIoYbSxpzynUGBsqQIzDVGuVZgyoWIEzQOhGEG-kmYn4y5N7I5ADv9Ox9Dm_xNTdGZQfmrHiKu5Wb9LhdUaNSQOoDY3m_ST7GX4Dyd7hT1_NhQVxGCBfPIMkbF64bZdnOXbErLUgSTtt54PLya6CvEO1JJtnC93tpulPzrn4oKRXQ3ZdkJJ45fYCymvIVvjJ-K7lmouVmshAmH_9iPYbZrCeHMZ3I"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="text-3xl font-bold mono uppercase tracking-tight">Marcus Thorne</h3>
+<p class="text-primary text-xs mono mt-1 font-bold uppercase tracking-[0.2em]">Head of Sales</p>
+</div>
+<span class="material-icons text-muted hover:text-off-white cursor-pointer">open_in_new</span>
+</div>
+<p class="text-sm text-muted leading-relaxed mb-8 max-w-xl mono">
+                            Early sales hire at Snowflake. Helped scale enterprise revenue from $2M to $100M ARR. Expert in GTM strategy and sales enablement. Strategic advisor on institutional partnerships.
+                        </p>
+<div class="flex flex-wrap gap-4">
+<span class="px-3 py-1 border border-cream/10 text-[10px] mono text-muted uppercase tracking-wider">GTM_STRATEGY</span>
+<span class="px-3 py-1 border border-cream/10 text-[10px] mono text-muted uppercase tracking-wider">EX_SNOWFLAKE</span>
+<span class="px-3 py-1 border border-cream/10 text-[10px] mono text-muted uppercase tracking-wider">SALES_OPS</span>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-5 p-10 flex items-center justify-between gap-8">
+<div class="radar-chart-container">
+<svg class="w-full h-full" viewBox="0 0 100 100">
+<polygon class="radar-grid" fill="none" points="50,5 95,35 80,90 20,90 5,35"></polygon>
+<polygon class="radar-grid" fill="none" points="50,27.5 72.5,42.5 65,70 35,70 27.5,42.5"></polygon>
+<line class="radar-grid" x1="50" x2="50" y1="50" y2="5"></line>
+<line class="radar-grid" x1="50" x2="95" y1="50" y2="35"></line>
+<line class="radar-grid" x1="50" x2="80" y1="50" y2="90"></line>
+<line class="radar-grid" x1="50" x2="20" y1="50" y2="90"></line>
+<line class="radar-grid" x1="50" x2="5" y1="50" y2="35"></line>
+<polygon class="radar-shape" points="50,15 92,30 65,55 35,45 12,35"></polygon>
+</svg>
+</div>
+<div class="flex-grow grid grid-cols-2 gap-y-6">
+<div>
+<div class="text-[9px] mono text-muted uppercase tracking-[0.2em]">Leadership</div>
+<div class="text-3xl font-bold mono">8.5</div>
+</div>
+<div>
+<div class="text-[9px] mono text-muted uppercase tracking-[0.2em]">Product</div>
+<div class="text-3xl font-bold mono">6.2</div>
+</div>
+<div>
+<div class="text-[9px] mono text-muted uppercase tracking-[0.2em]">Sales</div>
+<div class="text-3xl font-bold mono">9.6</div>
+</div>
+<div>
+<div class="text-[9px] mono text-muted uppercase tracking-[0.2em]">Technical</div>
+<div class="text-3xl font-bold mono">4.8</div>
+</div>
+</div>
+</div>
+</div>
+<div class="p-16 border-b border-cream/20 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white/[0.03] transition-colors group">
+<div class="w-16 h-16 border border-dashed border-cream/30 flex items-center justify-center mb-6 group-hover:border-primary transition-colors">
+<span class="material-icons text-cream/30 group-hover:text-primary transition-colors">person_add_alt</span>
+</div>
+<h3 class="mono uppercase font-bold tracking-[0.3em] text-sm mb-2">Initialize_New_Profile</h3>
+<p class="mono text-[10px] text-muted uppercase tracking-widest">Append team matrix data node</p>
+</div>
+</div>
+<div class="mt-24 p-12 border border-cream/20 bg-white/[0.01]">
+<div class="flex items-end justify-between mb-16">
+<div>
+<h2 class="text-4xl font-bold mono uppercase tracking-tight">Composite Team Analysis</h2>
+<p class="text-muted mono text-sm uppercase tracking-widest mt-4">Aggregated capacity of technical and operational vectors</p>
+</div>
+<div class="text-right">
+<div class="text-[9px] mono text-primary uppercase tracking-[0.3em] mb-2 font-bold">Status_Calibration</div>
+<div class="px-6 py-2 border border-primary text-primary text-xs font-bold mono uppercase">Optimized_Balanced</div>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-5 gap-12">
+<div class="space-y-4">
+<div class="flex justify-between items-end border-b border-cream/10 pb-2">
+<span class="text-[9px] mono text-muted uppercase tracking-widest">Leadership</span>
+<span class="text-2xl mono font-bold">8.4</span>
+</div>
+<div class="h-[2px] w-full bg-cream/10">
+<div class="h-full bg-primary" style="width: 84%"></div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-end border-b border-cream/10 pb-2">
+<span class="text-[9px] mono text-muted uppercase tracking-widest">Sales</span>
+<span class="text-2xl mono font-bold">7.2</span>
+</div>
+<div class="h-[2px] w-full bg-cream/10">
+<div class="h-full bg-primary" style="width: 72%"></div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-end border-b border-cream/10 pb-2">
+<span class="text-[9px] mono text-muted uppercase tracking-widest">Product</span>
+<span class="text-2xl mono font-bold">9.1</span>
+</div>
+<div class="h-[2px] w-full bg-cream/10">
+<div class="h-full bg-primary" style="width: 91%"></div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-end border-b border-cream/10 pb-2">
+<span class="text-[9px] mono text-muted uppercase tracking-widest">Technical</span>
+<span class="text-2xl mono font-bold">9.5</span>
+</div>
+<div class="h-[2px] w-full bg-cream/10">
+<div class="h-full bg-primary" style="width: 95%"></div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-end border-b border-cream/10 pb-2">
+<span class="text-[9px] mono text-muted uppercase tracking-widest">Design</span>
+<span class="text-2xl mono font-bold">5.8</span>
+</div>
+<div class="h-[2px] w-full bg-cream/10">
+<div class="h-full bg-primary" style="width: 58%"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="mt-24 border-t border-cream/10 py-12 px-8">
+<div class="max-w-[1600px] mx-auto flex justify-between items-center mono text-[10px] text-muted uppercase tracking-[0.3em]">
+<div>System_v2.4.0 // Sanctuary_Intelligence</div>
+<div class="flex gap-8">
+<a class="hover:text-off-white" href="#">Documentation</a>
+<a class="hover:text-off-white" href="#">Privacy_Policy</a>
+<a class="hover:text-off-white" href="#">API_Status</a>
+</div>
+</div>
+</footer>
+
+</body></html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Startup Detail Overview - Sanctuary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,FILL@0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "deep-black": "#050505",
+                        "cream": "#E8E8E1",
+                        "olive": "#A7AD89",
+                        "muted-gray": "#2A2A2A",
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --cream-divider: rgba(232, 232, 225, 0.15);
+        }
+        body {
+            background-color: #050505;
+            color: #E8E8E1;
+            -webkit-font-smoothing: antialiased;
+        }
+        .technical-grid {
+            border-top: 1px solid var(--cream-divider);
+            border-left: 1px solid var(--cream-divider);
+        }
+        .technical-grid > div {
+            border-bottom: 1px solid var(--cream-divider);
+            border-right: 1px solid var(--cream-divider);
+        }
+        .massive-score {
+            font-size: clamp(8rem, 25vw, 18rem);
+            line-height: 0.8;
+            letter-spacing: -0.05em;
+        }
+        .label-caps {
+            @apply text-[10px] uppercase tracking-[0.2em] font-mono text-olive mb-2 block opacity-80;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+        }
+    </style>
+</head>
+<body class="font-sans">
+<div class="relative flex min-h-screen flex-col">
+<header class="flex items-center justify-between px-8 py-6 border-b border-[var(--cream-divider)]">
+<div class="flex items-center gap-12">
+<div class="flex items-center gap-3 text-cream">
+<div class="size-5">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 4H42V17.3333V30.6667H24V44H6V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-sm font-mono tracking-widest uppercase">Sanctuary</h2>
+</div>
+<nav class="hidden md:flex items-center gap-8 font-mono text-[11px] uppercase tracking-widest opacity-60">
+<a class="hover:text-olive transition-colors" href="#">Portfolio</a>
+<a class="hover:text-olive transition-colors" href="#">Metrics</a>
+<a class="hover:text-olive transition-colors" href="#">Network</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden lg:flex items-center border border-[var(--cream-divider)] px-3 py-1.5 font-mono text-[10px] tracking-tight">
+<span class="opacity-40 uppercase">Terminal_ID:</span>
+<span class="ml-2 text-olive">SNC-992-W24</span>
+</div>
+<div class="size-8 bg-center bg-cover border border-cream/20" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAur_lpn7nx5sihLhTIjeuForWjn3Hw4dT85tTP4nZE65Q8dt5ItNXdXo3gkKWPirRZT0s0m3tKIgAlafcwTAldJJrO9o2BSNsQRL_fTqFG68rjf_VN_XrwhHaeR8NqxVwX2TTKuVchlpKuKvBaZO39ev3f3fTp6bS24FRqmeRxP5HYPTCfSmetbmEGX5jFRVbp7pjSaDkrtasPwA275fZml8qWAYbmD10FH5TgfTHrRVEEuQzGE0jxNMr6T_LCnMjzMGpFtwpy_3g");'></div>
+</div>
+</header>
+<main class="flex-1 flex flex-col">
+<section class="flex flex-col lg:flex-row border-b border-[var(--cream-divider)] overflow-hidden">
+<div class="lg:w-2/3 p-8 lg:p-16 flex flex-col justify-between border-r border-[var(--cream-divider)] bg-gradient-to-br from-deep-black to-[#0a0a0a]">
+<div>
+<span class="label-caps">Composite Rank Index</span>
+<h1 class="massive-score font-bold text-cream">8.4</h1>
+<div class="flex items-center gap-4 mt-8">
+<span class="text-olive font-mono text-sm">↑ 0.4 vs. last batch</span>
+<div class="h-px w-24 bg-olive/30"></div>
+<span class="text-cream/40 font-mono text-[11px] uppercase tracking-wider">Quantifiable Performance Metric</span>
+</div>
+</div>
+<div class="mt-16 lg:mt-0 grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="p-4 border border-[var(--cream-divider)] bg-white/5">
+<span class="label-caps">Founder</span>
+<p class="text-2xl font-mono text-cream">9.2</p>
+</div>
+<div class="p-4 border border-[var(--cream-divider)] bg-white/5">
+<span class="label-caps">Problem</span>
+<p class="text-2xl font-mono text-cream">8.5</p>
+</div>
+<div class="p-4 border border-[var(--cream-divider)] bg-white/5">
+<span class="label-caps">Value</span>
+<p class="text-2xl font-mono text-cream">7.8</p>
+</div>
+<div class="p-4 border border-[var(--cream-divider)] bg-white/5">
+<span class="label-caps">Execution</span>
+<p class="text-2xl font-mono text-cream">8.1</p>
+</div>
+</div>
+</div>
+<div class="lg:w-1/3 flex flex-col">
+<div class="p-12 flex flex-col items-center text-center border-b border-[var(--cream-divider)]">
+<div class="size-32 bg-center bg-cover mb-8 filter grayscale hover:grayscale-0 transition-all duration-500 border border-cream/10" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAPA_jMaiRmHl8hasmK91tIG7bnbw-Hvk_ScNQwHhJmdiqx3QlC9k7Uz9GxTzgVmjku1SDrPSDVCJsjLH9owYAPHkIKSkJN56CWd90lmPhh3a7kx-pX00UQIfTFuGlXEmzEEEyC8PjBXic5QhzrghUGqetlN_EkMLFMu9jCLNgM96XVluc5AfyQeUY49DUtgA9ESOPKia6bb3QUwQDzbsuchMQW-uQ1TWnhNWw1XXjtPyz2hM705fRRosdgxPZcImAa9OwhJZIbd5E");'></div>
+<h2 class="text-4xl font-bold tracking-tight mb-2 uppercase">EcoSphere AI</h2>
+<p class="text-olive font-mono text-[11px] tracking-[0.2em] mb-6 uppercase">Batch W24 / Series A</p>
+<div class="w-12 h-0.5 bg-olive mb-6"></div>
+<p class="text-cream/60 text-sm leading-relaxed max-w-xs mx-auto">
+                            Next-generation carbon tracking for enterprise supply chains. Autonomous ML-driven emissions visibility.
+                        </p>
+</div>
+<div class="flex-1 grid grid-cols-2">
+<div class="p-6 border-r border-[var(--cream-divider)] flex flex-col justify-center items-center">
+<span class="label-caps mb-1">Status</span>
+<span class="text-olive text-xs font-mono tracking-widest">ACTIVE_NODE</span>
+</div>
+<div class="p-6 flex flex-col justify-center items-center">
+<span class="label-caps mb-1">HQ</span>
+<span class="text-cream text-xs font-mono">SF_CALIF</span>
+</div>
+</div>
+</div>
+</section>
+<section class="grid grid-cols-1 lg:grid-cols-4 technical-grid">
+<div class="lg:col-span-2 p-10 flex flex-col gap-8">
+<div>
+<span class="label-caps">Core Proposition</span>
+<p class="text-xl text-cream/90 leading-relaxed font-light">
+                            EcoSphere AI integrates directly with global ERP systems to provide real-time carbon visibility across global supply chains. By leveraging proprietary machine learning models, they transform static reporting into actionable climate intelligence.
+                        </p>
+</div>
+<div class="grid grid-cols-2 gap-12 mt-4">
+<div>
+<span class="label-caps">Market Segment</span>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 border border-cream/20 text-[10px] font-mono">CLIMATE_TECH</span>
+<span class="px-2 py-1 border border-cream/20 text-[10px] font-mono">SAAS_ENTERPRISE</span>
+<span class="px-2 py-1 border border-cream/20 text-[10px] font-mono">AI_ML_INFRA</span>
+</div>
+</div>
+<div>
+<span class="label-caps">Digital Asset</span>
+<a class="text-cream hover:text-olive transition-colors flex items-center gap-2 font-mono text-xs" href="#">
+                                ECOSPHERE.AI <span class="material-symbols-outlined text-sm">north_east</span>
+</a>
+</div>
+</div>
+</div>
+<div class="p-10 border-l border-[var(--cream-divider)] lg:border-l-0">
+<span class="label-caps">Critical Milestones</span>
+<div class="space-y-8 mt-4">
+<div class="relative pl-6 border-l border-olive/30">
+<div class="absolute -left-1 top-0 size-2 bg-olive"></div>
+<p class="text-sm font-bold text-cream mb-1">12 Fortune 500 Clients</p>
+<p class="text-xs text-cream/50 leading-relaxed">Enterprise onboarding confirmed for Q3 manufacturing sector cycle.</p>
+</div>
+<div class="relative pl-6 border-l border-olive/30">
+<div class="absolute -left-1 top-0 size-2 bg-olive"></div>
+<p class="text-sm font-bold text-cream mb-1">100M+ Data Points</p>
+<p class="text-xs text-cream/50 leading-relaxed">Proprietary dataset for indirect emissions in automotive vertical.</p>
+</div>
+</div>
+</div>
+<div class="p-10 bg-white/[0.02]">
+<span class="label-caps">Network Registry</span>
+<div class="mt-4 space-y-4">
+<div class="flex items-center gap-3 group cursor-pointer">
+<div class="size-8 border border-cream/20 flex items-center justify-center group-hover:border-olive">
+<span class="material-symbols-outlined text-sm opacity-50 group-hover:opacity-100 group-hover:text-olive transition-all">description</span>
+</div>
+<span class="text-[11px] font-mono opacity-60 group-hover:opacity-100">PITCH_DECK_V2.PDF</span>
+</div>
+<div class="flex items-center gap-3 group cursor-pointer">
+<div class="size-8 border border-cream/20 flex items-center justify-center group-hover:border-olive">
+<span class="material-symbols-outlined text-sm opacity-50 group-hover:opacity-100 group-hover:text-olive transition-all">account_tree</span>
+</div>
+<span class="text-[11px] font-mono opacity-60 group-hover:opacity-100">CAP_TABLE_SUMMARY</span>
+</div>
+<div class="mt-8 pt-8 border-t border-[var(--cream-divider)]">
+<span class="label-caps">Stakeholders</span>
+<div class="flex -space-x-1 mt-3">
+<div class="size-7 border border-deep-black bg-cover" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC8ZTPCa7yJ_ohrVWZwGOHykkhOS910iCxqh7z1dyCEDGf6UkijiGB5xB6fqUSmn40s6bkCOswX6N4P1idY2qZNdK6SOj7LXx24SDFHUglkSh-OVoO0i87pae2taYybEpQ03g-NuwnwpFide-Vja7WKW_gQ2y2tT4p-f9yxLe_y7qVjevFxhY3ImV2jkCQC2auABBMZH-UST2xgj-ZDkZItbuZykeIwoxdXWo-auXlMPyZTsjpPddYaHl7Q3hlqf-cSWDDZQku3nVs')"></div>
+<div class="size-7 border border-deep-black bg-cover" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCD5VzNifzt6jIcUkpuabZ6OO16K0oqL89oV9jlRG_A1lgj_piZ3MSfWYEByVSdaE1pzewD8MnB8yzEN_y7JVDjTaWLkyoNcdXV8sx8-wmG_U2smvGZ2UkpEghHSnzxE7cCA3iLc15C7KCBaIS3pWeFkhIsG8bGpRUbq0ae6YrjPChDL87jf8bCpG1jK6ATTYA_73s3yw5y4keP_Dpad2h0xQPHllq4mj2GGHQB4aiuGP14WyktBpAord7onBcijcUoDstZ39TzAFQ')"></div>
+<div class="size-7 border border-deep-black bg-cover" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBgody-F4aQdKcvhF5P5UOeIt939Buwz8L6CZF9dIJnIVryzhSXgH7qv4XMl9ZhH_oN8JhtQQGz5XsCm-gnc5ak8flmPosq87OIYNjbjf-XanitH6Uw4RZ41RhNwGr9sbQrTJIeIdE7dhUum4cLBGv8kchkFLlPzIVLSG3LfUutnQrLOU0oHWNo94jxR-kEuU-kHeykZPSZU4YoGMU2uR0bbf2Y7dT1Qu2LLCFUQUDy0ypJte36uIlJcjqtLquGUqZ2pByeMCE6O_8')"></div>
+<div class="size-7 border border-cream/20 bg-muted-gray flex items-center justify-center text-[8px] font-mono">+12</div>
+</div>
+<p class="text-[9px] font-mono opacity-40 mt-3 uppercase tracking-tighter">Sequoia / Accel / Angels</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="p-4 border-t border-[var(--cream-divider)] flex justify-between items-center px-10">
+<div class="flex items-center gap-6 font-mono text-[9px] opacity-40 uppercase tracking-widest">
+<span>© 2024 Sanctuary Systems</span>
+<span>Encrypted Session</span>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-2 border border-cream/20 text-xs font-mono uppercase tracking-widest hover:bg-cream hover:text-deep-black transition-all">
+                    Export_Report
+                </button>
+<button class="px-6 py-2 bg-olive text-deep-black text-xs font-mono uppercase tracking-widest hover:bg-olive/80 transition-all">
+                    Modify_Node
+                </button>
+</div>
+</footer>
+</div>
+
+</body></html>
