@@ -1,15 +1,41 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import type { User } from '@supabase/supabase-js'
 
 export type UserRole = 'founder' | 'partner' | null
+export type PartnerSubType = 'mentor' | 'vc' | 'startup_manager' | null
 
-interface RoleState {
-  role: UserRole
-  setRole: (role: UserRole) => void
-  clearRole: () => void
+// User profile from Supabase
+export interface UserProfile {
+  id: string
+  email: string
+  name: string | null
+  avatarUrl: string | null
+  userType: UserRole
+  partnerSubType: PartnerSubType
+  startupId: string | null
+  onboardingComplete: boolean
 }
 
-// Mock user data for display purposes
+interface AuthState {
+  // Role (persisted locally for quick access)
+  role: UserRole
+  partnerSubType: PartnerSubType
+
+  // Supabase user (not persisted - managed by Supabase)
+  supabaseUser: User | null
+  profile: UserProfile | null
+  isLoading: boolean
+
+  // Actions
+  setRole: (role: UserRole, partnerSubType?: PartnerSubType) => void
+  clearRole: () => void
+  setSupabaseUser: (user: User | null) => void
+  setProfile: (profile: UserProfile | null) => void
+  setLoading: (loading: boolean) => void
+}
+
+// Mock user data for display purposes (used when no Supabase auth)
 export const mockFounder = {
   id: 'user-founder-1',
   name: 'Sarah Chen',
@@ -25,28 +51,77 @@ export const mockPartner = {
   avatarUrl: null,
 }
 
-export const useAuthStore = create<RoleState>()(
+export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       role: null,
+      partnerSubType: null,
+      supabaseUser: null,
+      profile: null,
+      isLoading: true,
 
-      setRole: (role: UserRole) => {
-        set({ role })
+      setRole: (role: UserRole, partnerSubType?: PartnerSubType) => {
+        set({ role, partnerSubType: partnerSubType || null })
       },
 
       clearRole: () => {
-        set({ role: null })
+        set({ role: null, partnerSubType: null, profile: null })
+      },
+
+      setSupabaseUser: (user: User | null) => {
+        set({ supabaseUser: user })
+      },
+
+      setProfile: (profile: UserProfile | null) => {
+        if (profile) {
+          set({
+            profile,
+            role: profile.userType,
+            partnerSubType: profile.partnerSubType
+          })
+        } else {
+          set({ profile: null })
+        }
+      },
+
+      setLoading: (isLoading: boolean) => {
+        set({ isLoading })
       },
     }),
     {
-      name: 'sanctuary-role',
+      name: 'sanctuary-auth',
+      // Only persist role and partnerSubType, not Supabase user
+      partialize: (state) => ({
+        role: state.role,
+        partnerSubType: state.partnerSubType
+      }),
     }
   )
 )
 
-// Helper hooks for backwards compatibility
+// Helper hooks
+
+/**
+ * Returns the current user - from Supabase profile if available, otherwise mock data
+ */
 export function useUser() {
-  const role = useAuthStore((state) => state.role)
+  const { role, profile } = useAuthStore((state) => ({
+    role: state.role,
+    profile: state.profile,
+  }))
+
+  // If we have a Supabase profile, use that
+  if (profile) {
+    return {
+      id: profile.id,
+      name: profile.name || 'User',
+      email: profile.email,
+      avatarUrl: profile.avatarUrl,
+      company: role === 'founder' ? 'Your Company' : undefined,
+    }
+  }
+
+  // Fall back to mock data
   if (role === 'founder') return mockFounder
   if (role === 'partner') return mockPartner
   return null
@@ -64,4 +139,17 @@ export function useIsFounder() {
 
 export function useCurrentRole() {
   return useAuthStore((state) => state.role)
+}
+
+export function usePartnerSubType() {
+  return useAuthStore((state) => state.partnerSubType)
+}
+
+export function useIsAuthenticated() {
+  const supabaseUser = useAuthStore((state) => state.supabaseUser)
+  return !!supabaseUser
+}
+
+export function useAuthLoading() {
+  return useAuthStore((state) => state.isLoading)
 }

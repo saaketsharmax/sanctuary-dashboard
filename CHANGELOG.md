@@ -2,6 +2,28 @@
 
 All notable changes to the Sanctuary Dashboard will be documented in this file.
 
+## [0.4.0] - 2026-02-02
+
+### Added
+- **Supabase Integration**: Full Supabase SDK setup for database and auth
+  - Browser client (`src/lib/supabase/client.ts`)
+  - Server client (`src/lib/supabase/server.ts`)
+  - Middleware helper (`src/lib/supabase/middleware.ts`)
+  - Auth utilities (`src/lib/supabase/auth.ts`)
+- **Database Schema**: SQL schema file for Supabase (`supabase/schema.sql`)
+  - Users table with RLS policies
+  - Startups table with role-based access
+  - Applications table for founder onboarding
+  - Auto-create user profile trigger
+- **Auth Provider**: React context provider for Supabase auth state sync
+- **Enhanced Auth Store**: Extended Zustand store with Supabase user/profile support
+
+### Changed
+- Updated root layout to include AuthProvider
+- Auth store now supports both mock data (demo mode) and real Supabase users
+
+---
+
 ## [0.3.1] - 2026-02-02
 
 ### Fixed
