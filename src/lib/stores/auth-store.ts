@@ -1,87 +1,67 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { MockUser } from '@/lib/mock-data'
-import { getMockUserByEmail } from '@/lib/mock-data'
 
-interface AuthState {
-  user: MockUser | null
-  isAuthenticated: boolean
-  isLoading: boolean
+export type UserRole = 'founder' | 'partner' | null
 
-  // Actions
-  login: (email: string, password: string) => Promise<boolean>
-  logout: () => void
-  setUser: (user: MockUser | null) => void
+interface RoleState {
+  role: UserRole
+  setRole: (role: UserRole) => void
+  clearRole: () => void
 }
 
-export const useAuthStore = create<AuthState>()(
+// Mock user data for display purposes
+export const mockFounder = {
+  id: 'user-founder-1',
+  name: 'Sarah Chen',
+  email: 'sarah@techflow.ai',
+  company: 'TechFlow AI',
+  avatarUrl: null,
+}
+
+export const mockPartner = {
+  id: 'user-partner-1',
+  name: 'Alex Thompson',
+  email: 'alex@sanctuary.vc',
+  avatarUrl: null,
+}
+
+export const useAuthStore = create<RoleState>()(
   persist(
     (set) => ({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false,
+      role: null,
 
-      login: async (email: string, _password: string) => {
-        set({ isLoading: true })
-
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 500))
-
-        const user = getMockUserByEmail(email)
-
-        if (user) {
-          set({ user, isAuthenticated: true, isLoading: false })
-          return true
-        }
-
-        // For demo: allow any email with partner/founder domain
-        if (email.endsWith('@sanctuary.vc')) {
-          const demoUser: MockUser = {
-            id: 'demo-partner',
-            email,
-            name: 'Demo Partner',
-            avatarUrl: null,
-            role: 'partner',
-            startupId: null,
-          }
-          set({ user: demoUser, isAuthenticated: true, isLoading: false })
-          return true
-        }
-
-        set({ isLoading: false })
-        return false
+      setRole: (role: UserRole) => {
+        set({ role })
       },
 
-      logout: () => {
-        set({ user: null, isAuthenticated: false })
-      },
-
-      setUser: (user) => {
-        set({ user, isAuthenticated: !!user })
+      clearRole: () => {
+        set({ role: null })
       },
     }),
     {
-      name: 'sanctuary-auth',
-      partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+      name: 'sanctuary-role',
     }
   )
 )
 
-// Helper hooks
+// Helper hooks for backwards compatibility
 export function useUser() {
-  return useAuthStore((state) => state.user)
-}
-
-export function useIsAuthenticated() {
-  return useAuthStore((state) => state.isAuthenticated)
+  const role = useAuthStore((state) => state.role)
+  if (role === 'founder') return mockFounder
+  if (role === 'partner') return mockPartner
+  return null
 }
 
 export function useIsPartner() {
-  const user = useAuthStore((state) => state.user)
-  return user?.role === 'partner' || user?.role === 'admin'
+  const role = useAuthStore((state) => state.role)
+  return role === 'partner'
 }
 
 export function useIsFounder() {
-  const user = useAuthStore((state) => state.user)
-  return user?.role === 'founder'
+  const role = useAuthStore((state) => state.role)
+  return role === 'founder'
+}
+
+export function useCurrentRole() {
+  return useAuthStore((state) => state.role)
 }

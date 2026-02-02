@@ -6,18 +6,40 @@ import { Textarea } from '@/components/ui/textarea'
 import { InterviewMessage, TypingIndicator } from './InterviewMessage'
 import { InterviewProgressCompact } from './InterviewProgress'
 import { useInterviewStore } from '@/lib/stores/interview-store'
-import { getInterviewAgent } from '@/lib/ai/agents/interview-agent'
-import { Send, Pause, Square } from 'lucide-react'
-import type { InterviewSection } from '@/types'
+import { Send, Pause, Square, Sparkles, Cpu } from 'lucide-react'
+import type { InterviewSection, InterviewMessage as InterviewMessageType } from '@/types'
 
 interface InterviewChatProps {
   applicationId: string
   onComplete?: () => void
+  applicationContext?: {
+    companyName: string
+    companyOneLiner?: string
+    industry?: string
+    stage?: string
+    problemStatement?: string
+    solutionStatement?: string
+  }
 }
 
-export function InterviewChat({ applicationId, onComplete }: InterviewChatProps) {
+// API response type
+interface ChatApiResponse {
+  response: string
+  shouldTransition: boolean
+  isComplete: boolean
+  signals?: Array<{
+    type: string
+    content: string
+    dimension: string
+    impact: number
+  }>
+  mode: 'live' | 'mock'
+}
+
+export function InterviewChat({ applicationId, onComplete, applicationContext }: InterviewChatProps) {
   const [input, setInput] = useState('')
   const [isPaused, setIsPaused] = useState(false)
+  const [aiMode, setAiMode] = useState<'live' | 'mock' | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -32,8 +54,6 @@ export function InterviewChat({ applicationId, onComplete }: InterviewChatProps)
     completeInterview,
   } = useInterviewStore()
 
-  const agent = getInterviewAgent()
-
   // Initialize interview if not started
   useEffect(() => {
     if (!currentInterview) {
@@ -44,7 +64,7 @@ export function InterviewChat({ applicationId, onComplete }: InterviewChatProps)
   // Send opening message when interview starts
   useEffect(() => {
     if (currentInterview && messages.length === 0) {
-      const openingMessage = agent.getOpeningMessage()
+      const openingMessage = "Welcome to your Sanctuary interview. I'm going to ask you some direct questions to understand you and your startup better. This will take about 45-60 minutes. Let's begin.\n\nTell me about yourself in 60 seconds. Not your resume — who are you as a person?"
       setTyping(true)
 
       const timer = setTimeout(() => {
@@ -59,7 +79,7 @@ export function InterviewChat({ applicationId, onComplete }: InterviewChatProps)
 
       return () => clearTimeout(timer)
     }
-  }, [currentInterview, messages.length, addMessage, setTyping, agent])
+  }, [currentInterview, messages.length, addMessage, setTyping])
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -84,15 +104,35 @@ export function InterviewChat({ applicationId, onComplete }: InterviewChatProps)
     setTyping(true)
 
     try {
-      // Get AI response
-      const { response, shouldTransition, isComplete } = await agent.processMessage(
-        userMessage,
-        currentInterview.currentSection,
-        messages
-      )
+      // Call the interview chat API
+      const response = await fetch('/api/interview/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          interviewId: currentInterview.id,
+          applicationId,
+          message: userMessage,
+          currentSection: currentInterview.currentSection,
+          messageHistory: messages,
+          applicationContext,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`)
+      }
+
+      const data: ChatApiResponse = await response.json()
+
+      // Track which mode we're in
+      if (data.mode && aiMode !== data.mode) {
+        setAiMode(data.mode)
+      }
 
       // Handle section transition
-      if (shouldTransition) {
+      if (data.shouldTransition) {
         transitionSection()
       }
 
@@ -100,14 +140,14 @@ export function InterviewChat({ applicationId, onComplete }: InterviewChatProps)
       addMessage({
         interviewId: currentInterview.id,
         role: 'assistant',
-        content: response,
-        section: shouldTransition
+        content: data.response,
+        section: data.shouldTransition
           ? getNextSection(currentInterview.currentSection)
           : currentInterview.currentSection,
       })
 
       // Handle interview completion
-      if (isComplete) {
+      if (data.isComplete) {
         completeInterview()
         onComplete?.()
       }
@@ -162,7 +202,19 @@ export function InterviewChat({ applicationId, onComplete }: InterviewChatProps)
     <div className="flex flex-col h-[calc(100vh-200px)] min-h-[600px] max-h-[800px] bg-background rounded-lg border">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
-        <InterviewProgressCompact currentSection={currentInterview.currentSection} />
+        <div className="flex items-center gap-3">
+          <InterviewProgressCompact currentSection={currentInterview.currentSection} />
+          {aiMode && (
+            <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
+              aiMode === 'live'
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+            }`}>
+              {aiMode === 'live' ? <Sparkles className="h-3 w-3" /> : <Cpu className="h-3 w-3" />}
+              {aiMode === 'live' ? 'AI' : 'Demo'}
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"

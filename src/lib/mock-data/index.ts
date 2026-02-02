@@ -135,11 +135,18 @@ export function getPortfolioStats() {
   const avgScore =
     activeStartups.reduce((sum, s) => sum + (s.overallScore || 0), 0) / activeStartups.length
 
+  // Get metrics data from the metrics module
+  const portfolioMetrics = getPortfolioMetrics()
+
   return {
     totalStartups: startups.length,
     activeStartups: activeStartups.length,
     totalFounders: founders.length,
     avgOverallScore: Math.round(avgScore),
+    // Add metrics data
+    totalMRR: portfolioMetrics.totalMRR,
+    totalUsers: portfolioMetrics.totalUsers,
+    avgRetention: portfolioMetrics.averageRetention,
     riskCounts,
     stageDistribution: {
       problem_discovery: startups.filter((s) => s.stage === 'problem_discovery').length,

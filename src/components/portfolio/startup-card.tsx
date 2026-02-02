@@ -12,9 +12,10 @@ import { getStageInfo, getRiskInfo } from '@/types'
 
 interface StartupCardProps {
   startup: StartupWithFounders
+  linkPrefix?: string
 }
 
-export function StartupCard({ startup }: StartupCardProps) {
+export function StartupCard({ startup, linkPrefix = '/startup' }: StartupCardProps) {
   const stageInfo = getStageInfo(startup.stage)
   const riskInfo = getRiskInfo(startup.riskLevel)
   const leadFounder = startup.founders.find((f) => f.isLead) || startup.founders[0]
@@ -35,7 +36,7 @@ export function StartupCard({ startup }: StartupCardProps) {
   }
 
   return (
-    <Link href={`/startup/${startup.id}`}>
+    <Link href={`${linkPrefix}/${startup.id}`}>
       <Card className="group hover:shadow-md transition-shadow cursor-pointer h-full">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">

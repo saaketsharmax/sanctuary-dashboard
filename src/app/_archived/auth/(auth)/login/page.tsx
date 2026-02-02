@@ -23,7 +23,12 @@ export default function LoginPage() {
     const success = await login(email, password)
 
     if (success) {
-      router.push('/portfolio')
+      // Redirect based on email domain/user type
+      if (email.endsWith('@sanctuary.vc') || email === 'partner@sanctuary.vc') {
+        router.push('/partner/dashboard')
+      } else {
+        router.push('/founder/dashboard')
+      }
     } else {
       setError('Invalid email or password. Try partner@sanctuary.vc')
     }
@@ -35,7 +40,7 @@ export default function LoginPage() {
     const success = await login(demoEmail, 'demo')
 
     if (success) {
-      router.push('/portfolio')
+      router.push(role === 'partner' ? '/partner/dashboard' : '/founder/dashboard')
     }
   }
 
