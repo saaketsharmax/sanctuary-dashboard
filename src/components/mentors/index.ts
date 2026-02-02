@@ -1,3 +1,5 @@
-export * from './expertise-badge'
-export * from './mentor-card'
-export * from './experience-card'
+export { MentorProfile } from "./mentor-profile"
+export { MatchDetail } from "./match-detail"
+export { ExpertiseBadge } from "./expertise-badge"
+export { ExperienceCard } from "./experience-card"
+export { MentorCard } from "./mentor-card"

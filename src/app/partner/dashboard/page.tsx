@@ -15,14 +15,14 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { mockPartner } from '@/lib/stores/auth-store'
-import { getPortfolioStats, getAllStartupsWithFounders, getPendingMatches } from '@/lib/mock-data'
+import { getPortfolioStats, getAllStartupsWithFounders, getPendingMatchesWithNames } from '@/lib/mock-data'
 import { getAllApplicationsWithFounders } from '@/lib/mock-data/onboarding'
 
 export default function PartnerDashboard() {
   const stats = getPortfolioStats()
   const startups = getAllStartupsWithFounders()
   const applications = getAllApplicationsWithFounders()
-  const pendingMatches = getPendingMatches()
+  const pendingMatches = getPendingMatchesWithNames()
 
   const pendingApplications = applications.filter(
     app => app.status === 'assessment_generated' || app.status === 'under_review'

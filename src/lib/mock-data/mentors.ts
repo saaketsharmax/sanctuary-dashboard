@@ -17,6 +17,8 @@ export const mentors: Mentor[] = [
   {
     id: 'mentor-1',
     name: 'Alex Rivera',
+    title: 'Managing Partner',
+    company: 'Rivera Ventures',
     email: 'alex@rivera.vc',
     bio: 'Serial founder with 3 successful exits. Former CEO of DataStream (acquired by Salesforce). Now investing and advising early-stage B2B SaaS companies.',
     linkedinUrl: 'https://linkedin.com/in/alexrivera',
@@ -34,6 +36,8 @@ export const mentors: Mentor[] = [
   {
     id: 'mentor-2',
     name: 'Dr. Maya Patel',
+    title: 'Sales Consultant',
+    company: 'Patel Sales Advisory',
     email: 'maya@patelsales.com',
     bio: 'Enterprise sales leader with 15+ years at Oracle, Stripe, and Snowflake. Built sales teams from 0 to 200. Specializes in complex B2B sales cycles.',
     linkedinUrl: 'https://linkedin.com/in/mayapatel',
@@ -51,6 +55,8 @@ export const mentors: Mentor[] = [
   {
     id: 'mentor-3',
     name: 'James Chen',
+    title: 'CTO & Technical Advisor',
+    company: 'Chen Tech Advisory',
     email: 'james@chentech.io',
     bio: 'CTO and technical co-founder of 2 YC companies. Expert in building scalable systems and hiring engineering talent. Previously at Google and Meta.',
     linkedinUrl: 'https://linkedin.com/in/jameschen',
@@ -68,6 +74,8 @@ export const mentors: Mentor[] = [
   {
     id: 'mentor-4',
     name: 'Sarah Mitchell',
+    title: 'GTM Strategist',
+    company: 'GTM Strategy Co',
     email: 'sarah@gtmstrategy.co',
     bio: 'Growth and GTM expert. Built marketing at 3 unicorns. Specializes in B2B SaaS go-to-market strategy and brand positioning.',
     linkedinUrl: 'https://linkedin.com/in/sarahmitchell',
@@ -85,6 +93,8 @@ export const mentors: Mentor[] = [
   {
     id: 'mentor-5',
     name: 'Marcus Johnson',
+    title: 'Operations Consultant',
+    company: 'Ops Excellence',
     email: 'marcus@opsexcellence.com',
     bio: 'Operations wizard. Scaled operations at Uber and DoorDash. Expert in unit economics, supply chain, and operational efficiency.',
     linkedinUrl: 'https://linkedin.com/in/marcusjohnson',
@@ -102,6 +112,8 @@ export const mentors: Mentor[] = [
   {
     id: 'mentor-6',
     name: 'Lisa Wang',
+    title: 'Product Leadership Coach',
+    company: 'Product Leader IO',
     email: 'lisa@productleader.io',
     bio: 'Product leader with experience at Airbnb, Notion, and Figma. Expert in finding PMF and building products users love.',
     linkedinUrl: 'https://linkedin.com/in/lisawang',
@@ -119,6 +131,8 @@ export const mentors: Mentor[] = [
   {
     id: 'mentor-7',
     name: 'David Kim',
+    title: 'People Operations Advisor',
+    company: 'People Ops Co',
     email: 'david@peopleops.co',
     bio: 'People and culture expert. Former VP People at Stripe and Coinbase. Specializes in building high-performance teams and culture.',
     linkedinUrl: 'https://linkedin.com/in/davidkim',
@@ -136,6 +150,8 @@ export const mentors: Mentor[] = [
   {
     id: 'mentor-8',
     name: 'Rachel Torres',
+    title: 'Pivot Strategist',
+    company: 'Pivot Master Co',
     email: 'rachel@pivotmaster.co',
     bio: 'Pivot specialist. Led 3 successful pivots including one that resulted in a $500M exit. Expert in recognizing when and how to pivot.',
     linkedinUrl: 'https://linkedin.com/in/racheltorres',
@@ -695,6 +711,44 @@ export function getMatchesByMentorId(mentorId: string): Match[] {
 
 export function getPendingMatches(): Match[] {
   return matches.filter((m) => m.status === 'pending').sort((a, b) => b.score - a.score)
+}
+
+// Extended match type with display names for UI
+export type MatchWithNames = Match & {
+  mentorName: string
+  startupName: string
+  bottleneckType: string
+}
+
+export function getPendingMatchesWithNames(): MatchWithNames[] {
+  return matches
+    .filter((m) => m.status === 'pending')
+    .map((match) => {
+      const mentor = getMentorById(match.mentorId)
+      const bottleneck = getBottleneckById(match.bottleneckId)
+      const startup = bottleneck ? startups.find((s) => s.id === bottleneck.startupId) : undefined
+      return {
+        ...match,
+        mentorName: mentor?.name || 'Unknown Mentor',
+        startupName: startup?.name || 'Unknown Startup',
+        bottleneckType: bottleneck?.problemArchetype || 'unknown',
+      }
+    })
+    .sort((a, b) => b.score - a.score)
+}
+
+export function getAllMatchesWithNames(): MatchWithNames[] {
+  return matches.map((match) => {
+    const mentor = getMentorById(match.mentorId)
+    const bottleneck = getBottleneckById(match.bottleneckId)
+    const startup = bottleneck ? startups.find((s) => s.id === bottleneck.startupId) : undefined
+    return {
+      ...match,
+      mentorName: mentor?.name || 'Unknown Mentor',
+      startupName: startup?.name || 'Unknown Startup',
+      bottleneckType: bottleneck?.problemArchetype || 'unknown',
+    }
+  })
 }
 
 export function getMatchWithDetails(id: string): MatchWithDetails | undefined {

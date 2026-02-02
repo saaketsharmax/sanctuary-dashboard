@@ -54,6 +54,8 @@ import {
   getMatchById,
   getMatchesByBottleneckId,
   getPendingMatches,
+  getPendingMatchesWithNames,
+  getAllMatchesWithNames,
   getMatchWithDetails,
   getMatchStats,
 } from './mentors'
@@ -215,6 +217,8 @@ export const mockData = {
   getMatchById,
   getMatchesByBottleneckId,
   getPendingMatches,
+  getPendingMatchesWithNames,
+  getAllMatchesWithNames,
   getMatchWithDetails,
   getMatchStats,
   // Onboarding

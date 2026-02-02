@@ -493,6 +493,8 @@ export type ConfidenceLevel = (typeof CONFIDENCE_LEVELS)[number]
 export interface Mentor {
   id: string
   name: string
+  title: string
+  company: string
   email: string
   bio: string
   linkedinUrl: string | null
@@ -506,6 +508,7 @@ export interface Mentor {
   // Matching preferences
   preferredStages: Stage[]
   maxActiveMatches: number
+  matchCount?: number  // Number of current active matches
   // Timestamps
   createdAt: string
   updatedAt: string

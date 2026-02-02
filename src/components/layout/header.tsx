@@ -12,7 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useAuthStore } from '@/lib/stores/auth-store'
+import { useAuthStore, useUser } from '@/lib/stores/auth-store'
+import { useRouter } from 'next/navigation'
 
 interface HeaderProps {
   title?: string
@@ -29,13 +30,20 @@ export function Header({
   onAddClick,
   addButtonLabel = 'Add New',
 }: HeaderProps) {
-  const { user, logout } = useAuthStore()
+  const router = useRouter()
+  const user = useUser()
+  const { clearRole } = useAuthStore()
 
   const initials = user?.name
     ?.split(' ')
     .map((n) => n[0])
     .join('')
     .toUpperCase()
+
+  const handleLogout = () => {
+    clearRole()
+    router.push('/')
+  }
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-6">
@@ -98,8 +106,8 @@ export function Header({
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout} className="text-destructive">
-              Logout
+            <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+              Exit to Home
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

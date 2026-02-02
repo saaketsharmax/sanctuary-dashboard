@@ -17,8 +17,9 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { useAuthStore } from '@/lib/stores/auth-store'
+import { useAuthStore, useUser } from '@/lib/stores/auth-store'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 const navigation = [
   {
@@ -57,8 +58,15 @@ const secondaryNavigation = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { user, logout } = useAuthStore()
+  const router = useRouter()
+  const user = useUser()
+  const { clearRole, role } = useAuthStore()
   const [collapsed, setCollapsed] = useState(false)
+
+  const handleLogout = () => {
+    clearRole()
+    router.push('/')
+  }
 
   return (
     <aside
@@ -136,18 +144,18 @@ export function Sidebar() {
         {user && !collapsed && (
           <div className="mb-2 rounded-lg bg-accent/50 px-3 py-2">
             <p className="text-sm font-medium">{user.name}</p>
-            <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+            <p className="text-xs text-muted-foreground capitalize">{role || 'User'}</p>
           </div>
         )}
         <Button
           variant="ghost"
           size={collapsed ? 'icon' : 'default'}
           className={cn('w-full', !collapsed && 'justify-start')}
-          onClick={logout}
-          title={collapsed ? 'Logout' : undefined}
+          onClick={handleLogout}
+          title={collapsed ? 'Exit' : undefined}
         >
           <LogOut className="h-5 w-5 shrink-0" />
-          {!collapsed && <span className="ml-3">Logout</span>}
+          {!collapsed && <span className="ml-3">Exit to Home</span>}
         </Button>
       </div>
 

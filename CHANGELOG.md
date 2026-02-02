@@ -2,6 +2,16 @@
 
 All notable changes to the Sanctuary Dashboard will be documented in this file.
 
+## [0.3.1] - 2026-02-02
+
+### Fixed
+- **Build Error**: Added missing `ExpertiseBadge` export to `@/components/mentors`
+- **Type Error**: Fixed `Bottleneck` property access in `match-detail.tsx` (using `rawBlocker`, `rawAttempts`, `rawSuccessCriteria` instead of non-existent properties)
+- **Component Exports**: Added `ExperienceCard` and `MentorCard` exports to mentors index
+- **Cleanup**: Removed archived files that were causing build failures
+
+---
+
 ## [0.3.0] - 2026-02-02
 
 ### Added

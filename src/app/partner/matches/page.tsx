@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Check, X, Send, ArrowRight } from 'lucide-react'
-import { matches as allMatchesData, getPendingMatches } from '@/lib/mock-data'
+import { getAllMatchesWithNames, getPendingMatchesWithNames } from '@/lib/mock-data'
 import Link from 'next/link'
 
 const statusColors: Record<string, string> = {
@@ -18,8 +18,8 @@ const statusColors: Record<string, string> = {
 }
 
 export default function MatchesPage() {
-  const allMatches = allMatchesData
-  const pendingMatches = getPendingMatches()
+  const allMatches = getAllMatchesWithNames()
+  const pendingMatches = getPendingMatchesWithNames()
   const approvedMatches = allMatches.filter(m => m.status === 'approved' || m.status === 'intro_sent')
   const completedMatches = allMatches.filter(m => m.status === 'completed')
 
