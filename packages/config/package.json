@@ -1,0 +1,9 @@
+{
+  "name": "@sanctuary/config",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./typescript": "./typescript.json",
+    "./eslint": "./eslint.config.mjs"
+  }
+}

@@ -1,6 +1,29 @@
 # Changelog
 
-All notable changes to the Sanctuary Dashboard will be documented in this file.
+All notable changes to the Sanctuary Ecosystem will be documented in this file.
+
+## [1.0.0] - 2026-02-03
+
+### Changed
+- **Monorepo Restructure**: Converted single app to Turborepo monorepo
+  - Dashboard moved to `apps/dashboard/`
+  - Created placeholder apps: `apps/community/`, `apps/marketing/`
+  - Created shared packages: `packages/ui/`, `packages/database/`, `packages/config/`
+- **Workspace Configuration**: Added npm workspaces + Turborepo
+- **Package Naming**: Apps now use `@sanctuary/*` namespace
+
+### Added
+- `turbo.json` - Turborepo configuration
+- Shared database package with Supabase types
+- Shared UI package (ready for component extraction)
+- Shared config package for TypeScript base config
+
+### Migration Notes
+- Run `npm install` from root to install all dependencies
+- Use `npm run dev:dashboard` to start dashboard
+- Environment variables now in `apps/dashboard/.env.local`
+
+---
 
 ## [0.4.0] - 2026-02-02
 

@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sanctuary Ecosystem
+
+A monorepo containing all Sanctuary products.
+
+## Structure
+
+```
+sanctuary-ecosystem/
+├── apps/
+│   ├── dashboard/      # app.sanctuary.vc - Portfolio management
+│   ├── community/      # community.sanctuary.vc - Events & engagement
+│   └── marketing/      # sanctuary.vc - Marketing website
+│
+├── packages/
+│   ├── ui/            # Shared UI components
+│   ├── database/      # Supabase client & types
+│   └── config/        # Shared configs
+│
+├── docs/              # Documentation
+└── turbo.json         # Turborepo config
+```
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm 10+
+
+### Installation
 
 ```bash
+# Install all dependencies
+npm install
+
+# Start all apps in development
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Start specific app
+npm run dev:dashboard
+npm run dev:community
+npm run dev:marketing
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Building
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Build all apps
+npm run build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Build specific app
+npm run build:dashboard
+```
 
-## Learn More
+## Apps
 
-To learn more about Next.js, take a look at the following resources:
+### Dashboard (`apps/dashboard`)
+- **URL:** http://localhost:3005
+- **Purpose:** Portfolio management, founder/partner portals
+- **Status:** Active development
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Community Hub (`apps/community`)
+- **URL:** http://localhost:3006
+- **Purpose:** Events, engagement, "The Sanctuary Times"
+- **Status:** Planned
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Marketing (`apps/marketing`)
+- **URL:** http://localhost:3007
+- **Purpose:** Public website, applications
+- **Status:** Planned
 
-## Deploy on Vercel
+## Packages
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### @sanctuary/ui
+Shared UI components built with shadcn/ui and Tailwind CSS.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### @sanctuary/database
+Supabase client, types, and database utilities.
+
+### @sanctuary/config
+Shared TypeScript and ESLint configurations.
+
+## Environment Variables
+
+Each app has its own `.env.local` file. Copy `.env.example` to get started:
+
+```bash
+cp apps/dashboard/.env.example apps/dashboard/.env.local
+```
+
+## Documentation
+
+- [Ecosystem PRD](./docs/ECOSYSTEM-PRD.md)
+- [Changelog](./CHANGELOG.md)
+- [Features](./docs/FEATURES.md)
+- [Data Model](./docs/DATA_MODEL.md)
+
+## License
+
+Private - Sanctuary VC
