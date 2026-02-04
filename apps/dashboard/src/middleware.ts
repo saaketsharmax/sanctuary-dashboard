@@ -1,12 +1,22 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
+// Check if Supabase is configured
+const isSupabaseConfigured = () => {
+  return !!(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  )
+}
+
 // Routes that don't require authentication
 const publicRoutes = [
   '/',
   '/auth/login',
   '/auth/signup',
   '/auth/callback',
+  '/apply',
+  '/interview',
 ]
 
 // Routes that require authentication but no specific role
@@ -17,7 +27,7 @@ const authOnlyRoutes = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Skip middleware for static files and api routes (except auth callback)
+  // Skip middleware for static files and api routes
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
@@ -26,16 +36,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // If Supabase is not configured, allow all routes (demo mode)
+  if (!isSupabaseConfigured()) {
+    return NextResponse.next()
+  }
+
   // Get user session
   const { user, supabaseResponse } = await updateSession(request)
 
   // Check if route is public
   const isPublicRoute = publicRoutes.some(route =>
-    pathname === route || pathname.startsWith(route + '/')
-  )
-
-  // Check if route is auth-only (needs auth but no role)
-  const isAuthOnlyRoute = authOnlyRoutes.some(route =>
     pathname === route || pathname.startsWith(route + '/')
   )
 
@@ -51,13 +61,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth/role-select', request.url))
   }
 
-  // For protected routes (founder/* and partner/*), we could check role here
-  // but for now we'll let the layouts handle role-specific access
-  // This keeps the middleware fast and avoids additional DB queries
-
   // If authenticated user visits root, redirect based on context
   if (user && pathname === '/') {
-    // Redirect to role-select to determine where to go
     return NextResponse.redirect(new URL('/auth/role-select', request.url))
   }
 
