@@ -1,12 +1,21 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Building2, Users, Rocket, TrendingUp, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
+import { Rocket, TrendingUp, ArrowRight, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function LandingPage() {
   const router = useRouter()
+
+  const handleFounderClick = () => {
+    router.push('/auth/signup')
+  }
+
+  const handlePartnerClick = () => {
+    router.push('/auth/signup')
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
@@ -19,19 +28,42 @@ export default function LandingPage() {
             </div>
             <span className="font-semibold text-xl">Sanctuary</span>
           </div>
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" asChild>
+              <Link href="/auth/login">Sign In</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/auth/signup">Get Started</Link>
+            </Button>
+          </div>
         </div>
       </header>
 
       {/* Hero Section */}
       <main className="container mx-auto px-6 py-16">
         <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+            <Play className="h-3 w-3" />
+            AI-Powered Accelerator
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
             Welcome to Sanctuary
           </h1>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-xl text-muted-foreground mb-8">
             The accelerator platform that connects founders with the resources,
             mentors, and partners they need to scale their startups.
           </p>
+          <div className="flex items-center justify-center gap-4">
+            <Button size="lg" asChild>
+              <Link href="/auth/signup">
+                Apply Now
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link href="/auth/login">Sign In</Link>
+            </Button>
+          </div>
         </div>
 
         {/* Role Selection Cards */}
@@ -39,23 +71,27 @@ export default function LandingPage() {
           {/* Founder Card */}
           <Card
             className="relative overflow-hidden hover:border-primary/50 transition-all cursor-pointer group"
-            onClick={() => router.push('/founder/dashboard')}
+            onClick={handleFounderClick}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
             <CardHeader className="pb-4">
               <div className="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4">
                 <Rocket className="h-7 w-7 text-blue-500" />
               </div>
-              <CardTitle className="text-2xl">I'm a Founder</CardTitle>
+              <CardTitle className="text-2xl">I&apos;m a Founder</CardTitle>
               <CardDescription className="text-base">
-                Access your startup dashboard, track progress, and connect with mentors
+                Apply to join the accelerator, get mentorship, and scale your startup
               </CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-sm text-muted-foreground mb-6">
                 <li className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  Manage your company profile
+                  AI-powered interview process
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                  Get matched with expert mentors
                 </li>
                 <li className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
@@ -63,15 +99,11 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  Request mentor support
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  Upload documents and pitch decks
+                  Access investor network
                 </li>
               </ul>
               <Button className="w-full group-hover:bg-blue-600" size="lg">
-                Enter Founder Portal
+                Apply as Founder
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </CardContent>
@@ -80,39 +112,39 @@ export default function LandingPage() {
           {/* Partner Card */}
           <Card
             className="relative overflow-hidden hover:border-primary/50 transition-all cursor-pointer group"
-            onClick={() => router.push('/partner/dashboard')}
+            onClick={handlePartnerClick}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
             <CardHeader className="pb-4">
               <div className="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">
                 <TrendingUp className="h-7 w-7 text-emerald-500" />
               </div>
-              <CardTitle className="text-2xl">I'm a Partner</CardTitle>
+              <CardTitle className="text-2xl">I&apos;m a Partner</CardTitle>
               <CardDescription className="text-base">
-                Manage your portfolio, review applications, and match mentors
+                Mentor startups, invest in portfolio companies, or manage the program
               </CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-sm text-muted-foreground mb-6">
                 <li className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  View portfolio performance
+                  Review AI-assessed applications
                 </li>
                 <li className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Review startup applications
+                  Intelligent mentor-startup matching
                 </li>
                 <li className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Manage mentor matching
+                  Real-time portfolio metrics
                 </li>
                 <li className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Track portfolio metrics
+                  Automated startup insights
                 </li>
               </ul>
               <Button className="w-full group-hover:bg-emerald-600" variant="default" size="lg">
-                Enter Partner Portal
+                Join as Partner
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </CardContent>
