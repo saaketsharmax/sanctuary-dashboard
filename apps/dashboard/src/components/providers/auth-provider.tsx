@@ -21,8 +21,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const supabase = createClient()
 
-    // Check for existing session on mount
+    // Check for existing session on mount with timeout
     const initAuth = async () => {
+      // Set a timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        console.warn('Auth initialization timed out')
+        setLoading(false)
+      }, 5000)
+
       try {
         const { data: { user } } = await supabase.auth.getUser()
 
@@ -52,6 +58,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } catch (error) {
         console.error('Auth initialization error:', error)
       } finally {
+        clearTimeout(timeoutId)
         setLoading(false)
       }
     }
