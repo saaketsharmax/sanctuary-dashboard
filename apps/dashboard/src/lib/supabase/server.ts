@@ -18,8 +18,22 @@ export async function createClient() {
         exchangeCodeForSession: async () => ({ error: null }),
       },
       from: () => ({
-        select: () => ({ eq: () => ({ single: async () => ({ data: null, error: null }) }) }),
+        select: () => ({
+          eq: () => ({
+            single: async () => ({ data: null, error: null }),
+            order: () => ({ data: [], error: null }),
+          }),
+          order: () => ({ data: [], error: null }),
+        }),
         update: () => ({ eq: () => ({ select: () => ({ single: async () => ({ data: null, error: null }) }) }) }),
+        insert: () => ({
+          select: () => ({
+            single: async () => ({
+              data: { id: `demo-${Date.now()}` },
+              error: null,
+            }),
+          }),
+        }),
       }),
     } as unknown as ReturnType<typeof createServerClient>
   }

@@ -16,6 +16,7 @@ import {
   Trash2,
   ArrowRight,
   ArrowLeft,
+  AlertCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -130,19 +131,34 @@ export default function FounderApplyPage() {
 
   const formData = watch()
 
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
   const onSubmit = async (data: ApplicationFormData) => {
     setIsSubmitting(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    setSubmitError(null)
 
-    // Generate a mock application ID
-    const applicationId = `app-${Date.now()}`
+    try {
+      const response = await fetch('/api/applications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
 
-    // In a real app, we'd save to database here
-    console.log('Application submitted:', data)
+      const result = await response.json()
 
-    // Redirect to interview
-    router.push(`/founder/interview/${applicationId}`)
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit application')
+      }
+
+      // Redirect to interview with the application ID
+      router.push(`/founder/interview/${result.id}`)
+    } catch (error) {
+      console.error('Submit error:', error)
+      setSubmitError(error instanceof Error ? error.message : 'Failed to submit application')
+      setIsSubmitting(false)
+    }
   }
 
   const nextStep = () => {
@@ -561,6 +577,16 @@ export default function FounderApplyPage() {
                     After submitting, you&apos;ll proceed to a brief AI-powered interview to learn more about you and your startup.
                   </p>
                 </div>
+
+                {submitError && (
+                  <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-destructive">Submission Failed</h4>
+                      <p className="text-sm text-destructive/80">{submitError}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
