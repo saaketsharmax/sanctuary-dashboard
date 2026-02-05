@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { InterviewMessage, TypingIndicator } from './InterviewMessage'
 import { InterviewProgressCompact } from './InterviewProgress'
 import { useInterviewStore } from '@/lib/stores/interview-store'
-import { Send, Pause, Square, Sparkles, Cpu } from 'lucide-react'
+import { Send, Pause, Square, Sparkles, Cpu, Loader2 } from 'lucide-react'
 import type { InterviewSection, InterviewMessage as InterviewMessageType } from '@/types'
 
 interface InterviewChatProps {
@@ -40,8 +40,10 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
   const [input, setInput] = useState('')
   const [isPaused, setIsPaused] = useState(false)
   const [aiMode, setAiMode] = useState<'live' | 'mock' | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const hasStartedRef = useRef(false)
 
   const {
     currentInterview,
@@ -54,12 +56,52 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
     completeInterview,
   } = useInterviewStore()
 
+  // Save interview to database
+  const saveInterviewToDb = useCallback(async (action: 'start' | 'complete') => {
+    try {
+      const payload = action === 'start'
+        ? { action: 'start' }
+        : {
+            action: 'complete',
+            transcript: messages.map(m => ({
+              id: m.id,
+              interviewId: currentInterview?.id || '',
+              role: m.role,
+              content: m.content,
+              section: m.section,
+              sequenceNumber: m.sequenceNumber,
+              createdAt: m.createdAt,
+            })),
+            startedAt: currentInterview?.startedAt || new Date().toISOString(),
+            completedAt: new Date().toISOString(),
+            durationMinutes: currentInterview?.durationMinutes || 0,
+            aiModel: currentInterview?.aiModel || 'claude-sonnet-4-20250514',
+          }
+
+      const response = await fetch(`/api/applications/${applicationId}/interview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        console.error(`Failed to ${action} interview:`, data.error)
+      }
+    } catch (error) {
+      console.error(`Error saving interview (${action}):`, error)
+    }
+  }, [applicationId, messages, currentInterview])
+
   // Initialize interview if not started
   useEffect(() => {
-    if (!currentInterview) {
+    if (!currentInterview && !hasStartedRef.current) {
+      hasStartedRef.current = true
       startInterview(applicationId)
+      // Mark interview as started in database
+      saveInterviewToDb('start')
     }
-  }, [applicationId, currentInterview, startInterview])
+  }, [applicationId, currentInterview, startInterview, saveInterviewToDb])
 
   // Send opening message when interview starts
   useEffect(() => {
@@ -149,6 +191,10 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
       // Handle interview completion
       if (data.isComplete) {
         completeInterview()
+        // Save completed interview to database
+        setIsSaving(true)
+        await saveInterviewToDb('complete')
+        setIsSaving(false)
         onComplete?.()
       }
     } catch (error) {
@@ -171,9 +217,13 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
     }
   }
 
-  const handleEndInterview = () => {
+  const handleEndInterview = async () => {
     if (confirm('Are you sure you want to end the interview early? Your progress will be saved.')) {
       completeInterview()
+      // Save completed interview to database
+      setIsSaving(true)
+      await saveInterviewToDb('complete')
+      setIsSaving(false)
       onComplete?.()
     }
   }
@@ -273,6 +323,19 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
               <Send className="h-4 w-4 mr-2" />
               Resume Interview
             </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Saving overlay */}
+      {isSaving && (
+        <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 mx-auto text-primary mb-2 animate-spin" />
+            <p className="text-lg font-medium">Saving Interview</p>
+            <p className="text-sm text-muted-foreground">
+              Please wait while we save your interview...
+            </p>
           </div>
         </div>
       )}
