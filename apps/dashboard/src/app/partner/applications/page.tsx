@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Eye, Check, X, MessageSquare } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import { getAllApplicationsWithFounders as getAllApplications } from '@/lib/mock-data/onboarding'
 import Link from 'next/link'
 
@@ -98,30 +98,12 @@ function ApplicationList({ applications }: { applications: any[] }) {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {app.interviewId && (
-                  <Link href={`/interview/${app.id}`}>
-                    <Button variant="outline" size="sm">
-                      <MessageSquare className="h-4 w-4 mr-1" />
-                      Interview
-                    </Button>
-                  </Link>
-                )}
-                <Button variant="outline" size="sm">
-                  <Eye className="h-4 w-4 mr-1" />
-                  Review
-                </Button>
-                {(app.status === 'assessment_generated' || app.status === 'under_review') && (
-                  <>
-                    <Button variant="default" size="sm">
-                      <Check className="h-4 w-4 mr-1" />
-                      Approve
-                    </Button>
-                    <Button variant="destructive" size="sm">
-                      <X className="h-4 w-4 mr-1" />
-                      Decline
-                    </Button>
-                  </>
-                )}
+                <Link href={`/partner/applications/${app.id}`}>
+                  <Button variant="outline" size="sm">
+                    <Eye className="h-4 w-4 mr-1" />
+                    Review
+                  </Button>
+                </Link>
               </div>
             </div>
           </CardContent>
