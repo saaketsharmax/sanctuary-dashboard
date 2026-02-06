@@ -36,11 +36,26 @@ interface ChatApiResponse {
   mode: 'live' | 'mock'
 }
 
+// Signal type for collection
+interface CollectedSignal {
+  type: string
+  content: string
+  dimension: 'founder' | 'problem' | 'user_value' | 'execution'
+  impact: number
+  sourceMessageId?: string
+  section: string
+  confidence?: number
+}
+
 export function InterviewChat({ applicationId, onComplete, applicationContext }: InterviewChatProps) {
   const [input, setInput] = useState('')
   const [isPaused, setIsPaused] = useState(false)
   const [aiMode, setAiMode] = useState<'live' | 'mock' | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [collectedSignals, setCollectedSignals] = useState<CollectedSignal[]>([])
+  const [pauseCount, setPauseCount] = useState(0)
+  const [totalPauseTime, setTotalPauseTime] = useState(0)
+  const pauseStartRef = useRef<number | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const hasStartedRef = useRef(false)
@@ -57,7 +72,7 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
   } = useInterviewStore()
 
   // Save interview to database
-  const saveInterviewToDb = useCallback(async (action: 'start' | 'complete') => {
+  const saveInterviewToDb = useCallback(async (action: 'start' | 'complete', signals?: CollectedSignal[]) => {
     try {
       const payload = action === 'start'
         ? { action: 'start' }
@@ -72,10 +87,13 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
               sequenceNumber: m.sequenceNumber,
               createdAt: m.createdAt,
             })),
+            signals: signals || collectedSignals,
             startedAt: currentInterview?.startedAt || new Date().toISOString(),
             completedAt: new Date().toISOString(),
             durationMinutes: currentInterview?.durationMinutes || 0,
             aiModel: currentInterview?.aiModel || 'claude-sonnet-4-20250514',
+            pauses: pauseCount,
+            totalPauseTime: totalPauseTime,
           }
 
       const response = await fetch(`/api/applications/${applicationId}/interview`, {
@@ -91,7 +109,7 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
     } catch (error) {
       console.error(`Error saving interview (${action}):`, error)
     }
-  }, [applicationId, messages, currentInterview])
+  }, [applicationId, messages, currentInterview, collectedSignals, pauseCount, totalPauseTime])
 
   // Initialize interview if not started
   useEffect(() => {
@@ -171,6 +189,20 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
       // Track which mode we're in
       if (data.mode && aiMode !== data.mode) {
         setAiMode(data.mode)
+      }
+
+      // Collect signals from the response
+      if (data.signals && data.signals.length > 0) {
+        const newSignals: CollectedSignal[] = data.signals.map(signal => ({
+          type: signal.type,
+          content: signal.content,
+          dimension: signal.dimension as 'founder' | 'problem' | 'user_value' | 'execution',
+          impact: signal.impact,
+          section: currentInterview.currentSection,
+          sourceMessageId: messages[messages.length - 1]?.id, // Last user message
+          confidence: 0.8, // Default confidence
+        }))
+        setCollectedSignals(prev => [...prev, ...newSignals])
       }
 
       // Handle section transition
@@ -269,7 +301,21 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setIsPaused(!isPaused)}
+            onClick={() => {
+              if (isPaused) {
+                // Resuming - calculate pause time
+                if (pauseStartRef.current) {
+                  const pauseDuration = (Date.now() - pauseStartRef.current) / 1000
+                  setTotalPauseTime(prev => prev + pauseDuration)
+                  pauseStartRef.current = null
+                }
+              } else {
+                // Pausing - record start time
+                pauseStartRef.current = Date.now()
+                setPauseCount(prev => prev + 1)
+              }
+              setIsPaused(!isPaused)
+            }}
             className="text-muted-foreground"
           >
             {isPaused ? (
