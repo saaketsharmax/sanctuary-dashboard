@@ -1068,3 +1068,220 @@ export function calculateAssessmentOverallScore(assessment: Partial<Assessment>)
   }
   return Math.round((founderScore + problemScore + userValueScore + executionScore) / 4)
 }
+
+// -----------------------------------------------------
+// RESEARCH AGENT TYPES
+// -----------------------------------------------------
+
+export interface LinkedInData {
+  headline: string
+  experience: WorkExperience[]
+  education: Education[]
+  connections: number
+  validated: boolean
+}
+
+export interface WorkExperience {
+  company: string
+  title: string
+  startDate: string
+  endDate: string | null
+  description: string | null
+}
+
+export interface Education {
+  institution: string
+  degree: string
+  field: string | null
+  graduationYear: number | null
+}
+
+export interface FounderProfile {
+  name: string
+  linkedinData: LinkedInData | null
+  discrepancies: string[]
+}
+
+export interface MarketAnalysis {
+  tamEstimate: { value: string; source: string; confidence: string }
+  samEstimate: { value: string; source: string; confidence: string }
+  somEstimate: { value: string; source: string; confidence: string }
+  growthRate: string
+  keyTrends: string[]
+  sources: string[]
+}
+
+export interface CompetitorInfo {
+  name: string
+  website: string
+  description: string
+  funding: string
+  differentiator: string
+  threatLevel: 'high' | 'medium' | 'low'
+}
+
+export interface ValidationFinding {
+  claim: string
+  source: string
+  verified: boolean
+  notes: string
+}
+
+export interface NewsItem {
+  title: string
+  source: string
+  date: string
+  sentiment: 'positive' | 'neutral' | 'negative'
+  summary: string
+  url: string
+}
+
+export interface ResearchOutput {
+  founderProfiles: FounderProfile[]
+  marketAnalysis: MarketAnalysis
+  competitors: CompetitorInfo[]
+  validationFindings: ValidationFinding[]
+  recentNews: NewsItem[]
+  researchedAt: string
+  sources: string[]
+}
+
+// -----------------------------------------------------
+// STARTUP MEMO TYPES
+// -----------------------------------------------------
+
+export type MemoRecommendation = 'strong_accept' | 'accept' | 'conditional' | 'lean_decline' | 'decline'
+
+export interface FounderBackground {
+  name: string
+  role: string
+  background: string
+  domainExpertise: string[]
+  validatedViaLinkedIn: boolean
+}
+
+export interface CompetitorAnalysis {
+  name: string
+  description: string
+  funding: string
+  positioning: string
+  threatLevel: 'high' | 'medium' | 'low'
+}
+
+export interface RiskItem {
+  title: string
+  description: string
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  source: 'interview' | 'research' | 'assessment'
+  mitigation: string | null
+}
+
+export interface SignalSummary {
+  positiveSignals: number
+  negativeSignals: number
+  totalQuotes: number
+  strongestSignals: string[]
+}
+
+export interface StartupMemo {
+  // Metadata
+  generatedAt: string
+  version: string
+  applicationId: string
+  companyName: string
+
+  // Executive Summary
+  executiveSummary: {
+    oneLiner: string
+    recommendation: MemoRecommendation
+    confidence: number
+    keyThesis: string
+    criticalRisks: string[]
+  }
+
+  // Founder Profile
+  founderProfile: {
+    summary: string
+    backgrounds: FounderBackground[]
+    teamDynamics: string
+    gaps: string[]
+    score: number
+    scoreReasoning: string
+  }
+
+  // Problem & Market
+  problemAndMarket: {
+    problemStatement: string
+    icp: {
+      description: string
+      painPoints: string[]
+      currentSolutions: string[]
+      willingnessToPay: string
+    }
+    marketSize: {
+      tam: string
+      sam: string
+      som: string
+      methodology: string
+    }
+    validationEvidence: string[]
+    score: number
+    scoreReasoning: string
+  }
+
+  // Solution & Traction
+  solutionAndTraction: {
+    productDescription: string
+    differentiation: string[]
+    currentMetrics: {
+      users: number | null
+      mrr: number | null
+      growth: string
+      retention: string
+    }
+    evidenceQuality: string
+    score: number
+    scoreReasoning: string
+  }
+
+  // Competitive Landscape
+  competitiveLandscape: {
+    directCompetitors: CompetitorAnalysis[]
+    indirectAlternatives: string[]
+    positioning: string
+    sustainableAdvantage: string
+  }
+
+  // Execution Assessment
+  executionAssessment: {
+    shippingVelocity: string
+    decisionQuality: string
+    resourceEfficiency: string
+    teamGaps: string[]
+    score: number
+    scoreReasoning: string
+  }
+
+  // Risk Analysis
+  riskAnalysis: {
+    redFlags: RiskItem[]
+    marketRisks: RiskItem[]
+    executionRisks: RiskItem[]
+    mitigationStrategies: string[]
+  }
+
+  // Recommendation
+  recommendation: {
+    decision: string
+    confidence: number
+    keyQuestions: string[]
+    suggestedNextSteps: string[]
+  }
+
+  // Appendix
+  appendix: {
+    interviewTranscriptUrl: string | null
+    signalsSummary: SignalSummary
+    researchSources: string[]
+  }
+}

@@ -1,9 +1,9 @@
 'use client'
 
-import { use, useState } from 'react'
+import { use, useState, useEffect } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, FileText, Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
@@ -19,6 +19,7 @@ import {
   ProposedProgrammePreview,
   ReviewDecisionModal,
 } from '@/components/application-review'
+import { MemoViewer } from '@/components/memo'
 import {
   getApplicationWithFounders,
   getInterviewByApplicationId,
@@ -27,6 +28,7 @@ import {
   getProposedProgrammeByApplicationId,
   getProgrammeWeeks,
 } from '@/lib/mock-data/onboarding'
+import type { StartupMemo } from '@/types'
 
 interface ApplicationDetailPageProps {
   params: Promise<{ id: string }>
@@ -46,6 +48,53 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
   // Modal states
   const [decisionModalOpen, setDecisionModalOpen] = useState(false)
   const [decisionType, setDecisionType] = useState<'approve' | 'reject'>('approve')
+
+  // Memo state
+  const [memo, setMemo] = useState<StartupMemo | null>(null)
+  const [memoLoading, setMemoLoading] = useState(false)
+  const [memoError, setMemoError] = useState<string | null>(null)
+
+  // Fetch existing memo on load
+  useEffect(() => {
+    async function fetchMemo() {
+      try {
+        const res = await fetch(`/api/applications/${id}/memo`)
+        const data = await res.json()
+        if (data.memo) {
+          setMemo(data.memo)
+        }
+      } catch (err) {
+        // Memo not available yet, that's ok
+      }
+    }
+    fetchMemo()
+  }, [id])
+
+  // Generate memo
+  const handleGenerateMemo = async (force = false) => {
+    setMemoLoading(true)
+    setMemoError(null)
+    try {
+      const res = await fetch(`/api/applications/${id}/memo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force }),
+      })
+      const data = await res.json()
+      if (data.memo) {
+        setMemo(data.memo)
+        toast.success('Memo generated successfully')
+      } else if (data.error) {
+        setMemoError(data.error)
+        toast.error('Failed to generate memo')
+      }
+    } catch (err) {
+      setMemoError('Failed to generate memo')
+      toast.error('Failed to generate memo')
+    } finally {
+      setMemoLoading(false)
+    }
+  }
 
   if (!application) {
     notFound()
@@ -74,6 +123,7 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
   const hasInterview = interview && messages.length > 0
   const hasAssessment = assessment !== undefined
   const hasProgramme = programme !== undefined
+  const hasMemo = memo !== null
 
   return (
     <div className="space-y-6">
@@ -105,6 +155,10 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
           </TabsTrigger>
           <TabsTrigger value="programme" disabled={!hasProgramme}>
             Programme
+          </TabsTrigger>
+          <TabsTrigger value="memo">
+            <FileText className="h-4 w-4 mr-1" />
+            Memo
           </TabsTrigger>
         </TabsList>
 
@@ -157,6 +211,53 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 No programme proposal available
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="memo">
+          {memoLoading ? (
+            <Card>
+              <CardContent className="py-12 flex flex-col items-center justify-center gap-4">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <p className="text-muted-foreground">Generating startup memo...</p>
+                <p className="text-xs text-muted-foreground">This may take a few moments</p>
+              </CardContent>
+            </Card>
+          ) : hasMemo ? (
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleGenerateMemo(true)}
+                  disabled={memoLoading}
+                >
+                  <RefreshCw className="h-4 w-4 mr-1" />
+                  Regenerate
+                </Button>
+              </div>
+              <MemoViewer memo={memo} />
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="py-12 flex flex-col items-center justify-center gap-4">
+                <FileText className="h-12 w-12 text-muted-foreground" />
+                <div className="text-center">
+                  <h3 className="font-semibold">No Memo Generated Yet</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Generate a comprehensive startup memo that synthesizes the application,
+                    interview, assessment, and research data.
+                  </p>
+                </div>
+                <Button onClick={() => handleGenerateMemo()} disabled={memoLoading}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Generate Memo
+                </Button>
+                {memoError && (
+                  <p className="text-sm text-red-500">{memoError}</p>
+                )}
               </CardContent>
             </Card>
           )}
