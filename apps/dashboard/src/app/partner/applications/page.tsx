@@ -1,12 +1,33 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useEffect, useState } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Eye } from 'lucide-react'
-import { getAllApplicationsWithFounders as getAllApplications } from '@/lib/mock-data/onboarding'
+import { Eye, Loader2, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
+
+interface Application {
+  id: string
+  status: string
+  companyName: string
+  companyOneLiner: string
+  companyWebsite: string | null
+  stage: string
+  userCount: number
+  mrr: number
+  founders: Array<{
+    name: string
+    email: string
+    isLead: boolean
+  }>
+  submittedAt: string | null
+  createdAt: string
+  interviewCompletedAt: string | null
+  assessmentCompletedAt: string | null
+  aiScore: number | null
+}
 
 const statusColors: Record<string, string> = {
   draft: 'bg-gray-100 text-gray-700',
@@ -20,17 +41,64 @@ const statusColors: Record<string, string> = {
 }
 
 export default function ApplicationsPage() {
-  const applications = getAllApplications()
+  const [applications, setApplications] = useState<Application[]>([])
+  const [loading, setLoading] = useState(true)
+  const [isMock, setIsMock] = useState(false)
 
-  const needsReview = applications.filter(a => a.status === 'assessment_generated' || a.status === 'under_review')
-  const inProgress = applications.filter(a => ['submitted', 'interview_scheduled', 'interview_completed'].includes(a.status))
-  const decided = applications.filter(a => a.status === 'approved' || a.status === 'rejected')
+  const fetchApplications = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/partner/applications')
+      const data = await res.json()
+      if (data.success) {
+        setApplications(data.applications)
+        setIsMock(data.isMock)
+      }
+    } catch (error) {
+      console.error('Failed to fetch applications:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchApplications()
+  }, [])
+
+  const needsReview = applications.filter(a =>
+    a.status === 'assessment_generated' ||
+    a.status === 'under_review' ||
+    a.status === 'interview_completed'
+  )
+  const inProgress = applications.filter(a =>
+    ['submitted', 'interview_scheduled'].includes(a.status)
+  )
+  const decided = applications.filter(a =>
+    a.status === 'approved' || a.status === 'rejected'
+  )
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Applications</h1>
-        <p className="text-muted-foreground mt-1">Review founder applications</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Applications</h1>
+          <p className="text-muted-foreground mt-1">
+            Review founder applications
+            {isMock && <Badge variant="outline" className="ml-2">Demo Mode</Badge>}
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={fetchApplications}>
+          <RefreshCw className="h-4 w-4 mr-1" />
+          Refresh
+        </Button>
       </div>
 
       <Tabs defaultValue="needs_review">
@@ -67,7 +135,7 @@ export default function ApplicationsPage() {
   )
 }
 
-function ApplicationList({ applications }: { applications: any[] }) {
+function ApplicationList({ applications }: { applications: Application[] }) {
   if (applications.length === 0) {
     return (
       <Card>
@@ -87,14 +155,28 @@ function ApplicationList({ applications }: { applications: any[] }) {
               <div className="flex-1">
                 <div className="flex items-center gap-3">
                   <h3 className="font-semibold">{app.companyName}</h3>
-                  <Badge className={statusColors[app.status]}>
+                  <Badge className={statusColors[app.status] || 'bg-gray-100 text-gray-700'}>
                     {app.status.replace(/_/g, ' ')}
                   </Badge>
+                  {app.aiScore && (
+                    <Badge variant="outline">
+                      Score: {Math.round(app.aiScore * 100)}
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">{app.companyOneLiner}</p>
                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                   <span>Stage: {app.stage?.replace('_', ' ') || 'N/A'}</span>
-                  <span>Submitted: {app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : 'Draft'}</span>
+                  <span>Users: {app.userCount || 0}</span>
+                  <span>MRR: ${app.mrr || 0}</span>
+                  <span>
+                    Submitted: {app.submittedAt
+                      ? new Date(app.submittedAt).toLocaleDateString()
+                      : 'Draft'}
+                  </span>
+                  {app.interviewCompletedAt && (
+                    <span className="text-green-600">Interview Done</span>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2">
