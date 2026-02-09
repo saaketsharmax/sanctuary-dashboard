@@ -440,7 +440,7 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
 
         {/* Assessment Tab */}
         <TabsContent value="assessment">
-          {hasAssessment ? (
+          {hasAssessment && application.aiAssessment ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
@@ -449,16 +449,16 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                 <CardContent className="space-y-4">
                   <div className="text-center p-4 bg-primary/10 rounded-lg">
                     <p className="text-4xl font-bold text-primary">
-                      {application.aiAssessment.overallScore}
+                      {application.aiAssessment?.overallScore ?? 'N/A'}
                     </p>
                     <p className="text-sm text-muted-foreground">Overall Score</p>
                   </div>
                   <div className="space-y-3">
                     {[
-                      { label: 'Founder', score: application.aiAssessment.founderScore },
-                      { label: 'Problem', score: application.aiAssessment.problemScore },
-                      { label: 'User Value', score: application.aiAssessment.userValueScore },
-                      { label: 'Execution', score: application.aiAssessment.executionScore },
+                      { label: 'Founder', score: application.aiAssessment?.founderScore ?? 0 },
+                      { label: 'Problem', score: application.aiAssessment?.problemScore ?? 0 },
+                      { label: 'User Value', score: application.aiAssessment?.userValueScore ?? 0 },
+                      { label: 'Execution', score: application.aiAssessment?.executionScore ?? 0 },
                     ].map((item) => (
                       <div key={item.label}>
                         <div className="flex justify-between text-sm mb-1">
@@ -474,22 +474,24 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                       </div>
                     ))}
                   </div>
-                  <div className="pt-4 border-t">
-                    <Badge
-                      className={
-                        application.aiAssessment.recommendation === 'accept'
-                          ? 'bg-green-100 text-green-700'
-                          : application.aiAssessment.recommendation === 'decline'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-yellow-100 text-yellow-700'
-                      }
-                    >
-                      {application.aiAssessment.recommendation}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground ml-2">
-                      {application.aiAssessment.recommendationConfidence}% confidence
-                    </span>
-                  </div>
+                  {application.aiAssessment?.recommendation && (
+                    <div className="pt-4 border-t">
+                      <Badge
+                        className={
+                          application.aiAssessment.recommendation === 'accept'
+                            ? 'bg-green-100 text-green-700'
+                            : application.aiAssessment.recommendation === 'decline'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-yellow-100 text-yellow-700'
+                        }
+                      >
+                        {application.aiAssessment.recommendation}
+                      </Badge>
+                      <span className="text-sm text-muted-foreground ml-2">
+                        {application.aiAssessment?.recommendationConfidence ?? 0}% confidence
+                      </span>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -498,13 +500,15 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                   <CardTitle>Analysis</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-medium text-sm">Summary</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {application.aiAssessment.oneLineSummary}
-                    </p>
-                  </div>
-                  {application.aiAssessment.keyStrengths?.length > 0 && (
+                  {application.aiAssessment?.oneLineSummary && (
+                    <div>
+                      <h4 className="font-medium text-sm">Summary</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {application.aiAssessment.oneLineSummary}
+                      </p>
+                    </div>
+                  )}
+                  {application.aiAssessment?.keyStrengths?.length > 0 && (
                     <div>
                       <h4 className="font-medium text-sm text-green-600">Key Strengths</h4>
                       <ul className="text-sm mt-1 space-y-1">
@@ -517,7 +521,7 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                       </ul>
                     </div>
                   )}
-                  {application.aiAssessment.keyRisks?.length > 0 && (
+                  {application.aiAssessment?.keyRisks?.length > 0 && (
                     <div>
                       <h4 className="font-medium text-sm text-red-600">Key Risks</h4>
                       <ul className="text-sm mt-1 space-y-1">
@@ -530,7 +534,7 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                       </ul>
                     </div>
                   )}
-                  {application.aiAssessment.criticalQuestions?.length > 0 && (
+                  {application.aiAssessment?.criticalQuestions?.length > 0 && (
                     <div>
                       <h4 className="font-medium text-sm">Critical Questions</h4>
                       <ul className="text-sm mt-1 space-y-1">
