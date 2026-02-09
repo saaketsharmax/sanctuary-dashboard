@@ -12,45 +12,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   const { id: applicationId } = await params
 
   try {
-    // If Supabase is not configured, use mock data
+    // Require Supabase to be configured
     if (!isSupabaseConfigured()) {
-      console.log(`Demo mode: Generating mock assessment for application ${applicationId}`)
-
-      const agent = getAssessmentAgent()
-      const mockInput: AssessmentInput = {
-        applicationId,
-        companyName: 'Demo Company',
-        applicationData: {
-          companyOneLiner: 'A demo company for testing',
-          problemDescription: 'Demo problem description',
-          targetCustomer: 'Demo target customer',
-          solutionDescription: 'Demo solution',
-          stage: 'mvp',
-          userCount: 10,
-          mrr: 1000,
-          biggestChallenge: 'Demo challenge',
-          whySanctuary: 'Demo reason',
-          whatTheyWant: 'Demo wants',
-          founders: [
-            { name: 'Demo Founder', isLead: true, hasStartedBefore: true, yearsExperience: 5 }
-          ],
-        },
-        transcript: [
-          { role: 'assistant', content: 'Welcome to your interview.', section: 'founder_dna' },
-          { role: 'user', content: 'Thank you for having me.', section: 'founder_dna' },
-        ],
-        signals: [],
-      }
-
-      const result = await agent.generateAssessment(mockInput)
-
-      return NextResponse.json({
-        success: result.success,
-        applicationId,
-        assessment: result.assessment,
-        metadata: result.metadata,
-        mode: 'demo',
-      })
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 503 }
+      )
     }
 
     // Get authenticated user
