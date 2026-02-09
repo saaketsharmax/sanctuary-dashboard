@@ -44,29 +44,54 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
 
   // Fetch user on mount
   useEffect(() => {
+    let mounted = true
+
     async function fetchUser() {
       try {
         const supabase = createClient()
-        const { data: { user: authUser } } = await supabase.auth.getUser()
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+
+        if (!mounted) return
+
+        // Handle auth errors gracefully
+        if (authError) {
+          console.warn('Auth error in layout:', authError.message)
+          setUser({
+            name: 'Partner',
+            email: 'Session loading...',
+          })
+          return
+        }
 
         if (authUser) {
           // Get user profile from users table
-          const { data: profile } = await supabase
-            .from('users')
-            .select('name, email')
-            .eq('id', authUser.id)
-            .single()
+          try {
+            const { data: profile } = await supabase
+              .from('users')
+              .select('name, email')
+              .eq('id', authUser.id)
+              .single()
 
-          if (profile) {
-            setUser({
-              name: profile.name || authUser.email?.split('@')[0] || 'Partner',
-              email: profile.email || authUser.email || '',
-            })
-          } else {
-            setUser({
-              name: authUser.email?.split('@')[0] || 'Partner',
-              email: authUser.email || '',
-            })
+            if (!mounted) return
+
+            if (profile) {
+              setUser({
+                name: profile.name || authUser.email?.split('@')[0] || 'Partner',
+                email: profile.email || authUser.email || '',
+              })
+            } else {
+              setUser({
+                name: authUser.email?.split('@')[0] || 'Partner',
+                email: authUser.email || '',
+              })
+            }
+          } catch {
+            if (mounted) {
+              setUser({
+                name: authUser.email?.split('@')[0] || 'Partner',
+                email: authUser.email || '',
+              })
+            }
           }
         } else {
           // Not logged in - use fallback
@@ -76,17 +101,38 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
           })
         }
       } catch (error) {
-        console.error('Failed to fetch user:', error)
-        setUser({
-          name: 'Partner',
-          email: 'Error loading',
-        })
+        // Handle network/abort errors gracefully - don't crash the app
+        const isNetworkError = error instanceof Error && (
+          error.name === 'AbortError' ||
+          error.message.includes('abort') ||
+          error.message.includes('network') ||
+          error.message.includes('fetch')
+        )
+
+        if (!isNetworkError) {
+          console.error('Failed to fetch user:', error)
+        } else {
+          console.warn('Network issue fetching user - continuing with fallback')
+        }
+
+        if (mounted) {
+          setUser({
+            name: 'Partner',
+            email: 'Loading...',
+          })
+        }
       } finally {
-        setLoading(false)
+        if (mounted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchUser()
+
+    return () => {
+      mounted = false
+    }
   }, [])
 
   const handleLogout = async () => {
