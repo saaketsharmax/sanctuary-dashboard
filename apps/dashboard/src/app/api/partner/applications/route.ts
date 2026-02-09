@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
     if (!isSupabaseConfigured()) {
       return NextResponse.json({
         success: true,
-        applications: getMockApplications(),
-        isMock: true,
+        applications: [],
+        message: 'Database not configured',
       })
     }
 
@@ -24,10 +24,10 @@ export async function GET(request: NextRequest) {
 
     if (authError || !user) {
       return NextResponse.json({
-        success: true,
-        applications: getMockApplications(),
-        isMock: true,
-      })
+        success: false,
+        applications: [],
+        error: 'Not authenticated',
+      }, { status: 401 })
     }
 
     // Check if user is a partner
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
     if (profile?.user_type !== 'partner') {
       return NextResponse.json(
-        { error: 'Only partners can view applications' },
+        { success: false, error: 'Only partners can view applications', applications: [] },
         { status: 403 }
       )
     }
@@ -68,10 +68,10 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error('Applications fetch error:', error)
       return NextResponse.json({
-        success: true,
-        applications: getMockApplications(),
-        isMock: true,
-      })
+        success: false,
+        applications: [],
+        error: 'Failed to fetch applications',
+      }, { status: 500 })
     }
 
     // Format for frontend
@@ -120,37 +120,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       applications: formattedApplications,
-      isMock: false,
     })
   } catch (error) {
     console.error('Partner applications API error:', error)
     return NextResponse.json({
-      success: true,
-      applications: getMockApplications(),
-      isMock: true,
-    })
+      success: false,
+      applications: [],
+      error: 'Internal server error',
+    }, { status: 500 })
   }
-}
-
-function getMockApplications() {
-  return [
-    {
-      id: 'mock-1',
-      status: 'submitted',
-      companyName: 'Demo Startup',
-      companyOneLiner: 'A demo startup for testing the platform',
-      companyWebsite: 'https://demo.com',
-      stage: 'mvp',
-      userCount: 50,
-      mrr: 2000,
-      founders: [
-        { name: 'Demo Founder', email: 'demo@example.com', isLead: true, hasStartedBefore: true }
-      ],
-      submittedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      interviewCompletedAt: null,
-      assessmentCompletedAt: null,
-      aiScore: null,
-    }
-  ]
 }

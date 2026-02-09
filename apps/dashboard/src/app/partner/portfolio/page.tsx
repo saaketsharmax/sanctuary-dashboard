@@ -1,57 +1,18 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { LayoutGrid, List } from 'lucide-react'
-import { StartupCard } from '@/components/portfolio/startup-card'
-import { StartupTable } from '@/components/portfolio/startup-table'
-import { AddStartupModal } from '@/components/portfolio/add-startup-modal'
+import { useState } from 'react'
+import { LayoutGrid, List, Briefcase } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Toaster } from '@/components/ui/sonner'
-import { toast } from 'sonner'
-import { getAllStartupsWithFounders, getPortfolioStats } from '@/lib/mock-data'
-import { STAGES, RISK_LEVELS } from '@/types'
-import type { Stage, RiskLevel } from '@/types'
 
 type ViewMode = 'grid' | 'list'
 
 export default function PartnerPortfolioPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
-  const [stageFilter, setStageFilter] = useState<Stage | 'all'>('all')
-  const [riskFilter, setRiskFilter] = useState<RiskLevel | 'all'>('all')
-  const [addModalOpen, setAddModalOpen] = useState(false)
 
-  const allStartups = getAllStartupsWithFounders()
-  const stats = getPortfolioStats()
-
-  const filteredStartups = useMemo(() => {
-    return allStartups.filter((startup) => {
-      if (stageFilter !== 'all' && startup.stage !== stageFilter) return false
-      if (riskFilter !== 'all' && startup.riskLevel !== riskFilter) return false
-      return true
-    })
-  }, [allStartups, stageFilter, riskFilter])
-
-  const clearFilters = () => {
-    setStageFilter('all')
-    setRiskFilter('all')
-  }
-
-  const hasFilters = stageFilter !== 'all' || riskFilter !== 'all'
-
-  const handleAddSuccess = (data: any) => {
-    toast.success(`${data.name} added to portfolio`, {
-      description: 'The startup has been created successfully.',
-    })
-  }
+  // No mock data - shows empty state
+  const startups: never[] = []
 
   return (
     <div className="space-y-6">
@@ -60,66 +21,30 @@ export default function PartnerPortfolioPage() {
           <h1 className="text-3xl font-bold">Portfolio</h1>
           <p className="text-muted-foreground mt-1">Manage your startup portfolio</p>
         </div>
-        <Button onClick={() => setAddModalOpen(true)}>Add Startup</Button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="rounded-lg border bg-card p-4">
           <p className="text-sm text-muted-foreground">Total Startups</p>
-          <p className="text-2xl font-bold">{stats.totalStartups}</p>
+          <p className="text-2xl font-bold">0</p>
         </div>
         <div className="rounded-lg border bg-card p-4">
           <p className="text-sm text-muted-foreground">Active</p>
-          <p className="text-2xl font-bold">{stats.activeStartups}</p>
+          <p className="text-2xl font-bold">0</p>
         </div>
         <div className="rounded-lg border bg-card p-4">
           <p className="text-sm text-muted-foreground">Avg Score</p>
-          <p className="text-2xl font-bold">{stats.avgOverallScore}/100</p>
+          <p className="text-2xl font-bold">-</p>
         </div>
         <div className="rounded-lg border bg-card p-4">
           <p className="text-sm text-muted-foreground">At Risk</p>
-          <p className="text-2xl font-bold text-yellow-600">
-            {stats.riskCounts.elevated + stats.riskCounts.high}
-          </p>
+          <p className="text-2xl font-bold">0</p>
         </div>
       </div>
 
-      {/* Filters and View Toggle */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex flex-wrap gap-3 items-center">
-          <Select value={stageFilter} onValueChange={(value) => setStageFilter(value as Stage | 'all')}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by stage" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Stages</SelectItem>
-              {STAGES.map((stage) => (
-                <SelectItem key={stage.value} value={stage.value}>{stage.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={riskFilter} onValueChange={(value) => setRiskFilter(value as RiskLevel | 'all')}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Filter by risk" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Risk Levels</SelectItem>
-              {RISK_LEVELS.map((risk) => (
-                <SelectItem key={risk.value} value={risk.value}>{risk.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {hasFilters && (
-            <>
-              <Button variant="ghost" size="sm" onClick={clearFilters}>Clear filters</Button>
-              <Badge variant="secondary">{filteredStartups.length} of {allStartups.length}</Badge>
-            </>
-          )}
-        </div>
-
+      {/* View Toggle */}
+      <div className="flex justify-end">
         <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
           <TabsList>
             <TabsTrigger value="grid" className="gap-2">
@@ -134,26 +59,18 @@ export default function PartnerPortfolioPage() {
         </Tabs>
       </div>
 
-      {/* Startup Grid/List */}
-      {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredStartups.map((startup) => (
-            <StartupCard key={startup.id} startup={startup} linkPrefix="/partner/portfolio" />
-          ))}
-        </div>
-      ) : (
-        <StartupTable startups={filteredStartups} linkPrefix="/partner/portfolio" />
-      )}
-
-      {filteredStartups.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No startups match your filters</p>
-          <Button variant="link" onClick={clearFilters}>Clear all filters</Button>
-        </div>
-      )}
-
-      <AddStartupModal open={addModalOpen} onOpenChange={setAddModalOpen} onSuccess={handleAddSuccess} />
-      <Toaster />
+      {/* Empty State */}
+      <Card>
+        <CardContent className="py-16">
+          <div className="text-center">
+            <Briefcase className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No startups yet</h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Approved applications will appear here once founders complete the onboarding process.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

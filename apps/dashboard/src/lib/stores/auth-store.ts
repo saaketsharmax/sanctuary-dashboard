@@ -35,19 +35,19 @@ interface AuthState {
   setLoading: (loading: boolean) => void
 }
 
-// Mock user data for display purposes (used when no Supabase auth)
-export const mockFounder = {
-  id: 'user-founder-1',
-  name: 'Sarah Chen',
-  email: 'sarah@techflow.ai',
-  company: 'TechFlow AI',
+// Default placeholder data (shown when user profile not yet loaded)
+export const defaultFounder = {
+  id: '',
+  name: 'Founder',
+  email: '',
+  company: '',
   avatarUrl: null,
 }
 
-export const mockPartner = {
-  id: 'user-partner-1',
-  name: 'Alex Thompson',
-  email: 'alex@sanctuary.vc',
+export const defaultPartner = {
+  id: '',
+  name: 'Partner',
+  email: '',
   avatarUrl: null,
 }
 
@@ -102,7 +102,7 @@ export const useAuthStore = create<AuthState>()(
 // Helper hooks
 
 /**
- * Returns the current user - from Supabase profile if available, otherwise mock data
+ * Returns the current user - from Supabase profile if available, otherwise default placeholders
  */
 export function useUser() {
   const { role, profile } = useAuthStore((state) => ({
@@ -121,9 +121,9 @@ export function useUser() {
     }
   }
 
-  // Fall back to mock data
-  if (role === 'founder') return mockFounder
-  if (role === 'partner') return mockPartner
+  // Return default placeholder (no mock data)
+  if (role === 'founder') return defaultFounder
+  if (role === 'partner') return defaultPartner
   return null
 }
 

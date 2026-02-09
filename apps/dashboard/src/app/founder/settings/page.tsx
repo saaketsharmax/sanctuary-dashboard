@@ -5,15 +5,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { mockFounder } from '@/lib/stores/auth-store'
 import { User, Bell, Shield, Save } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 
 export default function FounderSettingsPage() {
-  const [name, setName] = useState(mockFounder.name)
-  const [email] = useState(mockFounder.email)
+  const [name, setName] = useState('')
+  const [email] = useState('')
   const [notifications, setNotifications] = useState({
     email: true,
     mentorMatches: true,
@@ -43,11 +42,11 @@ export default function FounderSettingsPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" value={email} disabled className="bg-muted" />
+            <Input id="email" value={email} disabled className="bg-muted" placeholder="Your email" />
             <p className="text-xs text-muted-foreground">Email cannot be changed</p>
           </div>
         </CardContent>
