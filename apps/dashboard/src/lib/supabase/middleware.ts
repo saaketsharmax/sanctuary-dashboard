@@ -3,10 +3,9 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 // Check if Supabase is configured
 const isSupabaseConfigured = () => {
-  return !!(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  )
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  return !!(url && key && url.startsWith('http') && key.length > 10)
 }
 
 export async function updateSession(request: NextRequest) {
@@ -21,41 +20,51 @@ export async function updateSession(request: NextRequest) {
 
   let response = supabaseResponse
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-          response = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
-
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
   try {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            try {
+              return request.cookies.getAll()
+            } catch {
+              return []
+            }
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value }) =>
+                request.cookies.set(name, value)
+              )
+              response = NextResponse.next({
+                request,
+              })
+              cookiesToSet.forEach(({ name, value, options }) =>
+                response.cookies.set(name, value, options)
+              )
+            } catch {
+              // Ignore cookie setting errors
+            }
+          },
+        },
+      }
+    )
+
+    // IMPORTANT: Avoid writing any logic between createServerClient and
+    // supabase.auth.getUser(). A simple mistake could make it very hard to debug
+    // issues with users being randomly logged out.
+
     const {
       data: { user },
     } = await supabase.auth.getUser()
 
     return { user, supabaseResponse: response }
-  } catch {
-    // If there's an error (e.g., invalid credentials), return null user
-    return { user: null, supabaseResponse: response }
+  } catch (error) {
+    // If there's any error, return null user and continue
+    // This prevents the middleware from crashing the entire app
+    console.warn('Middleware auth error:', error instanceof Error ? error.message : 'Unknown error')
+    return { user: null, supabaseResponse }
   }
 }
