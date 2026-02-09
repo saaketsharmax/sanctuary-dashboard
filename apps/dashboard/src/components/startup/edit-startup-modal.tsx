@@ -27,7 +27,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { STAGES, INDUSTRIES, BUSINESS_MODELS, STARTUP_STATUSES } from '@/types'
 import type { Startup } from '@/types'
-import { cohorts } from '@/lib/mock-data'
+
+// Empty until cohorts are fetched from database
+const cohorts: { id: string; name: string }[] = []
 
 const editStartupSchema = z.object({
   // Basic Info

@@ -1,11 +1,11 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { InterviewProgress } from '@/components/onboarding/interview'
-import { getApplicationById } from '@/lib/mock-data/onboarding'
 import { INTERVIEW_SECTIONS } from '@/types'
 import {
   Clock,
@@ -14,17 +14,59 @@ import {
   ArrowRight,
   CheckCircle2,
   AlertCircle,
+  Loader2,
 } from 'lucide-react'
+
+interface Application {
+  id: string
+  companyName: string
+  companyOneLiner: string
+  stage: string
+}
 
 export default function InterviewWaitingRoom() {
   const params = useParams()
   const router = useRouter()
   const applicationId = params.applicationId as string
 
-  // Get application data
-  const application = getApplicationById(applicationId)
+  const [application, setApplication] = useState<Application | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  if (!application) {
+  // Fetch application data
+  useEffect(() => {
+    async function fetchApplication() {
+      try {
+        const response = await fetch(`/api/applications/${applicationId}`)
+        if (!response.ok) {
+          throw new Error('Application not found')
+        }
+        const data = await response.json()
+        if (data.success && data.application) {
+          setApplication(data.application)
+        } else {
+          throw new Error('Application not found')
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load application')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchApplication()
+  }, [applicationId])
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
+        <p className="text-muted-foreground">Loading application...</p>
+      </div>
+    )
+  }
+
+  if (error || !application) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <AlertCircle className="h-12 w-12 text-destructive mb-4" />

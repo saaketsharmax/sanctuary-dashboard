@@ -25,7 +25,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { STAGES, INDUSTRIES, BUSINESS_MODELS } from '@/types'
-import { cohorts } from '@/lib/mock-data'
+
+// Empty until cohorts are fetched from database
+const cohorts: { id: string; name: string }[] = []
 
 const addStartupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),

@@ -6,14 +6,22 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Mail, Linkedin, Briefcase, DollarSign, Users, Calendar } from 'lucide-react'
 import type { Mentor } from '@/types'
-import { getExperiencesByMentorId } from '@/lib/mock-data/mentors'
 
 interface MentorProfileProps {
   mentor: Mentor
 }
 
 export function MentorProfile({ mentor }: MentorProfileProps) {
-  const experiences = getExperiencesByMentorId(mentor.id)
+  // No mock data - experiences will be fetched from database when available
+  const experiences: Array<{
+    id: string
+    problemArchetype: string
+    yearOccurred: number
+    problemStatement: string
+    context: string
+    solution: string
+    outcomes: string
+  }> = []
 
   return (
     <div className="space-y-6">

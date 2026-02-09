@@ -1,144 +1,118 @@
 'use client'
 
-import Link from 'next/link'
-import { getPortfolioMetrics, getAllStartupMetrics } from '@/lib/mock-data'
-import { KPIGrid } from './kpi-grid'
-import { MRRChart } from './mrr-chart'
-import { UserGrowthChart } from './user-growth-chart'
-import { TrendIndicator } from './trend-indicator'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { AlertTriangle, Trophy } from 'lucide-react'
-import { formatCurrency } from '@/types'
+import { BarChart3, TrendingUp, Users, DollarSign } from 'lucide-react'
 
 export function PortfolioMetrics() {
-  const portfolioMetrics = getPortfolioMetrics()
-  const allStartupMetrics = getAllStartupMetrics()
-
+  // No mock data - show empty state until real metrics are available
   return (
     <div className="space-y-6">
-      {/* KPI Cards */}
-      <KPIGrid metrics={portfolioMetrics} type="portfolio" />
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <MRRChart
-          data={portfolioMetrics.mrrHistory}
-          title="Portfolio MRR"
-          height={250}
-        />
-        <UserGrowthChart
-          data={portfolioMetrics.userHistory}
-          title="Portfolio Users"
-          height={250}
-        />
-      </div>
-
-      {/* Top Performers & At Risk */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Top Performers */}
+      {/* Empty KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-yellow-500" />
-              Top Performers
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {portfolioMetrics.topPerformers.map((startup, index) => (
-              <Link
-                key={startup.startupId}
-                href={`/startup/${startup.startupId}`}
-                className="flex items-center justify-between p-3 rounded-lg hover:bg-accent transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-lg font-bold text-muted-foreground">#{index + 1}</span>
-                  <span className="font-medium">{startup.startupName}</span>
-                </div>
-                <TrendIndicator direction="up" change={startup.mrrChange} size="sm" />
-              </Link>
-            ))}
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Portfolio MRR</p>
+                <p className="text-2xl font-bold">$0</p>
+              </div>
+              <DollarSign className="h-8 w-8 text-muted-foreground/50" />
+            </div>
           </CardContent>
         </Card>
 
-        {/* At Risk */}
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
-              Needs Attention
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {portfolioMetrics.atRisk.length > 0 ? (
-              portfolioMetrics.atRisk.map((startup) => (
-                <Link
-                  key={startup.startupId}
-                  href={`/startup/${startup.startupId}`}
-                  className="flex items-center justify-between p-3 rounded-lg hover:bg-accent transition-colors"
-                >
-                  <span className="font-medium">{startup.startupName}</span>
-                  <Badge variant="destructive">{startup.issue}</Badge>
-                </Link>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No startups at risk
-              </p>
-            )}
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Users</p>
+                <p className="text-2xl font-bold">0</p>
+              </div>
+              <Users className="h-8 w-8 text-muted-foreground/50" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Avg Retention</p>
+                <p className="text-2xl font-bold">--%</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-muted-foreground/50" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Active Startups</p>
+                <p className="text-2xl font-bold">0</p>
+              </div>
+              <BarChart3 className="h-8 w-8 text-muted-foreground/50" />
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* All Startups Metrics Table */}
+      {/* Empty State for Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-medium">Portfolio MRR</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[250px] flex items-center justify-center">
+            <p className="text-muted-foreground">No data yet</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-medium">Portfolio Users</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[250px] flex items-center justify-center">
+            <p className="text-muted-foreground">No data yet</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Empty States for Lists */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-medium">Top Performers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground text-center py-4">
+              No startups tracked yet
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-medium">Needs Attention</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground text-center py-4">
+              No startups at risk
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* All Startups Table */}
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader>
           <CardTitle className="text-base font-medium">All Startups</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-2 font-medium">Startup</th>
-                  <th className="text-right py-3 px-2 font-medium">MRR</th>
-                  <th className="text-right py-3 px-2 font-medium">Users</th>
-                  <th className="text-right py-3 px-2 font-medium">Retention</th>
-                  <th className="text-right py-3 px-2 font-medium">NPS</th>
-                  <th className="text-right py-3 px-2 font-medium">Trend</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allStartupMetrics.map((metrics) => (
-                  <tr key={metrics.startupId} className="border-b last:border-0">
-                    <td className="py-3 px-2">
-                      <Link
-                        href={`/startup/${metrics.startupId}`}
-                        className="font-medium hover:underline"
-                      >
-                        {metrics.startupName}
-                      </Link>
-                    </td>
-                    <td className="text-right py-3 px-2">
-                      {formatCurrency(metrics.current.mrr)}
-                    </td>
-                    <td className="text-right py-3 px-2">
-                      {metrics.current.totalUsers.toLocaleString()}
-                    </td>
-                    <td className="text-right py-3 px-2">{metrics.current.retentionRate}%</td>
-                    <td className="text-right py-3 px-2">{metrics.current.nps ?? '—'}</td>
-                    <td className="text-right py-3 px-2">
-                      <TrendIndicator
-                        direction={metrics.mrrTrend}
-                        change={metrics.mrrChange}
-                        size="sm"
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <p className="text-sm text-muted-foreground text-center py-8">
+            No startups in portfolio yet. Add startups to see their metrics here.
+          </p>
         </CardContent>
       </Card>
     </div>
