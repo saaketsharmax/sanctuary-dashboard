@@ -13,12 +13,14 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { AlertTriangle, CheckCircle2 } from 'lucide-react'
-import type { ApplicationWithFounders } from '@/types'
 
 interface ReviewDecisionModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  application: ApplicationWithFounders
+  application: {
+    companyName: string
+    companyOneLiner?: string | null
+  }
   decision: 'approve' | 'reject'
   onConfirm: (notes?: string) => void
 }

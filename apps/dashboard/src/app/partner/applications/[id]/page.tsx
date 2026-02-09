@@ -635,19 +635,8 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
         open={decisionModalOpen}
         onOpenChange={setDecisionModalOpen}
         application={{
-          ...application,
-          founders: application.founders.map(f => ({
-            ...f,
-            id: f.email,
-            email: f.email,
-            name: f.name,
-            role: f.role || 'Founder',
-            isLead: f.isLead,
-            linkedin: f.linkedin || null,
-            yearsExperience: f.yearsExperience || 0,
-            hasStartedBefore: f.hasStartedBefore,
-            previousStartupOutcome: null,
-          })),
+          companyName: application.companyName,
+          companyOneLiner: application.companyOneLiner,
         }}
         decision={decisionType}
         onConfirm={handleConfirmDecision}
