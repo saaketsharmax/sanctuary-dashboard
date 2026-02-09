@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     if (!supabase) {
       return NextResponse.json({
         success: true,
-        ...getMockMetricsData(),
+        ...getEmptyMetricsData(),
         isMock: true,
       })
     }
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     if (authError || !user) {
       return NextResponse.json({
         success: true,
-        ...getMockMetricsData(),
+        ...getEmptyMetricsData(),
         isMock: true,
       })
     }
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     if (!profile?.startup_id) {
       return NextResponse.json({
         success: true,
-        ...getMockMetricsData(),
+        ...getEmptyMetricsData(),
         isMock: true,
       })
     }
@@ -194,75 +194,17 @@ export async function GET(request: NextRequest) {
     console.error('Founder metrics API error:', error)
     return NextResponse.json({
       success: true,
-      ...getMockMetricsData(),
+      ...getEmptyMetricsData(),
       isMock: true,
     })
   }
 }
 
-function getMockMetricsData() {
+function getEmptyMetricsData() {
   return {
-    metrics: {
-      mrr: {
-        value: 8500,
-        change: 12,
-        trend: 'up',
-        history: [
-          { date: '2025-09', value: 5200 },
-          { date: '2025-10', value: 5800 },
-          { date: '2025-11', value: 6400 },
-          { date: '2025-12', value: 7200 },
-          { date: '2026-01', value: 7600 },
-          { date: '2026-02', value: 8500 },
-        ],
-      },
-      activeUsers: {
-        value: 234,
-        change: 8,
-        trend: 'up',
-        history: [
-          { date: '2025-09', value: 145 },
-          { date: '2025-10', value: 168 },
-          { date: '2025-11', value: 189 },
-          { date: '2025-12', value: 205 },
-          { date: '2026-01', value: 217 },
-          { date: '2026-02', value: 234 },
-        ],
-      },
-      retention: {
-        value: 85,
-        change: -2,
-        trend: 'down',
-        history: [
-          { date: '2025-09', value: 82 },
-          { date: '2025-10', value: 84 },
-          { date: '2025-11', value: 86 },
-          { date: '2025-12', value: 88 },
-          { date: '2026-01', value: 87 },
-          { date: '2026-02', value: 85 },
-        ],
-      },
-      nps: {
-        value: 72,
-        change: 5,
-        trend: 'up',
-        history: [
-          { date: '2025-09', value: 58 },
-          { date: '2025-10', value: 62 },
-          { date: '2025-11', value: 65 },
-          { date: '2025-12', value: 68 },
-          { date: '2026-01', value: 67 },
-          { date: '2026-02', value: 72 },
-        ],
-      },
-    },
-    benchmarks: {
-      avgMrr: 12000,
-      avgUsers: 350,
-      avgRetention: 82,
-      avgNps: 65,
-    },
-    sharedMetrics: ['mrr', 'users', 'retention', 'nps'],
-    lastUpdated: '2026-02-07T10:00:00Z',
+    metrics: {},
+    benchmarks: null,
+    sharedMetrics: [],
+    lastUpdated: null,
   }
 }

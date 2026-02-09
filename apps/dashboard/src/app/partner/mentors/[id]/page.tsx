@@ -1,12 +1,10 @@
 'use client'
 
 import { use } from 'react'
-import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { MentorProfile } from '@/components/mentors/mentor-profile'
-import { getMentorById } from '@/lib/mock-data/mentors'
+import { Card, CardContent } from '@/components/ui/card'
 
 interface MentorPageProps {
   params: Promise<{ id: string }>
@@ -14,12 +12,8 @@ interface MentorPageProps {
 
 export default function PartnerMentorDetailPage({ params }: MentorPageProps) {
   const { id } = use(params)
-  const mentor = getMentorById(id)
 
-  if (!mentor) {
-    notFound()
-  }
-
+  // No mock data - show not found state
   return (
     <div className="space-y-6">
       <Link href="/partner/mentors">
@@ -29,7 +23,20 @@ export default function PartnerMentorDetailPage({ params }: MentorPageProps) {
         </Button>
       </Link>
 
-      <MentorProfile mentor={mentor} />
+      <Card>
+        <CardContent className="py-16">
+          <div className="text-center">
+            <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Mentor Not Found</h3>
+            <p className="text-muted-foreground max-w-md mx-auto mb-4">
+              This mentor does not exist or you don&apos;t have access to view their profile.
+            </p>
+            <Link href="/partner/mentors">
+              <Button>Return to Mentors</Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

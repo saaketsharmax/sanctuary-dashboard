@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     if (!supabase) {
       return NextResponse.json({
         success: true,
-        company: getMockCompanyData(),
+        company: getEmptyCompanyData(),
         isMock: true,
       })
     }
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     if (authError || !user) {
       return NextResponse.json({
         success: true,
-        company: getMockCompanyData(),
+        company: getEmptyCompanyData(),
         isMock: true,
       })
     }
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        company: getMockCompanyData(),
+        company: getEmptyCompanyData(),
         isMock: true,
       })
     }
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
     if (startupError || !startup) {
       return NextResponse.json({
         success: true,
-        company: getMockCompanyData(),
+        company: getEmptyCompanyData(),
         isMock: true,
       })
     }
@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
     console.error('Founder company API error:', error)
     return NextResponse.json({
       success: true,
-      company: getMockCompanyData(),
+      company: getEmptyCompanyData(),
       isMock: true,
     })
   }
@@ -202,28 +202,6 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-function getMockCompanyData() {
-  return {
-    id: 'mock-startup-1',
-    name: 'TechFlow AI',
-    oneLiner: 'AI-powered workflow automation for SMBs',
-    description: 'TechFlow AI helps small and medium businesses automate their repetitive workflows using artificial intelligence. Our platform learns from user behavior and suggests optimizations.',
-    website: 'https://techflow.ai',
-    problem: 'SMBs waste 20+ hours per week on repetitive tasks that could be automated.',
-    solution: 'An AI assistant that observes workflow patterns and automatically creates automation rules.',
-    targetCustomer: 'Small and medium businesses with 10-100 employees',
-    stage: 'solution_shaping',
-    industry: 'AI/ML',
-    location: 'San Francisco, CA',
-    founded: '2025',
-    cohort: 'Winter 2026',
-    status: 'active',
-    metrics: {
-      users: 234,
-      mrr: 8500,
-      retention: 85,
-      nps: 72,
-    },
-    isMock: true,
-  }
+function getEmptyCompanyData() {
+  return null
 }

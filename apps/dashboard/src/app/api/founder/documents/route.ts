@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     if (!supabase) {
       return NextResponse.json({
         success: true,
-        documents: getMockDocuments(),
+        documents: getEmptyDocuments(),
         isMock: true,
       })
     }
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     if (authError || !user) {
       return NextResponse.json({
         success: true,
-        documents: getMockDocuments(),
+        documents: getEmptyDocuments(),
         isMock: true,
       })
     }
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     if (!profile?.startup_id) {
       return NextResponse.json({
         success: true,
-        documents: getMockDocuments(),
+        documents: getEmptyDocuments(),
         isMock: true,
       })
     }
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       console.error('Documents fetch error:', docsError)
       return NextResponse.json({
         success: true,
-        documents: getMockDocuments(),
+        documents: getEmptyDocuments(),
         isMock: true,
       })
     }
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
     console.error('Founder documents API error:', error)
     return NextResponse.json({
       success: true,
-      documents: getMockDocuments(),
+      documents: getEmptyDocuments(),
       isMock: true,
     })
   }
@@ -296,39 +296,6 @@ function formatFileSize(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
-function getMockDocuments() {
-  return [
-    {
-      id: '1',
-      name: 'Pitch Deck v3.pdf',
-      type: 'pitch_deck',
-      size: '2.4 MB',
-      uploadedAt: '2026-01-28T10:00:00Z',
-      shared: true,
-    },
-    {
-      id: '2',
-      name: 'Financial Model.xlsx',
-      type: 'financials',
-      size: '1.1 MB',
-      uploadedAt: '2026-01-25T14:30:00Z',
-      shared: false,
-    },
-    {
-      id: '3',
-      name: 'Product Roadmap.pdf',
-      type: 'product',
-      size: '890 KB',
-      uploadedAt: '2026-01-20T09:15:00Z',
-      shared: true,
-    },
-    {
-      id: '4',
-      name: 'Cap Table.xlsx',
-      type: 'legal',
-      size: '245 KB',
-      uploadedAt: '2026-01-15T11:00:00Z',
-      shared: false,
-    },
-  ]
+function getEmptyDocuments() {
+  return []
 }

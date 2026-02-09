@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     if (!supabase) {
       return NextResponse.json({
         success: true,
-        requests: getMockRequests(),
+        requests: getEmptyRequests(),
         isMock: true,
       })
     }
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     if (authError || !user) {
       return NextResponse.json({
         success: true,
-        requests: getMockRequests(),
+        requests: getEmptyRequests(),
         isMock: true,
       })
     }
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     if (!profile?.startup_id) {
       return NextResponse.json({
         success: true,
-        requests: getMockRequests(),
+        requests: getEmptyRequests(),
         isMock: true,
       })
     }
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       console.error('Requests fetch error:', requestsError)
       return NextResponse.json({
         success: true,
-        requests: getMockRequests(),
+        requests: getEmptyRequests(),
         isMock: true,
       })
     }
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
     console.error('Founder requests API error:', error)
     return NextResponse.json({
       success: true,
-      requests: getMockRequests(),
+      requests: getEmptyRequests(),
       isMock: true,
     })
   }
@@ -253,59 +253,6 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-function getMockRequests() {
-  return [
-    {
-      id: '1',
-      type: 'mentor',
-      title: 'Need help with fundraising strategy',
-      description: 'Looking for a mentor who has experience raising Series A for B2B SaaS companies.',
-      status: 'pending',
-      priority: 'high',
-      createdAt: '2026-01-30T10:00:00Z',
-      updatedAt: '2026-01-30T10:00:00Z',
-      assignedTo: null,
-      resolutionNotes: null,
-      resolvedAt: null,
-    },
-    {
-      id: '2',
-      type: 'intro',
-      title: 'Intro to enterprise customers',
-      description: 'Looking for intros to CTOs at companies with 100-500 employees.',
-      status: 'in_progress',
-      priority: 'normal',
-      createdAt: '2026-01-28T14:00:00Z',
-      updatedAt: '2026-01-29T09:00:00Z',
-      assignedTo: 'Alex Rivera',
-      resolutionNotes: null,
-      resolvedAt: null,
-    },
-    {
-      id: '3',
-      type: 'feature',
-      title: 'Request: Weekly progress email summary',
-      description: 'Would be helpful to get a weekly email summarizing progress and upcoming milestones.',
-      status: 'completed',
-      priority: 'low',
-      createdAt: '2026-01-20T11:00:00Z',
-      updatedAt: '2026-01-25T16:00:00Z',
-      assignedTo: 'Product Team',
-      resolutionNotes: 'Added to roadmap for Q2.',
-      resolvedAt: '2026-01-25T16:00:00Z',
-    },
-    {
-      id: '4',
-      type: 'feedback',
-      title: 'Feedback on pitch deck',
-      description: 'Would like partner feedback on our latest pitch deck before investor meetings.',
-      status: 'pending',
-      priority: 'high',
-      createdAt: '2026-01-29T09:30:00Z',
-      updatedAt: '2026-01-29T09:30:00Z',
-      assignedTo: null,
-      resolutionNotes: null,
-      resolvedAt: null,
-    },
-  ]
+function getEmptyRequests() {
+  return []
 }

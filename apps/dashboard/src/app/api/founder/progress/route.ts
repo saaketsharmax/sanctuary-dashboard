@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     if (!supabase) {
       return NextResponse.json({
         success: true,
-        ...getMockProgressData(),
+        ...getEmptyProgressData(),
         isMock: true,
       })
     }
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     if (authError || !user) {
       return NextResponse.json({
         success: true,
-        ...getMockProgressData(),
+        ...getEmptyProgressData(),
         isMock: true,
       })
     }
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     if (!profile?.startup_id) {
       return NextResponse.json({
         success: true,
-        ...getMockProgressData(),
+        ...getEmptyProgressData(),
         isMock: true,
       })
     }
@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
     console.error('Founder progress API error:', error)
     return NextResponse.json({
       success: true,
-      ...getMockProgressData(),
+      ...getEmptyProgressData(),
       isMock: true,
     })
   }
@@ -226,80 +226,17 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-function getMockProgressData() {
+function getEmptyProgressData() {
   return {
-    checkpoints: [
-      {
-        id: '1',
-        name: 'Problem Validation',
-        description: 'Validate the core problem with 10+ customer interviews',
-        status: 'completed',
-        dueDate: '2026-01-15',
-        completedAt: '2026-01-14',
-        notes: 'Completed 12 interviews. Key insight: users want automation, not just tracking.',
-      },
-      {
-        id: '2',
-        name: 'MVP Launch',
-        description: 'Launch minimum viable product to beta users',
-        status: 'completed',
-        dueDate: '2026-01-29',
-        completedAt: '2026-01-28',
-        notes: 'Launched to 50 beta users. Initial feedback very positive.',
-      },
-      {
-        id: '3',
-        name: 'First Revenue',
-        description: 'Convert beta users to paying customers',
-        status: 'in_progress',
-        dueDate: '2026-02-15',
-        completedAt: null,
-        notes: null,
-      },
-      {
-        id: '4',
-        name: 'Product-Market Fit Survey',
-        description: 'Run Sean Ellis survey with existing users',
-        status: 'pending',
-        dueDate: '2026-02-28',
-        completedAt: null,
-        notes: null,
-      },
-      {
-        id: '5',
-        name: 'Series Seed Preparation',
-        description: 'Prepare materials for seed fundraise',
-        status: 'pending',
-        dueDate: '2026-03-15',
-        completedAt: null,
-        notes: null,
-      },
-    ],
-    feedback: [
-      {
-        id: '1',
-        message: 'Great progress on customer interviews. The insight about automation vs tracking is valuable.',
-        type: 'praise',
-        date: '2026-01-28T10:00:00Z',
-        from: 'Alex Rivera',
-        checkpointId: '1',
-      },
-      {
-        id: '2',
-        message: 'Consider focusing on a specific vertical for your first paying customers.',
-        type: 'general',
-        date: '2026-01-25T14:30:00Z',
-        from: 'Sarah Chen',
-        checkpointId: null,
-      },
-    ],
+    checkpoints: [],
+    feedback: [],
     progress: {
-      completed: 2,
-      total: 5,
-      percent: 40,
+      completed: 0,
+      total: 0,
+      percent: 0,
     },
-    stage: 'solution_shaping',
-    programmeStart: '2026-01-01',
-    programmeEnd: '2026-05-31',
+    stage: null,
+    programmeStart: null,
+    programmeEnd: null,
   }
 }

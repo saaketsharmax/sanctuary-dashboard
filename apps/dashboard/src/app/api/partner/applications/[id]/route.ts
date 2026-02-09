@@ -18,22 +18,20 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   try {
     if (!isSupabaseConfigured()) {
-      return NextResponse.json({
-        success: true,
-        application: getMockApplication(id),
-        isMock: true,
-      })
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 503 }
+      )
     }
 
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({
-        success: true,
-        application: getMockApplication(id),
-        isMock: true,
-      })
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
     }
 
     // Check if user is a partner
@@ -186,46 +184,3 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-function getMockApplication(id: string) {
-  return {
-    id,
-    status: 'submitted',
-    companyName: 'Demo Startup',
-    companyOneLiner: 'A demo startup for testing',
-    companyWebsite: 'https://demo.com',
-    companyDescription: 'This is a demo startup for testing the platform.',
-    problemDescription: 'Demo problem that needs solving.',
-    targetCustomer: 'Demo target customers.',
-    solutionDescription: 'Demo solution description.',
-    stage: 'mvp',
-    userCount: 50,
-    mrr: 2000,
-    biggestChallenge: 'Demo challenge.',
-    whySanctuary: 'Demo reason for Sanctuary.',
-    whatTheyWant: 'Demo expectations.',
-    founders: [
-      {
-        name: 'Demo Founder',
-        email: 'demo@example.com',
-        role: 'CEO',
-        isLead: true,
-        linkedin: 'https://linkedin.com/in/demo',
-        yearsExperience: 5,
-        hasStartedBefore: true,
-      }
-    ],
-    submittedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    interviewTranscript: [],
-    interviewCompletedAt: null,
-    aiAssessment: null,
-    aiScore: null,
-    assessmentCompletedAt: null,
-    proposedProgramme: null,
-    researchData: null,
-    researchCompletedAt: null,
-    memoData: null,
-    memoGeneratedAt: null,
-    applicationMetadata: null,
-  }
-}
