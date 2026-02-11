@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuthStore } from '@/lib/stores/auth-store'
 import { createClient } from '@/lib/supabase/client'
 import {
   LayoutDashboard,
@@ -39,8 +40,14 @@ interface UserProfile {
 export default function PartnerLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
+  const { setRole, clearRole } = useAuthStore()
   const [user, setUser] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Set role when entering partner section
+  useEffect(() => {
+    setRole('partner')
+  }, [setRole])
 
   // Fetch user on mount
   useEffect(() => {
@@ -139,9 +146,11 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
     try {
       const supabase = createClient()
       await supabase.auth.signOut()
+      clearRole()
       router.push('/auth/login')
     } catch (error) {
       console.error('Logout error:', error)
+      clearRole()
       router.push('/')
     }
   }

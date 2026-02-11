@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Get user session
-  const { user, supabaseResponse } = await updateSession(request)
+  const { user, userType, supabaseResponse } = await updateSession(request)
 
   // Check if route is public
   const isPublicRoute = publicRoutes.some(route =>
@@ -56,14 +56,39 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // If authenticated but on login/signup page, redirect to role-select or dashboard
+  // If authenticated but on login/signup page, redirect to dashboard or role-select
   if (user && (pathname === '/auth/login' || pathname === '/auth/signup')) {
+    if (userType === 'founder') return NextResponse.redirect(new URL('/founder/dashboard', request.url))
+    if (userType === 'partner') return NextResponse.redirect(new URL('/partner/dashboard', request.url))
     return NextResponse.redirect(new URL('/auth/role-select', request.url))
   }
 
-  // If authenticated user visits root, redirect based on context
+  // If authenticated user visits root, redirect based on role
   if (user && pathname === '/') {
+    if (userType === 'founder') return NextResponse.redirect(new URL('/founder/dashboard', request.url))
+    if (userType === 'partner') return NextResponse.redirect(new URL('/partner/dashboard', request.url))
     return NextResponse.redirect(new URL('/auth/role-select', request.url))
+  }
+
+  // Role-based route guards
+  if (user) {
+    const isFounderRoute = pathname.startsWith('/founder')
+    const isPartnerRoute = pathname.startsWith('/partner')
+
+    // User has no role but is trying to access role-specific routes
+    if (!userType && (isFounderRoute || isPartnerRoute)) {
+      return NextResponse.redirect(new URL('/auth/role-select', request.url))
+    }
+
+    // Founder trying to access partner routes
+    if (userType === 'founder' && isPartnerRoute) {
+      return NextResponse.redirect(new URL('/founder/dashboard', request.url))
+    }
+
+    // Partner trying to access founder routes
+    if (userType === 'partner' && isFounderRoute) {
+      return NextResponse.redirect(new URL('/partner/dashboard', request.url))
+    }
   }
 
   return supabaseResponse

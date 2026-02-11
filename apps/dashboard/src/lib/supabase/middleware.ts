@@ -15,7 +15,7 @@ export async function updateSession(request: NextRequest) {
 
   // If Supabase is not configured, return null user (demo mode)
   if (!isSupabaseConfigured()) {
-    return { user: null, supabaseResponse }
+    return { user: null, userType: null, supabaseResponse }
   }
 
   let response = supabaseResponse
@@ -60,11 +60,22 @@ export async function updateSession(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    return { user, supabaseResponse: response }
+    // Look up user_type from the users table
+    let userType: string | null = null
+    if (user) {
+      const { data: profile } = await supabase
+        .from('users')
+        .select('user_type')
+        .eq('id', user.id)
+        .single()
+      userType = profile?.user_type ?? null
+    }
+
+    return { user, userType, supabaseResponse: response }
   } catch (error) {
     // If there's any error, return null user and continue
     // This prevents the middleware from crashing the entire app
     console.warn('Middleware auth error:', error instanceof Error ? error.message : 'Unknown error')
-    return { user: null, supabaseResponse }
+    return { user: null, userType: null, supabaseResponse }
   }
 }

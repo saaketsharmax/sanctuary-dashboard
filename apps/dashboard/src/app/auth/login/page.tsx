@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { signIn, signInWithOAuth } from '@/lib/supabase/auth'
+import { signIn, signInWithOAuth, getUserProfile } from '@/lib/supabase/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -47,8 +47,15 @@ export default function LoginPage() {
       return
     }
 
-    // Check if user has selected a role
-    router.push('/auth/role-select')
+    // Check if user already has a role — skip role-select if so
+    const { data: profile } = await getUserProfile()
+    if (profile?.user_type === 'founder') {
+      router.push('/founder/dashboard')
+    } else if (profile?.user_type === 'partner') {
+      router.push('/partner/dashboard')
+    } else {
+      router.push('/auth/role-select')
+    }
   }
 
   const handleOAuthSignIn = async (provider: 'google' | 'github') => {
