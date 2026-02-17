@@ -99,6 +99,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       memoGeneratedAt: application.memo_generated_at,
       // Metadata
       applicationMetadata: application.application_metadata,
+      // Due Diligence
+      ddStatus: application.dd_status || 'not_started',
+      ddReportId: application.dd_report_id,
+      ddStartedAt: application.dd_started_at,
+      ddCompletedAt: application.dd_completed_at,
     }
 
     return NextResponse.json({

@@ -3,7 +3,7 @@
 import { use, useState, useEffect } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, FileText, Loader2, RefreshCw, Brain, Search } from 'lucide-react'
+import { ArrowLeft, FileText, Loader2, RefreshCw, Brain, Search, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -216,6 +216,7 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
   const hasAssessment = application.aiAssessment !== null
   const hasResearch = application.researchData !== null
   const hasMemo = application.memoData !== null
+  const hasDDCompleted = (application as any).ddStatus === 'completed'
 
   return (
     <div className="space-y-6">
@@ -291,6 +292,12 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
           <TabsTrigger value="memo">
             <FileText className="h-4 w-4 mr-1" />
             Memo {hasMemo && <Badge variant="secondary" className="ml-1">✓</Badge>}
+          </TabsTrigger>
+          <TabsTrigger value="dd" asChild>
+            <Link href={`/partner/applications/${id}/dd`} className="inline-flex items-center">
+              <Shield className="h-4 w-4 mr-1" />
+              Due Diligence {hasDDCompleted && <Badge variant="secondary" className="ml-1">✓</Badge>}
+            </Link>
           </TabsTrigger>
         </TabsList>
 
