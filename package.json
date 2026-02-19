@@ -19,6 +19,7 @@
     "clean": "turbo clean && rm -rf node_modules"
   },
   "devDependencies": {
+    "supabase": "^2.76.9",
     "turbo": "^2.5.0"
   },
   "packageManager": "npm@10.8.0",

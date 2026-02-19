@@ -1,125 +1,276 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Building2,
   FileText,
-  TrendingUp,
   ArrowRight,
-  Sparkles
+  CheckCircle2,
+  Clock,
+  Search,
+  Scale,
+  Loader2,
 } from 'lucide-react'
 import Link from 'next/link'
 
+interface Application {
+  id: string
+  company_name: string
+  status: string
+  submitted_at: string | null
+  interview_completed_at: string | null
+  assessment_completed_at: string | null
+  review_decision: string | null
+  reviewed_at: string | null
+  created_at: string
+}
+
+const STATUS_STEPS = [
+  { key: 'applied', label: 'Applied', icon: FileText },
+  { key: 'interviewed', label: 'Interviewed', icon: CheckCircle2 },
+  { key: 'under_review', label: 'Under Review', icon: Search },
+  { key: 'decision', label: 'Decision', icon: Scale },
+]
+
+function getStepIndex(app: Application): number {
+  if (app.review_decision || app.status === 'approved' || app.status === 'rejected') return 3
+  if (app.assessment_completed_at || app.status === 'assessment_generated') return 2
+  if (app.interview_completed_at || app.status === 'interview_completed') return 1
+  return 0
+}
+
+function getStatusBadge(status: string) {
+  switch (status) {
+    case 'approved':
+      return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Accepted</Badge>
+    case 'rejected':
+      return <Badge variant="secondary">Not Selected</Badge>
+    case 'submitted':
+      return <Badge variant="outline">Submitted</Badge>
+    case 'interview_completed':
+      return <Badge variant="outline">Interview Complete</Badge>
+    case 'assessment_generated':
+      return <Badge variant="outline">Under Review</Badge>
+    default:
+      return <Badge variant="outline">{status}</Badge>
+  }
+}
+
 export default function FounderDashboard() {
+  const [applications, setApplications] = useState<Application[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchApplications() {
+      try {
+        const res = await fetch('/api/applications')
+        if (res.ok) {
+          const data = await res.json()
+          setApplications(data.applications || [])
+        }
+      } catch (err) {
+        console.error('Failed to fetch applications:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchApplications()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
+        <p className="text-muted-foreground">Loading your dashboard...</p>
+      </div>
+    )
+  }
+
+  // No applications — show apply CTA
+  if (applications.length === 0) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold">Welcome to Sanctuary</h1>
+          <p className="text-muted-foreground mt-1">Your startup journey starts here</p>
+        </div>
+
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader>
+            <CardTitle>Ready to Apply?</CardTitle>
+            <CardDescription>
+              Tell us about your startup and go through our AI-powered interview process
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/founder/apply">
+              <Button>
+                Apply Now
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <Link href="/founder/company">
+            <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+              <CardContent className="pt-6 text-center">
+                <Building2 className="h-8 w-8 mx-auto text-primary mb-2" />
+                <p className="font-medium">Company Profile</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/founder/documents">
+            <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+              <CardContent className="pt-6 text-center">
+                <FileText className="h-8 w-8 mx-auto text-primary mb-2" />
+                <p className="font-medium">Documents</p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Has applications — show status for most recent
+  const app = applications[0]
+  const stepIndex = getStepIndex(app)
+  const isApproved = app.status === 'approved' || app.review_decision === 'approve'
+  const isRejected = app.status === 'rejected' || app.review_decision === 'reject'
+  const hasDecision = isApproved || isRejected
+
   return (
     <div className="space-y-8">
-      {/* Welcome Header */}
       <div>
-        <h1 className="text-3xl font-bold">Welcome to Sanctuary</h1>
-        <p className="text-muted-foreground mt-1">
-          Your startup journey starts here
-        </p>
+        <h1 className="text-3xl font-bold">Your Dashboard</h1>
+        <p className="text-muted-foreground mt-1">Track your application progress</p>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Company</span>
-            </div>
-            <p className="text-lg font-semibold mt-1">Not set up</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Stage</span>
-            </div>
-            <p className="text-lg font-semibold mt-1">-</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Documents</span>
-            </div>
-            <p className="text-lg font-semibold mt-1">0</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Progress</span>
-            </div>
-            <p className="text-lg font-semibold mt-1">0%</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Getting Started */}
+      {/* Application Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Get Started</CardTitle>
-          <CardDescription>Complete these steps to set up your profile</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Link href="/founder/apply">
-            <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-sm font-semibold text-primary">1</span>
-                </div>
-                <div>
-                  <p className="font-medium">Submit Application</p>
-                  <p className="text-sm text-muted-foreground">Tell us about your startup</p>
-                </div>
-              </div>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>{app.company_name}</CardTitle>
+              <CardDescription>
+                Applied{' '}
+                {new Date(app.submitted_at || app.created_at).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </CardDescription>
             </div>
-          </Link>
-
-          <div className="flex items-center justify-between p-4 rounded-lg border opacity-50">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-sm font-semibold text-muted-foreground">2</span>
-              </div>
-              <div>
-                <p className="font-medium">Complete Interview</p>
-                <p className="text-sm text-muted-foreground">AI-powered interview process</p>
-              </div>
-            </div>
+            {getStatusBadge(app.status)}
           </div>
+        </CardHeader>
+        <CardContent>
+          {/* 4-Step Progress Indicator */}
+          <div className="flex items-center justify-between">
+            {STATUS_STEPS.map((step, i) => {
+              const Icon = step.icon
+              const isCompleted = i <= stepIndex
+              const isCurrent = i === stepIndex
 
-          <div className="flex items-center justify-between p-4 rounded-lg border opacity-50">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-sm font-semibold text-muted-foreground">3</span>
-              </div>
-              <div>
-                <p className="font-medium">Get Accepted</p>
-                <p className="text-sm text-muted-foreground">Join the Sanctuary program</p>
-              </div>
-            </div>
+              return (
+                <div key={step.key} className="flex flex-col items-center flex-1">
+                  <div className="flex items-center w-full">
+                    {i > 0 && (
+                      <div
+                        className={`h-0.5 flex-1 ${i <= stepIndex ? 'bg-primary' : 'bg-muted'}`}
+                      />
+                    )}
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        isCompleted
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground'
+                      } ${isCurrent ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    {i < STATUS_STEPS.length - 1 && (
+                      <div
+                        className={`h-0.5 flex-1 ${i < stepIndex ? 'bg-primary' : 'bg-muted'}`}
+                      />
+                    )}
+                  </div>
+                  <span
+                    className={`text-xs mt-2 ${
+                      isCompleted ? 'text-primary font-medium' : 'text-muted-foreground'
+                    }`}
+                  >
+                    {step.label}
+                  </span>
+                </div>
+              )
+            })}
           </div>
         </CardContent>
       </Card>
 
+      {/* Decision Card */}
+      {hasDecision && (
+        <Card
+          className={
+            isApproved
+              ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
+              : 'border-muted'
+          }
+        >
+          <CardContent className="pt-6">
+            {isApproved ? (
+              <div className="text-center">
+                <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-3" />
+                <h3 className="text-xl font-bold mb-1">Congratulations!</h3>
+                <p className="text-muted-foreground">
+                  Your application for {app.company_name} has been accepted into the Sanctuary
+                  program.
+                </p>
+              </div>
+            ) : (
+              <div className="text-center">
+                <h3 className="text-xl font-bold mb-1">Thank You for Applying</h3>
+                <p className="text-muted-foreground">
+                  After careful review, we&apos;re unable to offer a place in this cohort. We
+                  encourage you to reapply in the future.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Waiting Card (no decision yet) */}
+      {!hasDecision && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5 text-primary flex-shrink-0" />
+              <div>
+                <p className="font-medium">Application Under Review</p>
+                <p className="text-sm text-muted-foreground">
+                  Our team is reviewing your application. You&apos;ll see updates here as your
+                  application progresses.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Quick Actions */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <Link href="/founder/apply">
+      <div className="grid md:grid-cols-2 gap-4">
+        <Link href="/founder/documents">
           <Card className="hover:border-primary/50 transition-colors cursor-pointer">
             <CardContent className="pt-6 text-center">
               <FileText className="h-8 w-8 mx-auto text-primary mb-2" />
-              <p className="font-medium">Apply Now</p>
+              <p className="font-medium">Documents</p>
             </CardContent>
           </Card>
         </Link>
@@ -128,14 +279,6 @@ export default function FounderDashboard() {
             <CardContent className="pt-6 text-center">
               <Building2 className="h-8 w-8 mx-auto text-primary mb-2" />
               <p className="font-medium">Company Profile</p>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/founder/documents">
-          <Card className="hover:border-primary/50 transition-colors cursor-pointer">
-            <CardContent className="pt-6 text-center">
-              <FileText className="h-8 w-8 mx-auto text-primary mb-2" />
-              <p className="font-medium">Documents</p>
             </CardContent>
           </Card>
         </Link>

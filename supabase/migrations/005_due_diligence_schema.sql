@@ -5,7 +5,7 @@
 
 -- DD CLAIMS TABLE
 CREATE TABLE IF NOT EXISTS public.dd_claims (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   application_id UUID NOT NULL REFERENCES public.applications(id) ON DELETE CASCADE,
   category TEXT NOT NULL CHECK (category IN (
     'revenue_metrics', 'user_customer', 'team_background', 'market_size',
@@ -50,7 +50,7 @@ CREATE POLICY "System can update claims" ON public.dd_claims
 
 -- DD VERIFICATIONS TABLE
 CREATE TABLE IF NOT EXISTS public.dd_verifications (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   claim_id UUID NOT NULL REFERENCES public.dd_claims(id) ON DELETE CASCADE,
   source_type TEXT NOT NULL CHECK (source_type IN ('ai_research', 'document_analysis', 'mentor_review', 'reference_check')),
   source_name TEXT NOT NULL,
@@ -81,7 +81,7 @@ CREATE POLICY "System can insert verifications" ON public.dd_verifications
 
 -- DD REPORTS TABLE
 CREATE TABLE IF NOT EXISTS public.dd_reports (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   application_id UUID NOT NULL REFERENCES public.applications(id) ON DELETE CASCADE,
   report_data JSONB NOT NULL DEFAULT '{}'::jsonb,
   overall_dd_score INTEGER NOT NULL DEFAULT 0,
@@ -121,6 +121,15 @@ ADD COLUMN IF NOT EXISTS dd_completed_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_applications_dd_status ON public.applications(dd_status);
 
+-- ENSURE update_updated_at() FUNCTION EXISTS
+CREATE OR REPLACE FUNCTION public.update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- UPDATE TRIGGERS
 DROP TRIGGER IF EXISTS update_dd_claims_updated_at ON public.dd_claims;
 CREATE TRIGGER update_dd_claims_updated_at BEFORE UPDATE ON public.dd_claims
@@ -130,12 +139,17 @@ DROP TRIGGER IF EXISTS update_dd_reports_updated_at ON public.dd_reports;
 CREATE TRIGGER update_dd_reports_updated_at BEFORE UPDATE ON public.dd_reports
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
--- ADD DD AGENT TYPES TO AGENT_RUNS CHECK CONSTRAINT
--- We need to drop and recreate the check since ALTER CHECK isn't supported
-ALTER TABLE public.agent_runs DROP CONSTRAINT IF EXISTS agent_runs_agent_type_check;
-ALTER TABLE public.agent_runs ADD CONSTRAINT agent_runs_agent_type_check
-  CHECK (agent_type IN (
-    'interview', 'assessment', 'programme', 'matching', 'research',
-    'calibration', 'memo_generation',
-    'dd_claim_extraction', 'dd_claim_verification', 'dd_document_verification', 'dd_report_generation'
-  ));
+-- ADD DD AGENT TYPES TO AGENT_RUNS CHECK CONSTRAINT (only if table exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'agent_runs') THEN
+    ALTER TABLE public.agent_runs DROP CONSTRAINT IF EXISTS agent_runs_agent_type_check;
+    ALTER TABLE public.agent_runs ADD CONSTRAINT agent_runs_agent_type_check
+      CHECK (agent_type IN (
+        'interview', 'assessment', 'programme', 'matching', 'research',
+        'calibration', 'memo_generation',
+        'dd_claim_extraction', 'dd_claim_verification', 'dd_document_verification', 'dd_report_generation'
+      ));
+  END IF;
+END
+$$;

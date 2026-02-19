@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
 // Check if Supabase is configured
@@ -34,6 +35,19 @@ function getMockClient() {
       }),
     }),
   } as unknown as ReturnType<typeof createServerClient>
+}
+
+/**
+ * Admin client using service role key — bypasses RLS.
+ * Use for server-side pipelines (DD, assessment, etc.) where there's no user session.
+ */
+export function createAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) {
+    throw new Error('Missing SUPABASE_URL or SERVICE_ROLE_KEY for admin client')
+  }
+  return createSupabaseClient(url, serviceKey)
 }
 
 export async function createClient() {

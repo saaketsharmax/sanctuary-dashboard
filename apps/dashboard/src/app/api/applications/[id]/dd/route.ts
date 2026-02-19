@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createAdminClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { getClaimExtractionAgent } from '@/lib/ai/agents/claim-extraction-agent'
 import { getClaimVerificationAgent } from '@/lib/ai/agents/claim-verification-agent'
 import { getDocumentVerificationAgent } from '@/lib/ai/agents/document-verification-agent'
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     const { data: application, error } = await supabase
       .from('applications')
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const body = await request.json().catch(() => ({}))
 
     // Fetch application

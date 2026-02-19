@@ -192,10 +192,10 @@ export default function InterviewCompletePage() {
           variant="outline"
           onClick={() => {
             resetInterview()
-            router.push('/')
+            router.push('/founder/dashboard')
           }}
         >
-          Return to Homepage
+          View Application Status
           <ArrowRight className="h-4 w-4 ml-2" />
         </Button>
 

@@ -166,6 +166,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       .from('applications')
       .update({
         status: newStatus,
+        review_decision: action,
         reviewed_by: user.id,
         reviewed_at: new Date().toISOString(),
         review_notes: notes || null,

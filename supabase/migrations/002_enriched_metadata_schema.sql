@@ -31,7 +31,7 @@ COMMENT ON COLUMN public.applications.review_metadata IS 'Partner review data: a
 -- ═══════════════════════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS public.interview_signals (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   application_id UUID NOT NULL REFERENCES public.applications(id) ON DELETE CASCADE,
   interview_id TEXT NOT NULL,
 
@@ -102,7 +102,7 @@ CREATE POLICY "System can insert signals" ON public.interview_signals
 -- ═══════════════════════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS public.assessment_feedback (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   application_id UUID NOT NULL REFERENCES public.applications(id) ON DELETE CASCADE,
   partner_id UUID NOT NULL REFERENCES public.users(id),
 
@@ -168,7 +168,7 @@ CREATE POLICY "Partners can insert own feedback" ON public.assessment_feedback
 -- ═══════════════════════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS public.startup_outcomes (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   startup_id UUID NOT NULL REFERENCES public.startups(id) ON DELETE CASCADE,
   application_id UUID REFERENCES public.applications(id),
 
@@ -277,7 +277,7 @@ CREATE POLICY "Partners can manage outcomes" ON public.startup_outcomes
 -- ═══════════════════════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS public.signal_weights (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   signal_type TEXT NOT NULL,
   dimension TEXT NOT NULL CHECK (dimension IN ('founder', 'problem', 'user_value', 'execution')),
@@ -345,11 +345,13 @@ CREATE POLICY "Only admins can modify weights" ON public.signal_weights
 -- ═══════════════════════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS public.agent_runs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   -- What agent ran
   agent_type TEXT NOT NULL CHECK (agent_type IN (
-    'interview', 'assessment', 'programme', 'matching', 'research', 'calibration'
+    'interview', 'assessment', 'programme', 'matching', 'research', 'calibration',
+    'memo_generation',
+    'dd_claim_extraction', 'dd_claim_verification', 'dd_document_verification', 'dd_report_generation'
   )),
   agent_version TEXT NOT NULL,
 

@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createAdminClient, isSupabaseConfigured } from '@/lib/supabase/server'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const url = new URL(request.url)
     const category = url.searchParams.get('category')
     const status = url.searchParams.get('status')

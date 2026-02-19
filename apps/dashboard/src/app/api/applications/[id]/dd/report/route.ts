@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createAdminClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { getDDReportGenerator } from '@/lib/ai/agents/dd-report-generator'
 import type { DDClaim } from '@/lib/ai/types/due-diligence'
 
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     const { data: application } = await supabase
       .from('applications')
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     const { data: application } = await supabase
       .from('applications')

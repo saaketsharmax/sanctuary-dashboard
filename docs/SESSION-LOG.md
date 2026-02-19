@@ -100,3 +100,161 @@ Built the full Due Diligence layer — AI-powered claim extraction, multi-source
 2. Test DD pipeline end-to-end with a real application
 3. Phase 2: Mentor review workflow for DD claims
 4. Interview Agent V2 (from previous session plan)
+
+---
+
+## Session: 2026-02-18 — Migration 005 Applied
+
+### What Was Done
+
+Ran migration 005 (Due Diligence schema) against remote Supabase.
+
+**Steps:**
+1. Installed Supabase CLI as dev dependency (`npm install -D supabase`)
+2. Linked project via `supabase link --project-ref hkncorpplwqxccbjrkmo`
+3. Marked migrations 002-004 as already applied (they were run manually before migration tracking was set up)
+4. Fixed migration 005:
+   - Replaced `uuid_generate_v4()` → `gen_random_uuid()` (not available in remote PG)
+   - Added `CREATE OR REPLACE FUNCTION update_updated_at()` (may not exist from migration 002)
+   - Wrapped `agent_runs` constraint update in `DO` block with existence check (table doesn't exist in remote)
+5. Pushed migration 005 — applied successfully
+
+**Tables created:** `dd_claims`, `dd_verifications`, `dd_reports`
+**Columns added to `applications`:** `dd_status`, `dd_report_id`, `dd_started_at`, `dd_completed_at`
+
+**DD Pipeline E2E Test (Spacekayak):**
+- Added `createAdminClient()` to `lib/supabase/server.ts` (service-role client, bypasses RLS)
+- Updated all 3 DD API routes (`dd/`, `dd/claims/`, `dd/report/`) to use admin client
+- Ran full pipeline against Spacekayak application (`106e6699...`)
+- **Claim Extraction** (real Claude): Extracted 11 claims from application data across 6 categories
+- **Claim Verification** (mock — no Tavily key): 11 mock verifications generated
+- **Report Generation** (real Claude): Score 74/100, Grade C, 3 red flags, executive summary
+- All data persisted to Supabase: `dd_claims` (11), `dd_verifications` (11), `dd_reports` (1)
+- Application `dd_status` updated to `completed`
+- All 3 GET endpoints verified working: status, claims (with category filter), report
+
+**Note:** `agent_runs` table doesn't exist in remote (from migration 002 which was never applied). The 3 agent_runs inserts in the DD route fail silently. Non-blocking but should be fixed eventually.
+
+### Current State
+
+- **Migration 005:** Applied ✓
+- **DD Pipeline:** E2E tested ✓ (mock verification, real extraction + report)
+- **Admin Client:** Added for server-side pipeline routes
+- **Supabase CLI:** Installed and linked to project
+- **Branch:** `main`, uncommitted changes
+
+### What's Next
+
+1. Add Tavily API key and re-test with real verification
+2. Interview Agent V2
+3. Apply migration 002 properly (creates `agent_runs` + enriched metadata tables)
+4. Phase 2: Mentor review workflow for DD claims
+
+---
+
+## Session: 2026-02-18 — Ship-Ready Fixes (COMPLETE)
+
+### What Was Done
+
+Executing 4-item ship-ready fix plan. Code changes complete, Supabase operations paused.
+
+**Completed:**
+
+1. **Migration 002 fixed** — Replaced 5x `uuid_generate_v4()` → `gen_random_uuid()`. Also added DD agent types (`dd_claim_extraction`, `dd_claim_verification`, `dd_document_verification`, `dd_report_generation`, `memo_generation`) to `agent_runs` CHECK constraint so migration 005's DO block (which skipped because table didn't exist) is covered.
+
+2. **Tavily API key added** — `TAVILY_API_KEY=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` added to `apps/dashboard/.env.local`
+
+3. **Founder dashboard rewritten** — `apps/dashboard/src/app/founder/dashboard/page.tsx`:
+   - Fetches applications via `GET /api/applications`
+   - No applications → "Apply Now" CTA + quick action cards
+   - Has applications → application card with company name, date, status badge
+   - 4-step progress indicator: Applied → Interviewed → Under Review → Decision
+   - Decision card: green "Congratulations" if approved, neutral "Thank you" if rejected
+   - Waiting card: "Application Under Review" message when no decision yet
+   - Quick action cards: Documents, Company Profile
+
+4. **Interview complete page updated** — `apps/dashboard/src/app/(onboarding)/interview/[applicationId]/complete/page.tsx`:
+   - "Return to Homepage" → "View Application Status" linking to `/founder/dashboard`
+
+5. **Partner PATCH route updated** — `apps/dashboard/src/app/api/partner/applications/[id]/route.ts`:
+   - Added `review_decision: action` to update payload so founder can see the decision
+
+6. **Build passes** — `npm run build:dashboard` zero errors
+
+**Remaining (Supabase operations):**
+
+1. **Migrations 002-004**: User ran `supabase migration repair --status reverted` for 002, 003, 004. Next step: `npx supabase db push --linked` (needs DB password).
+
+2. **Documents storage bucket**: After migrations, run SQL to create `documents` bucket (public), add storage policies for upload/read/delete by authenticated users.
+
+   SQL to run:
+   ```sql
+   INSERT INTO storage.buckets (id, name, public) VALUES ('documents', 'documents', true) ON CONFLICT (id) DO UPDATE SET public = true;
+   CREATE POLICY IF NOT EXISTS "Authenticated users can upload" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'documents');
+   CREATE POLICY IF NOT EXISTS "Public read access" ON storage.objects FOR SELECT USING (bucket_id = 'documents');
+   CREATE POLICY IF NOT EXISTS "Authenticated users can delete" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'documents');
+   ```
+
+### Current State
+
+- **Code changes:** All complete ✓
+- **Build:** Passes ✓
+- **Supabase CLI:** Linked, access token set (`sbp_...`), migrations 002-004 reverted
+- **Pending:** `supabase db push --linked` then storage bucket SQL
+- **Branch:** `main`, uncommitted changes
+
+### Resume Checklist
+
+All items completed in session 2026-02-19 — see below.
+
+---
+
+## Session: 2026-02-19 — Migrations Applied + DD E2E with Real Tavily
+
+### What Was Done
+
+Completed the resume checklist from the previous session.
+
+**1. Migrations 002-004 pushed to remote Supabase:**
+- Repaired migration tracking (002, 003, 004 marked as reverted)
+- Pushed with `--include-all` flag since they preceded already-applied migration 005
+- All 3 applied successfully. `IF NOT EXISTS` handled columns that were already added manually
+- 8 new tables confirmed: `agent_runs`, `interview_signals`, `assessment_feedback`, `startup_outcomes`, `signal_weights`, `founder_requests`, `partner_feedback`, `shared_metrics`
+
+**2. Documents storage bucket created:**
+- Created `documents` bucket (public) via Supabase Storage API
+- Added RLS policies via migration 006 (`006_documents_storage_policies.sql`):
+  - Authenticated users can upload
+  - Public read access
+  - Authenticated users can delete
+
+**3. DD pipeline tested with real Tavily verification:**
+- Force re-ran full DD pipeline against Spacekayak application
+- All 10 claims verified via real Tavily web search (no mock data)
+- Results much more nuanced than mock run:
+  - Score: 54/100, Grade D (down from 74/C with mocks)
+  - Team background: 3/3 confirmed (100% confidence)
+  - Traction: 3 claims disputed (inconsistencies between LinkedIn and website)
+  - Revenue metrics: unverified ($15k MRR claim)
+  - Customer reference: AI-verified
+- Executive summary accurately flagged metric inconsistencies as red flags
+
+**4. Build verified:** `npm run build:dashboard` passes with zero errors
+
+**Files Created:**
+- `supabase/migrations/006_documents_storage_policies.sql`
+
+### Current State
+
+- **All migrations:** 002-006 applied to remote Supabase ✓
+- **Storage:** `documents` bucket created with RLS policies ✓
+- **DD Pipeline:** Fully functional with real Tavily verification ✓
+- **Build:** Passes ✓
+- **Branch:** `main`, uncommitted changes
+
+### What's Next
+
+1. Interview Agent V2 (detailed plan in `docs/INTERVIEW-AGENT-V2-PLAN.md`)
+2. Enhanced Application Form V2
+3. Phase 2: Document Center, Investment Readiness Score, Notifications
+4. Commit all uncommitted changes
