@@ -34,6 +34,12 @@ export function createClient() {
         update: () => ({ eq: () => ({ select: () => ({ single: async () => ({ data: null, error: null }) }) }) }),
         insert: () => ({ select: () => ({ single: async () => ({ data: null, error: null }) }) }),
       }),
+      channel: () => ({
+        on: function() { return this },
+        subscribe: () => {},
+        unsubscribe: () => {},
+      }),
+      removeChannel: () => {},
     } as unknown as ReturnType<typeof createBrowserClient>
   }
 
@@ -72,6 +78,12 @@ export function createClient() {
         update: () => ({ eq: () => ({ select: () => ({ single: async () => ({ data: null, error: null }) }) }) }),
         insert: () => ({ select: () => ({ single: async () => ({ data: null, error: null }) }) }),
       }),
+      channel: () => ({
+        on: function() { return this },
+        subscribe: () => {},
+        unsubscribe: () => {},
+      }),
+      removeChannel: () => {},
     } as unknown as ReturnType<typeof createBrowserClient>
   }
 }

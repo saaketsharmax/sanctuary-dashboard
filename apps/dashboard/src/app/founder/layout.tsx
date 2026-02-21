@@ -11,6 +11,7 @@ import {
   MessageSquare,
   BarChart3,
   CheckSquare,
+  DollarSign,
   Settings,
   LogOut
 } from 'lucide-react'
@@ -24,6 +25,7 @@ const founderNavItems = [
   { href: '/founder/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/founder/company', label: 'My Company', icon: Building2 },
   { href: '/founder/documents', label: 'Documents', icon: FileText },
+  { href: '/founder/investment', label: 'Investment', icon: DollarSign },
   { href: '/founder/requests', label: 'Requests', icon: MessageSquare },
   { href: '/founder/metrics', label: 'Metrics', icon: BarChart3 },
   { href: '/founder/progress', label: 'Progress', icon: CheckSquare },

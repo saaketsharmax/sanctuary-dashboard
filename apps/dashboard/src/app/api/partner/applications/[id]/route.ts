@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createClient, createAdminClient, isSupabaseConfigured } from '@/lib/supabase/server'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -178,6 +178,24 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (updateError) {
       console.error('Update error:', updateError)
       return NextResponse.json({ error: updateError.message }, { status: 500 })
+    }
+
+    // Auto-create investment record on approval
+    if (action === 'approve') {
+      try {
+        const adminClient = createAdminClient()
+        await adminClient.from('investments').insert({
+          application_id: id,
+          cash_amount_cents: 5000000,    // $50,000
+          credits_amount_cents: 5000000, // $50,000
+          status: 'active',
+          approved_by: user.id,
+          approved_at: new Date().toISOString(),
+        })
+      } catch (investmentError) {
+        // Fire-and-forget: log but don't block approval
+        console.error('Failed to auto-create investment:', investmentError)
+      }
     }
 
     return NextResponse.json({

@@ -11,6 +11,7 @@ import {
   Users,
   GitCompare,
   FileCheck,
+  DollarSign,
   Share2,
   Settings,
   LogOut
@@ -28,6 +29,7 @@ const partnerNavItems = [
   { href: '/partner/mentors', label: 'Mentors', icon: Users },
   { href: '/partner/matches', label: 'Matches', icon: GitCompare },
   { href: '/partner/applications', label: 'Applications', icon: FileCheck },
+  { href: '/partner/investments', label: 'Investments', icon: DollarSign },
   { href: '/partner/shared-views', label: 'Shared Views', icon: Share2 },
   { href: '/partner/settings', label: 'Settings', icon: Settings },
 ]

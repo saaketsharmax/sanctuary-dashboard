@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
 import {
   Building2,
   FileText,
@@ -12,6 +13,7 @@ import {
   Clock,
   Search,
   Scale,
+  DollarSign,
   Loader2,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -59,25 +61,53 @@ function getStatusBadge(status: string) {
   }
 }
 
+interface InvestmentSummary {
+  cashRemaining: number
+  creditsRemaining: number
+  cashAmountCents: number
+  creditsAmountCents: number
+  cashUsed: number
+  creditsUsed: number
+}
+
+function formatCents(cents: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(cents / 100)
+}
+
 export default function FounderDashboard() {
   const [applications, setApplications] = useState<Application[]>([])
+  const [investment, setInvestment] = useState<InvestmentSummary | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchApplications() {
+    async function fetchData() {
       try {
-        const res = await fetch('/api/applications')
-        if (res.ok) {
-          const data = await res.json()
+        const [appRes, invRes] = await Promise.all([
+          fetch('/api/applications'),
+          fetch('/api/founder/investment'),
+        ])
+        if (appRes.ok) {
+          const data = await appRes.json()
           setApplications(data.applications || [])
         }
+        if (invRes.ok) {
+          const data = await invRes.json()
+          if (data.investment) {
+            setInvestment(data.investment)
+          }
+        }
       } catch (err) {
-        console.error('Failed to fetch applications:', err)
+        console.error('Failed to fetch data:', err)
       } finally {
         setLoading(false)
       }
     }
-    fetchApplications()
+    fetchData()
   }, [])
 
   if (loading) {
@@ -262,6 +292,48 @@ export default function FounderDashboard() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Investment Summary (approved founders only) */}
+      {isApproved && investment && (
+        <Link href="/founder/investment">
+          <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Investment
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Cash Remaining</p>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    {formatCents(investment.cashRemaining)}
+                  </p>
+                  <Progress
+                    value={investment.cashAmountCents > 0
+                      ? Math.round((investment.cashUsed / investment.cashAmountCents) * 100)
+                      : 0}
+                    className="h-1.5"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Credits Remaining</p>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {formatCents(investment.creditsRemaining)}
+                  </p>
+                  <Progress
+                    value={investment.creditsAmountCents > 0
+                      ? Math.round((investment.creditsUsed / investment.creditsAmountCents) * 100)
+                      : 0}
+                    className="h-1.5"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
       )}
 
       {/* Quick Actions */}

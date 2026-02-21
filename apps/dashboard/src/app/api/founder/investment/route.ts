@@ -17,14 +17,18 @@ export async function GET(request: NextRequest) {
     const view = request.nextUrl.searchParams.get('view') // 'cash' | 'credits' | null
 
     if (!isSupabaseConfigured()) {
-      return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
+      // No DB — return mock data so the UI is still usable
+      const mock = generateInvestmentMockData()
+      return returnViewFiltered(mock.investment, mock.transactions, view, mock.cashDashboard, true)
     }
 
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      // Not logged in — return mock data so the page isn't blank
+      const mock = generateInvestmentMockData()
+      return returnViewFiltered(mock.investment, mock.transactions, view, mock.cashDashboard, true)
     }
 
     // Find the founder's application

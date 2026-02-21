@@ -406,3 +406,50 @@ Split the single `/founder/investment` page into two dedicated pages with a shar
 - **Investment page split:** Fully built ✓
 - **Build:** Passes ✓
 - **Branch:** `main`, uncommitted changes
+
+---
+
+## Session: 2026-02-21 — Realtime Investment Tracking via Supabase Realtime
+
+### What Was Done
+
+Added live updates to all 4 investment pages using Supabase Realtime (Postgres Changes). When any `investment_transactions` row is inserted or updated, connected pages refetch data and show toast notifications.
+
+**Files created (2):**
+
+1. `supabase/migrations/008_realtime_investment_transactions.sql` — Adds `investment_transactions` to `supabase_realtime` publication
+2. `apps/dashboard/src/hooks/use-investment-realtime.ts` — Custom hook managing Supabase channel subscription lifecycle with 300ms debounce
+
+**Files modified (5):**
+
+3. `apps/dashboard/src/lib/supabase/client.ts` — Added `channel()` and `removeChannel()` to both mock client objects (demo mode safety)
+4. `apps/dashboard/src/app/founder/investment/cash/page.tsx` — Wired `useInvestmentRealtime` + toast for approve/deny events
+5. `apps/dashboard/src/app/founder/investment/credits/page.tsx` — Same pattern as cash page
+6. `apps/dashboard/src/app/partner/investments/page.tsx` — Wired hook (no investmentId filter) + toast for new requests and cancellations
+7. `apps/dashboard/src/app/partner/investments/[id]/page.tsx` — Same as portfolio but scoped to route param `id`
+
+**Architecture decisions:**
+
+- Custom hook pattern (not Zustand) — investment data is page-scoped, not global
+- Refetch on event (not optimistic updates) — balances computed server-side from `SUM(approved)`, always correct
+- `useRef` for callbacks avoids re-subscribing on every render
+- 300ms debounce coalesces batch approvals into a single refetch
+- Guards: no-op when `isMock === true` or `isSupabaseConfigured()` returns false
+
+**Event flow:**
+
+| Action | Toast recipient | Message |
+|--------|----------------|---------|
+| Founder submits request | Partner | "New request: [title] ($X)" |
+| Partner approves | Founder | "Request approved: [title]" |
+| Partner denies | Founder | "Request denied: [title]" |
+| Founder cancels | Partner | "Request cancelled: [title]" |
+
+**Build:** `npm run build:dashboard` passes with zero errors.
+
+### Current State
+
+- **Realtime investment tracking:** Fully built ✓
+- **Migration 008:** Created, needs to be run in Supabase
+- **Build:** Passes ✓
+- **Branch:** `main`, uncommitted changes

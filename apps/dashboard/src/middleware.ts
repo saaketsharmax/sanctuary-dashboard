@@ -17,6 +17,7 @@ const publicRoutes = [
   '/auth/callback',
   '/apply',
   '/interview',
+  '/preview',
 ]
 
 // Routes that require authentication but no specific role

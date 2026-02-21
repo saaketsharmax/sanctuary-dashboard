@@ -20,6 +20,9 @@ import {
   type CreditService,
 } from '@/types'
 import { CreditCard, Loader2, Info } from 'lucide-react'
+import { toast } from 'sonner'
+import { Toaster } from '@/components/ui/sonner'
+import { useInvestmentRealtime } from '@/hooks/use-investment-realtime'
 
 export default function CreditsInvestmentPage() {
   const [investment, setInvestment] = useState<InvestmentWithBalances | null>(null)
@@ -46,6 +49,21 @@ export default function CreditsInvestmentPage() {
   }, [])
 
   useEffect(() => { fetchData() }, [fetchData])
+
+  useInvestmentRealtime({
+    investmentId: investment?.id ?? null,
+    isMock,
+    onUpdate: fetchData,
+    onEvent: (payload) => {
+      if (payload.eventType === 'UPDATE') {
+        const rec = payload.new as Record<string, unknown>
+        const status = rec.status as string
+        const title = rec.title as string
+        if (status === 'approved') toast.success(`Request approved: ${title}`)
+        else if (status === 'denied') toast.error(`Request denied: ${title}`)
+      }
+    },
+  })
 
   const handleSubmitRequest = async (data: {
     investmentId: string
@@ -211,6 +229,8 @@ export default function CreditsInvestmentPage() {
         prefilledService={selectedService}
         onSubmit={handleSubmitRequest}
       />
+
+      <Toaster />
     </div>
   )
 }
