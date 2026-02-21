@@ -258,3 +258,151 @@ Completed the resume checklist from the previous session.
 2. Enhanced Application Form V2
 3. Phase 2: Document Center, Investment Readiness Score, Notifications
 4. Commit all uncommitted changes
+
+---
+
+## Session: 2026-02-21 — Investment & Credits Tracker
+
+### What Was Done
+
+Built the full Investment & Credits tracking system — $50k cash + $50k service credits per approved startup, with founder request flow and partner approval/deny workflow.
+
+**Files Created (15):**
+
+1. **Migration:** `supabase/migrations/007_investment_credits_schema.sql` — `investments` + `investment_transactions` tables, RLS policies, indexes, triggers
+2. **Types:** Added to `types/index.ts` — `CREDIT_CATEGORIES`, `Investment`, `InvestmentTransaction`, `InvestmentWithBalances`, `TransactionWithReviewer`, `PortfolioInvestmentSummary`, `formatInvestmentCurrency()`, `getCreditCategoryInfo()`
+3. **Founder API:**
+   - `api/founder/investment/route.ts` — GET investment + computed balances + transaction history
+   - `api/founder/investment/transactions/route.ts` — POST create request (Zod-style validation, balance check), PATCH cancel pending
+4. **Partner API:**
+   - `api/partner/investments/route.ts` — GET portfolio-wide summary with aggregated stats
+   - `api/partner/investments/[id]/route.ts` — GET single investment detail with credit breakdown by category
+   - `api/partner/investments/transactions/route.ts` — GET pending requests across portfolio (filterable), PATCH approve/deny with balance validation
+5. **Shared Components:**
+   - `components/investment/balance-card.tsx` — Balance display with progress bar + pending indicator
+   - `components/investment/transaction-table.tsx` — Shared table with cancel/approve/deny actions
+   - `components/investment/request-dialog.tsx` — New request form with type toggle, amount, category, title, description
+   - `components/investment/credit-category-badge.tsx` — Color-coded category badge
+   - `components/investment/index.ts` — Barrel export
+6. **Pages:**
+   - `app/founder/investment/page.tsx` — Balance cards, quick actions, transaction history with tabs (All/Pending/Approved/Denied)
+   - `app/partner/investments/page.tsx` — KPI row, pending requests with inline approve/deny, portfolio table
+   - `app/partner/investments/[id]/page.tsx` — Single investment detail with credit breakdown, full transaction table
+
+**Files Modified (4):**
+
+1. `api/partner/applications/[id]/route.ts` — Auto-creates investment on approval ($50k cash + $50k credits), fire-and-forget
+2. `app/founder/layout.tsx` — Added Investment nav item (DollarSign icon)
+3. `app/partner/layout.tsx` — Added Investments nav item (DollarSign icon)
+4. `app/founder/dashboard/page.tsx` — Added investment summary card for approved founders (cash/credits remaining with progress bars)
+
+**Key Design Decisions:**
+- Balances computed as `investment_amount - SUM(approved transactions)` — no stored balance columns
+- Founders can only cancel their own pending requests
+- Partners see portfolio-wide view + can drill into individual investments
+- Auto-allocation is fire-and-forget: if investment insert fails, approval still succeeds
+
+**Build:** `npm run build:dashboard` passes with zero errors.
+
+### Current State
+
+- **Investment system:** Fully built, ready for migration + testing
+- **Migration 007:** Needs to be pushed to remote Supabase
+- **Build:** Passes ✓
+- **Branch:** `main`, uncommitted changes
+
+### What's Next
+
+1. Push migration 007 to remote Supabase (`npx supabase db push --linked`)
+2. Test: approve a test application → verify investment auto-created
+3. Test: founder submits cash/credit requests → partner approves/denies
+4. Interview Agent V2
+5. Commit all uncommitted changes
+
+---
+
+## Session: 2026-02-21 (b) — Credit Visibility System
+
+### What Was Done
+
+Enhanced the founder investment page with full credit transparency — service catalog, per-category usage breakdown, usage analytics, and enhanced request flow.
+
+**Files Modified (4):**
+
+1. `types/index.ts` — Added `CreditService` interface, `CREDIT_SERVICES` constant (12 services across 4 categories: Space, Design, GTM, Launch Media), `getServicesForCategory()` and `formatServicePrice()` helpers, extended `InvestmentWithBalances` with `creditsByCategory` and `pendingByCategory` fields
+2. `api/founder/investment/route.ts` — Added `creditsByCategory` and `pendingByCategory` computation (sums approved/pending credit_usage transactions by category), included both in response
+3. `components/investment/request-dialog.tsx` — Added new optional props (`creditsByCategory`, `pendingByCategory`, `totalCreditsCents`, `prefilledService`), category spending context shown when category selected, service suggestion buttons that pre-fill form fields, `prefilledService` support from catalog click
+4. `app/founder/investment/page.tsx` — Added `selectedService` state, inserted 3 new sections (CategoryBreakdown, CreditAnalytics, ServiceCatalog), wired data flow to new components and enhanced RequestDialog
+
+**Files Created (3):**
+
+5. `components/investment/category-breakdown.tsx` — 2x2 grid of category cards with color-coded progress bars (blue/purple/green/orange), shows amount used, % of total pool, pending amounts
+6. `components/investment/credit-analytics.tsx` — Donut chart (Recharts PieChart) for category distribution with legend, Area chart for cumulative credit consumption over time (follows existing metric-chart.tsx pattern), returns `null` when no usage data
+7. `components/investment/service-catalog.tsx` — Tabbed grid (Space | Design | GTM | Launch Media) showing service cards with name, description, price range; `onSelectService` callback opens request dialog pre-filled
+
+**Also Updated:**
+
+8. `components/investment/index.ts` — Added barrel exports for 3 new components
+
+**Page Layout (top to bottom):**
+1. Header (existing)
+2. Balance Cards — Cash + Credits (existing)
+3. **Category Breakdown** (new)
+4. **Usage Analytics** (new)
+5. Quick Actions (existing)
+6. **Service Catalog** (new)
+7. Transaction History (existing)
+
+**Build:** `npm run build:dashboard` passes with zero errors.
+
+### Current State
+
+- **Credit visibility system:** Fully built ✓
+- **Build:** Passes ✓
+- **Branch:** `main`, uncommitted changes
+
+---
+
+## 2026-02-21 — Investment Page Redesign: Cash + Credits Split
+
+### What Changed
+
+Split the single `/founder/investment` page into two dedicated pages with a shared sub-nav:
+
+- `/founder/investment` → redirects to `/founder/investment/cash`
+- `/founder/investment/cash` → Cash Investment Dashboard (new)
+- `/founder/investment/credits` → Service Credits Dashboard (existing content moved)
+
+### Files Created (7)
+
+1. `src/lib/mock-data/investment-mock.ts` — Mock data generator (9+1 cash txns, 4+1 credit txns, computed CashDashboardData)
+2. `src/components/investment/investment-sub-nav.tsx` — Tab-style sub-navigation ("Cash Investment" | "Service Credits")
+3. `src/components/investment/runway-card.tsx` — Monthly burn rate + runway months (color-coded)
+4. `src/components/investment/expense-breakdown.tsx` — Category cards with progress bars + donut chart (Recharts PieChart)
+5. `src/components/investment/monthly-spend-chart.tsx` — Area chart for monthly spend (Recharts AreaChart)
+6. `src/app/founder/investment/cash/page.tsx` — Cash Investment Dashboard page
+7. `src/app/founder/investment/credits/page.tsx` — Service Credits Dashboard page
+
+### Files Modified (5)
+
+1. `src/types/index.ts` — Added `CASH_EXPENSE_CATEGORIES`, `CashExpenseCategory`, `CashDashboardData`, `cashExpenseCategory` field on `InvestmentTransaction`
+2. `src/app/api/founder/investment/route.ts` — Added `?view=cash|credits` param, mock data fallback when no investment, `cashDashboard` computation
+3. `src/app/founder/investment/page.tsx` — Replaced with redirect to `/founder/investment/cash`
+4. `src/components/investment/transaction-table.tsx` — Added `hideCategory` and `hideType` optional props
+5. `src/components/investment/index.ts` — Added barrel exports for 4 new components
+
+### Key Design Decisions
+
+- Mock data uses `date-fns` `subMonths` relative to current date so months always look recent
+- API returns `isMock: true` flag when falling back to mock data; pages show info banner
+- Cash page hides Type and Category columns in transaction table (all cash, no credit categories)
+- Credits page hides Type column (all credits)
+- Sidebar nav unchanged — `startsWith` logic already highlights "Investment" for sub-pages
+
+**Build:** `npm run build:dashboard` passes with zero errors.
+
+### Current State
+
+- **Investment page split:** Fully built ✓
+- **Build:** Passes ✓
+- **Branch:** `main`, uncommitted changes

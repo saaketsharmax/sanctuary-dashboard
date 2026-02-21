@@ -1183,6 +1183,176 @@ export interface SignalSummary {
   strongestSignals: string[]
 }
 
+// -----------------------------------------------------
+// INVESTMENT & CREDITS CONSTANTS
+// -----------------------------------------------------
+
+export const INVESTMENT_STATUSES = ['active', 'frozen', 'closed'] as const
+
+export const TRANSACTION_TYPES = ['cash_disbursement', 'credit_usage'] as const
+
+export const TRANSACTION_STATUSES = ['pending', 'approved', 'denied', 'cancelled'] as const
+
+export const CREDIT_CATEGORIES = [
+  { value: 'space', label: 'Space', color: 'blue' },
+  { value: 'design', label: 'Design', color: 'purple' },
+  { value: 'gtm', label: 'Go-to-Market', color: 'green' },
+  { value: 'launch_media', label: 'Launch Media', color: 'orange' },
+] as const
+
+export const DEFAULT_CASH_CENTS = 5_000_000 // $50,000
+export const DEFAULT_CREDITS_CENTS = 5_000_000 // $50,000
+
+// -----------------------------------------------------
+// INVESTMENT & CREDITS TYPES
+// -----------------------------------------------------
+
+export type InvestmentStatus = (typeof INVESTMENT_STATUSES)[number]
+export type TransactionType = (typeof TRANSACTION_TYPES)[number]
+export type TransactionStatus = (typeof TRANSACTION_STATUSES)[number]
+export type CreditCategory = (typeof CREDIT_CATEGORIES)[number]['value']
+
+export interface Investment {
+  id: string
+  applicationId: string
+  startupId: string | null
+  cashAmountCents: number
+  creditsAmountCents: number
+  status: InvestmentStatus
+  approvedBy: string | null
+  approvedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface InvestmentTransaction {
+  id: string
+  investmentId: string
+  type: TransactionType
+  creditCategory: CreditCategory | null
+  cashExpenseCategory?: CashExpenseCategory | null
+  amountCents: number
+  title: string
+  description: string | null
+  status: TransactionStatus
+  requestedBy: string
+  reviewedBy: string | null
+  reviewedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface InvestmentWithBalances extends Investment {
+  cashRemaining: number
+  creditsRemaining: number
+  cashUsed: number
+  creditsUsed: number
+  pendingCash: number
+  pendingCredits: number
+  companyName: string
+  creditsByCategory?: Partial<Record<CreditCategory, number>>
+  pendingByCategory?: Partial<Record<CreditCategory, number>>
+}
+
+export interface TransactionWithReviewer extends InvestmentTransaction {
+  reviewerName: string | null
+  requesterName: string | null
+  companyName?: string
+}
+
+export interface PortfolioInvestmentSummary {
+  totalInvestments: number
+  totalCashDeployed: number
+  totalCreditsUsed: number
+  totalCashRemaining: number
+  totalCreditsRemaining: number
+  pendingRequests: number
+  investments: InvestmentWithBalances[]
+}
+
+// -----------------------------------------------------
+// INVESTMENT UTILITY FUNCTIONS
+// -----------------------------------------------------
+
+// -----------------------------------------------------
+// CASH EXPENSE CATEGORIES
+// -----------------------------------------------------
+
+export const CASH_EXPENSE_CATEGORIES = [
+  { value: 'salaries', label: 'Salaries & Contractors', color: 'blue' },
+  { value: 'software', label: 'Software & Tools', color: 'purple' },
+  { value: 'marketing', label: 'Marketing', color: 'green' },
+  { value: 'legal', label: 'Legal & Compliance', color: 'orange' },
+  { value: 'misc', label: 'Miscellaneous', color: 'gray' },
+] as const
+
+export type CashExpenseCategory = (typeof CASH_EXPENSE_CATEGORIES)[number]['value']
+
+export interface CashDashboardData {
+  monthlyBurnRate: number // cents
+  runwayMonths: number
+  expensesByCategory: Partial<Record<CashExpenseCategory, number>> // cents
+  monthlySpend: { month: string; amount: number }[] // amount in cents
+}
+
+export function formatInvestmentCurrency(cents: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(cents / 100)
+}
+
+export function getCreditCategoryInfo(category: CreditCategory) {
+  return CREDIT_CATEGORIES.find((c) => c.value === category) || CREDIT_CATEGORIES[0]
+}
+
+// -----------------------------------------------------
+// CREDIT SERVICE CATALOG
+// -----------------------------------------------------
+
+export interface CreditService {
+  id: string
+  category: CreditCategory
+  name: string
+  description: string
+  priceRange: string
+  typicalPriceCents: number
+  unit: string
+}
+
+export const CREDIT_SERVICES: CreditService[] = [
+  // Space
+  { id: 'coworking-desk', category: 'space', name: 'Coworking Desk', description: 'Dedicated desk in shared workspace with high-speed internet and amenities', priceRange: '$500/mo', typicalPriceCents: 50_000, unit: 'month' },
+  { id: 'private-office', category: 'space', name: 'Private Office', description: 'Private office for your team with meeting room access', priceRange: '$2,000/mo', typicalPriceCents: 200_000, unit: 'month' },
+  { id: 'meeting-room', category: 'space', name: 'Meeting Room', description: 'Bookable meeting room for investor pitches and team sessions', priceRange: '$100/hr', typicalPriceCents: 10_000, unit: 'hour' },
+  // Design
+  { id: 'brand-identity', category: 'design', name: 'Brand Identity', description: 'Logo, color palette, typography, and brand guidelines', priceRange: '$5,000', typicalPriceCents: 500_000, unit: 'project' },
+  { id: 'pitch-deck', category: 'design', name: 'Pitch Deck Design', description: 'Investor-ready pitch deck with custom illustrations', priceRange: '$2,500', typicalPriceCents: 250_000, unit: 'project' },
+  { id: 'ui-ux-audit', category: 'design', name: 'UI/UX Audit', description: 'Comprehensive review of your product with actionable recommendations', priceRange: '$3,000', typicalPriceCents: 300_000, unit: 'project' },
+  // GTM
+  { id: 'market-research', category: 'gtm', name: 'Market Research', description: 'Deep-dive market analysis with TAM/SAM/SOM sizing and competitor landscape', priceRange: '$4,000', typicalPriceCents: 400_000, unit: 'project' },
+  { id: 'pr-campaign', category: 'gtm', name: 'PR Campaign', description: 'Media outreach campaign with press release and journalist introductions', priceRange: '$8,000', typicalPriceCents: 800_000, unit: 'campaign' },
+  { id: 'social-media-setup', category: 'gtm', name: 'Social Media Setup', description: 'Channel setup, content calendar, and initial content creation', priceRange: '$2,000', typicalPriceCents: 200_000, unit: 'project' },
+  // Launch Media
+  { id: 'launch-video', category: 'launch_media', name: 'Launch Video', description: 'Professional product launch or explainer video (60-90 seconds)', priceRange: '$6,000', typicalPriceCents: 600_000, unit: 'video' },
+  { id: 'press-kit', category: 'launch_media', name: 'Press Kit', description: 'Media kit with company overview, founder bios, and press assets', priceRange: '$3,000', typicalPriceCents: 300_000, unit: 'project' },
+  { id: 'event-sponsorship', category: 'launch_media', name: 'Event Sponsorship', description: 'Sponsored presence at industry events and demo days', priceRange: '$5,000', typicalPriceCents: 500_000, unit: 'event' },
+]
+
+export function getServicesForCategory(category: CreditCategory): CreditService[] {
+  return CREDIT_SERVICES.filter((s) => s.category === category)
+}
+
+export function formatServicePrice(service: CreditService): string {
+  return service.priceRange
+}
+
+// -----------------------------------------------------
+// STARTUP MEMO TYPES
+// -----------------------------------------------------
+
 export interface StartupMemo {
   // Metadata
   generatedAt: string
