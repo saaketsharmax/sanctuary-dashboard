@@ -9,8 +9,10 @@ import { createAdminClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { getClaimExtractionAgent } from '@/lib/ai/agents/claim-extraction-agent'
 import { getClaimVerificationAgent } from '@/lib/ai/agents/claim-verification-agent'
 import { getDocumentVerificationAgent } from '@/lib/ai/agents/document-verification-agent'
+import { getTeamAssessmentAgent } from '@/lib/ai/agents/team-assessment-agent'
+import { getMarketAssessmentAgent } from '@/lib/ai/agents/market-assessment-agent'
 import { getDDReportGenerator } from '@/lib/ai/agents/dd-report-generator'
-import type { DDClaim, DDVerification, DDOmission } from '@/lib/ai/types/due-diligence'
+import type { DDClaim, DDVerification, DDOmission, DDTeamAssessment, DDMarketAssessment } from '@/lib/ai/types/due-diligence'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -119,36 +121,60 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       .update({ dd_status: 'claims_extracted', dd_started_at: new Date().toISOString() })
       .eq('id', id)
 
-    // ─── Step 2: Extract claims ───
+    // ─── Step 2: Extract claims + Team + Market assessment (all parallel) ───
     const extractionAgent = getClaimExtractionAgent()
+    const teamAgent = getTeamAssessmentAgent()
+    const marketAgent = getMarketAssessmentAgent()
     const founders = Array.isArray(application.founders) ? application.founders : []
-    const extractionResult = await extractionAgent.extractClaims({
-      applicationId: id,
-      companyName: application.company_name,
-      applicationData: {
+
+    const foundersMapped = founders.map((f: any) => ({
+      name: f.name || '',
+      role: f.role || null,
+      yearsExperience: f.yearsExperience || null,
+      hasStartedBefore: f.hasStartedBefore || false,
+      previousStartupOutcome: f.previousStartupOutcome || null,
+      linkedin: f.linkedin || null,
+    }))
+
+    const [extractionResult, teamResult, marketResult] = await Promise.all([
+      extractionAgent.extractClaims({
+        applicationId: id,
+        companyName: application.company_name,
+        applicationData: {
+          companyDescription: application.company_description,
+          problemDescription: application.problem_description,
+          solutionDescription: application.solution_description,
+          targetCustomer: application.target_customer,
+          stage: application.stage,
+          userCount: application.user_count,
+          mrr: application.mrr ? Number(application.mrr) : null,
+          biggestChallenge: application.biggest_challenge,
+          whySanctuary: application.why_sanctuary,
+          whatTheyWant: application.what_they_want,
+          companyWebsite: application.company_website,
+        },
+        founders: foundersMapped,
+        interviewTranscript: application.interview_transcript || null,
+        researchData: application.research_data || null,
+      }),
+      teamAgent.assessTeam({
+        applicationId: id,
+        companyName: application.company_name,
+        founders: foundersMapped,
+        interviewTranscript: application.interview_transcript || null,
         companyDescription: application.company_description,
-        problemDescription: application.problem_description,
-        solutionDescription: application.solution_description,
+        stage: application.stage,
+      }),
+      marketAgent.assessMarket({
+        applicationId: id,
+        companyName: application.company_name,
+        companyDescription: application.company_description,
         targetCustomer: application.target_customer,
         stage: application.stage,
-        userCount: application.user_count,
-        mrr: application.mrr ? Number(application.mrr) : null,
-        biggestChallenge: application.biggest_challenge,
-        whySanctuary: application.why_sanctuary,
-        whatTheyWant: application.what_they_want,
         companyWebsite: application.company_website,
-      },
-      founders: founders.map((f: any) => ({
-        name: f.name || '',
-        role: f.role || null,
-        yearsExperience: f.yearsExperience || null,
-        hasStartedBefore: f.hasStartedBefore || false,
-        previousStartupOutcome: f.previousStartupOutcome || null,
-        linkedin: f.linkedin || null,
-      })),
-      interviewTranscript: application.interview_transcript || null,
-      researchData: application.research_data || null,
-    })
+        interviewTranscript: application.interview_transcript || null,
+      }),
+    ])
 
     if (!extractionResult.success) {
       await supabase.from('applications').update({ dd_status: 'failed' }).eq('id', id)
@@ -157,6 +183,18 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // Capture omissions from extraction
     const omissions: DDOmission[] = extractionResult.omissions || []
+
+    // Capture team assessment (non-blocking — DD continues even if team fails)
+    const teamAssessment: DDTeamAssessment | null = teamResult.success ? teamResult.assessment : null
+    if (!teamResult.success) {
+      console.error('Team assessment failed (non-blocking):', teamResult.error)
+    }
+
+    // Capture market assessment (non-blocking)
+    const marketAssessment: DDMarketAssessment | null = marketResult.success ? marketResult.assessment : null
+    if (!marketResult.success) {
+      console.error('Market assessment failed (non-blocking):', marketResult.error)
+    }
 
     // Log extraction agent run
     await supabase.from('agent_runs').insert({
@@ -169,6 +207,38 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       output_summary: {
         totalClaims: extractionResult.metadata.totalClaims,
         totalOmissions: omissions.length,
+      },
+    })
+
+    // Log team assessment agent run
+    await supabase.from('agent_runs').insert({
+      agent_type: 'dd_team_assessment',
+      agent_version: '1.0.0',
+      application_id: id,
+      trigger_type: 'manual',
+      status: teamResult.success ? 'completed' : 'failed',
+      completed_at: new Date().toISOString(),
+      output_summary: {
+        teamScore: teamAssessment?.overallTeamScore ?? null,
+        teamGrade: teamAssessment?.teamGrade ?? null,
+        foundersEnriched: teamResult.metadata.foundersEnriched,
+        tavilySearches: teamResult.metadata.tavilySearches,
+      },
+    })
+
+    // Log market assessment agent run
+    await supabase.from('agent_runs').insert({
+      agent_type: 'dd_market_assessment',
+      agent_version: '1.0.0',
+      application_id: id,
+      trigger_type: 'manual',
+      status: marketResult.success ? 'completed' : 'failed',
+      completed_at: new Date().toISOString(),
+      output_summary: {
+        marketScore: marketAssessment?.overallMarketScore ?? null,
+        marketGrade: marketAssessment?.marketGrade ?? null,
+        competitorsFound: marketResult.metadata.competitorsFound,
+        tavilySearches: marketResult.metadata.tavilySearches,
       },
     })
 
@@ -361,13 +431,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         })),
     }))
 
-    // ─── Step 8: Generate DD report (with omissions) ───
+    // ─── Step 8: Generate DD report (with omissions + team + market assessment) ───
     const reportGenerator = getDDReportGenerator()
     const reportResult = await reportGenerator.generateReport({
       applicationId: id,
       companyName: application.company_name,
       claims: fullClaims,
       omissions,
+      teamAssessment,
+      marketAssessment,
     })
 
     if (!reportResult.success || !reportResult.report) {
@@ -433,6 +505,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         score: reportResult.report.overallDDScore,
         grade: reportResult.report.ddGrade,
         recommendation: reportResult.report.recommendation.verdict,
+        teamScore: teamAssessment?.overallTeamScore ?? null,
+        teamGrade: teamAssessment?.teamGrade ?? null,
+        marketScore: marketAssessment?.overallMarketScore ?? null,
+        marketGrade: marketAssessment?.marketGrade ?? null,
       },
     })
   } catch (error) {

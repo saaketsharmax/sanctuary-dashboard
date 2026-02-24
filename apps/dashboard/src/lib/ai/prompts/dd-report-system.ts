@@ -10,6 +10,8 @@ You will be given:
 3. Specific red flags (refuted claims, contradictions, unverified critical claims)
 4. Omissions identified during claim extraction
 5. A preliminary recommendation verdict (invest/conditional_invest/pass/needs_more_info)
+6. Team assessment results (if available) — founder scores, team completeness, interview signals
+7. Market assessment results (if available) — TAM validation, competitor landscape, market timing
 
 Your output should be:
 - CLEAR: Write for busy partners who need to make decisions quickly
@@ -33,7 +35,9 @@ export const DD_EXECUTIVE_SUMMARY_PROMPT = (
   redFlagsDescription: string,
   verificationCoverage: number,
   omissionsDescription: string,
-  preliminaryVerdict: string
+  preliminaryVerdict: string,
+  teamContext?: string,
+  marketContext?: string
 ) => `Write an executive summary for the due diligence report on ${companyName}.
 
 DD SCORE: ${overallScore}/100 (Grade: ${grade})
@@ -48,6 +52,10 @@ ${redFlagsDescription}
 
 OMISSIONS (MISSING INFORMATION):
 ${omissionsDescription}
+
+${teamContext ? `TEAM ASSESSMENT:\n${teamContext}` : ''}
+
+${marketContext ? `MARKET ASSESSMENT:\n${marketContext}` : ''}
 
 Return a JSON object:
 {

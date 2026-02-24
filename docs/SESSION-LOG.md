@@ -538,3 +538,220 @@ Implemented 5 DD upgrades: Source Credibility Tiers, Benchmark Comparison, Omiss
 2. Fix `applications_status_check` constraint (migration 009) — still a blocker
 3. Run DD pipeline on an existing application to verify all new fields
 4. Interview Agent V2
+
+---
+
+## Session: 2026-02-24 (b) — DD Phase 2A: Team Assessment Agent
+
+### What Was Done
+
+Built the Team Assessment Agent — the first of 4 new DD agents (Team → Market → Finance → Pattern). This adds structured team analysis to the DD pipeline, covering founder enrichment, experience verification, team completeness scoring, red flag detection, and interview signal extraction.
+
+**Files Created (4):**
+
+1. `lib/ai/prompts/team-assessment-system.ts` — System prompt + user prompt for team analysis. Covers founder scoring (0-100), team completeness (key roles: CEO/CTO/Domain Expert/Growth), red flag detection, interview signal extraction. Scoring formula: 60% founder scores + 25% completeness + 15% interview signals.
+2. `lib/ai/agents/team-assessment-agent.ts` — Full agent with:
+   - Tavily enrichment per founder: background search, prior startup search (if claimed), GitHub search (if technical role)
+   - Claude analysis with structured JSON output
+   - Parsing & validation with score clamping, severity validation, sentiment validation
+   - Empty assessment fallback when no founders
+   - Mock agent for no-API mode
+   - Factory function (same pattern as all other agents)
+3. `components/dd/dd-team-assessment.tsx` — Team assessment UI with:
+   - Team score header (grade badge, overall score, completeness score, founder count, red flag count)
+   - Strengths & missing roles cards (2-column grid)
+   - Founder profile cards (avatar, score, experience verification, GitHub score, previous startups, strengths, red flags, evidence URLs)
+   - Team red flags panel
+   - Interview signals panel (sentiment badges: positive/neutral/concerning)
+4. `supabase/migrations/011_dd_phase2_team_market.sql` — Outcome tracking columns on applications (outcome, outcome_notes, outcome_updated_at) for future Pattern Agent + updated agent_runs constraint with new DD agent types
+
+**Files Modified (7):**
+
+5. `lib/ai/types/due-diligence.ts` — Added `DDFounderProfile`, `DDInterviewSignal`, `DDTeamAssessment`, `DDTeamAssessmentInput`, `DDTeamAssessmentResult` types. Added `team_assessment` to `DDStatus`. Extended `DueDiligenceReport` with `teamAssessment` field. Extended `DDReportInput` with optional `teamAssessment`.
+6. `app/api/applications/[id]/dd/route.ts` — Team assessment runs **in parallel** with claim extraction via `Promise.all`. Team assessment is non-blocking (pipeline continues if it fails). Results passed to report generator. Agent run logged. Response metadata includes team score/grade.
+7. `lib/ai/agents/dd-report-generator.ts` — Team assessment integrated into:
+   - Score blending: 75% claims-based + 25% team score
+   - Red flags: team red flags merged into report red flags
+   - Recommendation logic: Team grade D/F downgrades verdict; Team grade A/B relaxes high-flag threshold for 'invest'
+   - Follow-up questions: team-sourced questions (unverified founders, missing roles, concerning interview signals)
+   - Executive summary: team context passed to Claude for richer summaries
+   - Source counting: includes team evidence URLs
+   - Mock generator updated
+8. `lib/ai/prompts/dd-report-system.ts` — System prompt updated to mention team assessment. Executive summary prompt accepts optional `teamContext` parameter.
+9. `app/api/applications/[id]/dd/report/route.ts` — Regeneration route recovers team assessment from existing report_data JSONB
+10. `components/dd/index.ts` — Added `DDTeamAssessment` export
+11. `app/partner/applications/[id]/dd/page.tsx` — Added Team tab (shows team grade in tab label). New `DDTeamAssessment` component rendered in tab content.
+
+**Pipeline now:**
+```
+Extract Claims ─┐
+                 ├─→ Verify Claims → Document Verify → Generate Report
+Team Assessment ─┘                                         ↑
+  (parallel)                                    (team feeds into report)
+```
+
+**Build:** `npm run build:dashboard` passes with zero errors.
+
+### Current State
+
+- **Team Assessment Agent:** Fully built ✓
+- **Migration 011:** Created, needs to be applied to remote Supabase
+- **Build:** Passes ✓
+- **Branch:** `main`, uncommitted changes
+
+### What's Next
+
+1. Apply migrations 010 + 011 to remote Supabase
+2. Fix `applications_status_check` constraint (migration 009) — still a blocker
+3. Test DD pipeline (with team + market assessment) on a real application
+4. DD Phase 2C: Finance Assessment Agent
+5. DD Phase 2D: Pattern Assessment Agent
+6. Interview Agent V2
+
+---
+
+## Session: 2026-02-24 (c) — DD Phase 2B: Market Assessment Agent
+
+### What Was Done
+
+Built the Market Assessment Agent — validates market opportunity via Tavily research + Claude analysis. Covers TAM validation, competitive landscape mapping, market timing scoring, adjacent market identification, and market-specific red flags.
+
+**Files Created (3):**
+
+1. `lib/ai/prompts/market-assessment-system.ts` — System prompt + user prompt for market analysis. Instructs Claude to validate TAM (bottom-up + top-down), map competitors (name, funding, positioning, threat level, differentiator), score market timing (0-100), identify adjacent markets, and flag market red flags. Output is structured JSON.
+2. `lib/ai/agents/market-assessment-agent.ts` — Full agent with:
+   - Tavily enrichment: market sizing search, trend/CAGR search, competitor search, funding search, optional company website search (4-5 Tavily calls)
+   - Industry extraction heuristic from company description
+   - Claude analysis with structured JSON output
+   - Parsing & validation: TAM validation, competitor map, threat levels, severity validation, score clamping, grade derivation
+   - Mock agent for no-API mode (2 mock competitors, TAM estimate, timing score)
+   - Factory function (same singleton pattern as all other agents)
+3. `components/dd/dd-market-assessment.tsx` — Market assessment UI with:
+   - Market score header (grade badge, overall score, market timing, competitor count, red flag count)
+   - TAM Validation card (claimed vs. estimated, confidence bar, methodology, source links)
+   - Market Timing card (score gauge, timing label, market strengths list)
+   - Competitive Landscape section (CompetitorRow cards with threat level badge, positioning, differentiator, funding, source link)
+   - Adjacent Markets card (badge list)
+   - Market Red Flags card (severity badges, evidence)
+
+**Files Modified (6):**
+
+4. `lib/ai/types/due-diligence.ts` — Added `DDTAMValidation`, `DDCompetitor`, `DDCompetitorThreatLevel`, `DDMarketAssessment`, `DDMarketAssessmentInput`, `DDMarketAssessmentResult` types. Extended `DueDiligenceReport` with `marketAssessment` field. Extended `DDReportInput` with optional `marketAssessment`.
+5. `app/api/applications/[id]/dd/route.ts` — Market assessment runs **in parallel** with claim extraction + team assessment via `Promise.all`. Non-blocking (pipeline continues if it fails). Results passed to report generator. Agent run logged. Response metadata includes market score/grade.
+6. `lib/ai/agents/dd-report-generator.ts` — Market assessment integrated into:
+   - Score blending: 55% claims + 25% team + 20% market (with fallbacks: 80/20 market-only, 75/25 team-only)
+   - Red flags: market red flags merged into report red flags
+   - Recommendation logic: Market grade F → pass; Market grade D + not A/B → needs_more_info; Market grade A/B relaxes high-flag threshold
+   - Follow-up questions: `addMarketFollowUps()` — low-confidence TAM, high-threat competitors, low timing score
+   - Executive summary: market context (TAM, competitors, timing, strengths) passed to Claude
+   - Source counting: includes TAM sources + competitor source URLs
+   - Mock generator updated with `marketAssessment` field
+7. `lib/ai/prompts/dd-report-system.ts` — System prompt mentions market assessment. Executive summary prompt accepts optional `marketContext` parameter.
+8. `app/api/applications/[id]/dd/report/route.ts` — Regeneration route recovers `marketAssessment` from existing report_data JSONB
+9. `components/dd/index.ts` — Added `DDMarketAssessment` export
+10. `app/partner/applications/[id]/dd/page.tsx` — Added Market tab (shows market grade in tab label). `DDMarketAssessment` component rendered in tab content.
+
+**Pipeline now:**
+```
+Extract Claims ──┐
+                 ├─→ Verify Claims → Document Verify → Generate Report
+Team Assessment ─┤                                         ↑
+                 │                              (team + market feed
+Market Assessment┘                                into report)
+  (all 3 parallel)
+```
+
+**Build:** `npm run build:dashboard` passes with zero errors.
+
+### Current State
+
+- **Market Assessment Agent:** Fully built ✓
+- **Build:** Passes ✓
+- **Branch:** `main`, uncommitted changes
+
+### What's Next
+
+1. Apply migrations 010 + 011 to remote Supabase
+2. Fix `applications_status_check` constraint (migration 009) — still a blocker
+3. Test DD pipeline (with team + market assessment) on a real application
+4. DD Phase 2C: Finance Assessment Agent
+5. DD Phase 2D: Pattern Assessment Agent
+6. Interview Agent V2
+
+---
+
+## Session: 2026-02-24 (d) — Design Merge: OS-Style Dashboard
+
+### What Was Done
+
+Merged the designer's frontend code (from `sanctuary-shubhy/packages/ui`) into the engineering codebase. Created `design-merge` branch. This is a **reskin, not a rebuild** — all existing functionality (APIs, Supabase, AI pipelines, investment system) is preserved.
+
+**Branch:** `design-merge` (off `main`)
+
+**Token Foundation (globals.css):**
+
+1. Created `apps/dashboard/src/app/theme.css` — Designer's theme layer with custom gray scale (OKLCH), spacing tokens, border radius, shadows, focus rings, transitions
+2. Updated `apps/dashboard/src/app/globals.css`:
+   - Imported `theme.css`
+   - Changed `:root` tokens to designer's warm OKLCH palette (hue 85 tint on background, foreground, muted, accent, border, input, ring)
+   - Changed `--radius` from `0.625rem` to `0.5rem`
+   - Added 6 new semantic status tokens: `--success`, `--success-foreground`, `--warning`, `--warning-foreground`, `--info`, `--info-foreground` (light + dark mode)
+   - Registered all 6 new tokens in `@theme inline` block (enables `text-success`, `bg-warning`, etc.)
+   - Added warm utility classes: `.text-warm`, `.bg-warm`, `.border-warm`
+
+**OS Components (15 new files copied from designer):**
+
+3. `components/os/os-layout.tsx` — Full-screen OS layout with wallpaper background, window overlay, bottom nav, wallpaper selector, My Day panel
+4. `components/os/home-screen.tsx` — Greeting, AI input box, quick action buttons, recent sections grid
+5. `components/os/bottom-nav.tsx` — Fixed bottom navigation bar (glass morphism, role-aware: founder vs partner)
+6. `components/os/window-view.tsx` — macOS-style window overlay (cream containers, traffic lights, title bar). Fixed: converted `require()` calls to proper ES imports
+7. `components/os/wallpaper-selector.tsx` — Wallpaper picker with thumbnail grid, prev/next arrows, localStorage persistence
+8. `components/os/my-day-panel.tsx` — Side panel with schedule, tasks, AI insights
+9. `components/os/widget-card.tsx` — Glass morphism widget wrapper
+10. `components/os/draggable-widget.tsx` — Drag/resize widget infrastructure with grid snapping
+11. `components/os/widgets/` — 7 widget types: carousel, chart, list, news, progress, stats, welcome
+12. `components/os/window-content/` — 5 window content views: founder-company, founder-documents, founder-progress, partner-applications, partner-portfolio
+13. `components/chat/ChatWidget.tsx` — AI chat widget (floating button + expandable window)
+14. `components/chat/DynamicComponents.tsx` — Dynamic component renderer (MetricCard, TaskItem, GoalProgress, ChartCard, DocumentRef)
+
+**Wallpaper Assets (4 images):**
+
+15. Copied to `public/assets/wallpapers/`: wallpaper-bg.jpg (4MB), wallpaper-bg-2.png (14MB), wallpaper-bg-3.jpg (1.6MB), wallpaper-bg-4.jpg (1.5MB)
+
+**Layout Updates:**
+
+16. `app/founder/layout.tsx` — Dashboard route (`/founder/dashboard`) skips sidebar and renders children directly (OS layout handles its own chrome). All other founder routes keep the existing sidebar. Updated sidebar styling to match designer's patterns (bg-card, h-16 header, font-medium nav items, bg-accent/50 user card)
+17. `app/partner/layout.tsx` — Same pattern: dashboard skips sidebar, all other routes keep sidebar
+
+**Dashboard Pages (merged design + engineering):**
+
+18. `app/founder/dashboard/page.tsx` — Replaced card-based dashboard with OS-style home screen. Preserves real data fetching (`/api/applications`, `/api/founder/investment`). Quick actions navigate to real routes. Recent sections show real application status. Chat widget integrated.
+19. `app/partner/dashboard/page.tsx` — Same pattern: OS home screen with real data from `/api/partner/applications`. Application cards show real company names and statuses. Quick actions navigate to real partner routes.
+
+**Component Restyling:**
+
+20. `components/ui/badge.tsx` — Updated CVA variants to designer's softer style (bg-muted/50, bg-destructive/10 instead of solid colors, transition-colors duration-150)
+
+**Build:** `npm run build:dashboard` passes with zero errors. All 46 routes compile.
+
+### Key Design Decisions
+
+- **Hybrid layout:** Dashboard pages use full-screen OS layout (wallpaper + bottom nav), all other pages keep the traditional sidebar layout. This preserves all existing page functionality while giving dashboards the new look.
+- **Real data in OS home screen:** Quick actions navigate to real Next.js routes (not the window overlay system). Recent sections show real application data from APIs.
+- **Chat widget uses `/api/chat/ollama`:** The designer's chat widget calls a local Ollama endpoint we don't have. It gracefully handles the error. Can be swapped to use our Claude-based interview API later.
+- **Window content is static:** The window-view overlay content (company, documents, progress, portfolio, applications) uses static mock data from the designer. These are secondary to the real page content accessed via sidebar navigation.
+
+### Current State
+
+- **Design merge:** OS dashboard + token foundation complete ✓
+- **Build:** Passes ✓
+- **Branch:** `design-merge`, uncommitted changes
+
+### What's Next (Design Merge Continuation)
+
+1. **Commit** all design merge changes on `design-merge` branch
+2. **Hardcoded color conversion** — Convert ~269 instances of `text-green-600`, `bg-red-100`, etc. across 40+ files to use new semantic tokens (`text-success`, `bg-destructive/10`, `text-info`, `text-warning`)
+3. **Designer review checkpoint** — Get designer approval on token foundation + OS dashboard before proceeding to per-page restyling
+4. **Per-page restyling** (with designer screenshots as input): founder pages, partner pages, onboarding flow
+5. **Responsive pass** — Mobile/tablet designs (768px, 375px)
+6. **Merge `design-merge` → `main`** after final review

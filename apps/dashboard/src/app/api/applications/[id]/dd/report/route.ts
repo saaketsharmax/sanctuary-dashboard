@@ -141,8 +141,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         })),
     }))
 
-    // Try to recover omissions from the existing report's report_data
+    // Try to recover omissions and team assessment from the existing report's report_data
     let existingOmissions: any[] = []
+    let existingTeamAssessment: any = null
     const { data: existingReport } = await supabase
       .from('dd_reports')
       .select('report_data')
@@ -150,6 +151,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       .single()
     if (existingReport?.report_data?.omissions) {
       existingOmissions = existingReport.report_data.omissions
+    }
+    if (existingReport?.report_data?.teamAssessment) {
+      existingTeamAssessment = existingReport.report_data.teamAssessment
+    }
+    let existingMarketAssessment: any = null
+    if (existingReport?.report_data?.marketAssessment) {
+      existingMarketAssessment = existingReport.report_data.marketAssessment
     }
 
     // Generate report
@@ -159,6 +167,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       companyName: application.company_name,
       claims: fullClaims,
       omissions: existingOmissions,
+      teamAssessment: existingTeamAssessment,
+      marketAssessment: existingMarketAssessment,
     })
 
     if (!result.success || !result.report) {

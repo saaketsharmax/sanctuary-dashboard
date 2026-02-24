@@ -16,6 +16,8 @@ import {
   DDRecommendationBanner,
   DDFollowUpQuestions,
   DDOmissions,
+  DDTeamAssessment,
+  DDMarketAssessment,
 } from '@/components/dd'
 import type { DueDiligenceReport, DDClaim } from '@/lib/ai/types/due-diligence'
 
@@ -278,6 +280,16 @@ export default function DDPage({ params }: DDPageProps) {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            {report.teamAssessment && (
+              <TabsTrigger value="team">
+                Team ({report.teamAssessment.teamGrade})
+              </TabsTrigger>
+            )}
+            {report.marketAssessment && (
+              <TabsTrigger value="market">
+                Market ({report.marketAssessment.marketGrade})
+              </TabsTrigger>
+            )}
             <TabsTrigger value="claims">Claims ({claims.length})</TabsTrigger>
             <TabsTrigger value="redflags">
               Red Flags ({report.redFlags?.length || 0})
@@ -342,6 +354,20 @@ export default function DDPage({ params }: DDPageProps) {
               <DDOmissions omissions={report.omissions} />
             )}
           </TabsContent>
+
+          {/* Team Tab */}
+          {report.teamAssessment && (
+            <TabsContent value="team" className="space-y-6">
+              <DDTeamAssessment assessment={report.teamAssessment} />
+            </TabsContent>
+          )}
+
+          {/* Market Tab */}
+          {report.marketAssessment && (
+            <TabsContent value="market" className="space-y-6">
+              <DDMarketAssessment assessment={report.marketAssessment} />
+            </TabsContent>
+          )}
 
           {/* Claims Tab */}
           <TabsContent value="claims" className="space-y-4">

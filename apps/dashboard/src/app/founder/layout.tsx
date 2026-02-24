@@ -155,26 +155,31 @@ export default function FounderLayout({ children }: { children: React.ReactNode 
     }
   }
 
+  // Dashboard page uses its own full-screen OS layout — skip the sidebar
+  const isDashboard = pathname === '/founder/dashboard'
+  if (isDashboard) {
+    return <>{children}</>
+  }
+
   const displayName = user?.name || 'Founder'
   const displayEmail = user?.email || ''
 
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <aside className="w-64 border-r bg-muted/30 flex flex-col">
+      <aside className="w-64 border-r bg-card flex flex-col transition-all duration-300">
         {/* Logo */}
-        <div className="p-6 border-b">
+        <div className="flex h-16 items-center justify-between border-b px-4">
           <Link href="/founder/dashboard" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">S</span>
             </div>
-            <span className="font-semibold text-lg">Sanctuary</span>
+            <span className="font-semibold">Sanctuary</span>
           </Link>
-          <p className="text-xs text-muted-foreground mt-1">Founder Portal</p>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-2 space-y-1">
           {founderNavItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
             return (
@@ -182,13 +187,13 @@ export default function FounderLayout({ children }: { children: React.ReactNode 
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                   isActive
                     ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                 )}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className="h-5 w-5 shrink-0" />
                 {item.label}
               </Link>
             )
@@ -196,20 +201,13 @@ export default function FounderLayout({ children }: { children: React.ReactNode 
         </nav>
 
         {/* User section */}
-        <div className="p-4 border-t">
-          <div className="flex items-center gap-3 mb-3">
-            <Avatar className="h-9 w-9">
-              <AvatarFallback>
-                {loading ? '...' : displayName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{displayName}</p>
-              <p className="text-xs text-muted-foreground truncate">{displayEmail}</p>
-            </div>
+        <div className="border-t p-2">
+          <div className="mb-2 rounded-lg bg-accent/50 px-3 py-2">
+            <p className="text-sm font-medium">{loading ? '...' : displayName}</p>
+            <p className="text-xs text-muted-foreground truncate">{displayEmail}</p>
           </div>
           <Button variant="ghost" size="sm" className="w-full justify-start" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
+            <LogOut className="h-5 w-5 shrink-0 mr-3" />
             Logout
           </Button>
         </div>

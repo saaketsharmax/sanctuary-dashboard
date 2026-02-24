@@ -46,6 +46,7 @@ export type DDGrade = 'A' | 'B' | 'C' | 'D' | 'F'
 export type DDStatus =
   | 'not_started'
   | 'claims_extracted'
+  | 'team_assessment'
   | 'ai_verification'
   | 'completed'
   | 'failed'
@@ -148,9 +149,83 @@ export interface DueDiligenceReport {
   omissions: DDOmission[]
   followUpQuestions: DDFollowUpQuestion[]
   recommendation: DDRecommendation
+  teamAssessment?: DDTeamAssessment | null
+  marketAssessment?: DDMarketAssessment | null
   totalSources: number
   verificationCoverage: number // 0-1
   generatedAt: string
+}
+
+// -----------------------------------------------------
+// TEAM ASSESSMENT TYPES
+// -----------------------------------------------------
+
+export interface DDFounderProfile {
+  name: string
+  role: string | null
+  founderScore: number              // 0-100
+  experienceVerified: boolean
+  experienceEvidence: string
+  linkedinFound: boolean
+  githubFound: boolean
+  githubScore: number | null        // 0-100 (null if not technical)
+  previousStartups: { name: string; outcome: string; verified: boolean }[]
+  redFlags: string[]
+  strengths: string[]
+  evidenceUrls: string[]
+}
+
+export interface DDInterviewSignal {
+  signal: string
+  sentiment: 'positive' | 'neutral' | 'concerning'
+  source: string
+}
+
+export interface DDTeamAssessment {
+  founderProfiles: DDFounderProfile[]
+  teamCompletenessScore: number     // 0-100
+  overallTeamScore: number          // 0-100
+  teamGrade: DDGrade
+  teamRedFlags: DDRedFlag[]
+  teamStrengths: string[]
+  missingRoles: string[]
+  interviewSignals: DDInterviewSignal[]
+}
+
+// -----------------------------------------------------
+// MARKET ASSESSMENT TYPES
+// -----------------------------------------------------
+
+export interface DDTAMValidation {
+  claimed: string | null          // what the application stated
+  estimated: string               // what research suggests
+  confidence: number              // 0-1
+  methodology: string             // how the estimate was derived
+  sources: string[]               // evidence URLs
+}
+
+export type DDCompetitorThreatLevel = 'high' | 'medium' | 'low'
+
+export interface DDCompetitor {
+  name: string
+  description: string
+  funding: string | null          // e.g. "$50M Series B"
+  positioning: string             // how they position vs. the company
+  threatLevel: DDCompetitorThreatLevel
+  differentiator: string          // what makes the company different
+  sourceUrl: string | null
+}
+
+export interface DDMarketAssessment {
+  tamValidation: DDTAMValidation
+  competitorMap: DDCompetitor[]
+  marketTimingScore: number       // 0-100 (growing=high, declining=low)
+  marketTimingReasoning: string
+  adjacentMarkets: string[]
+  overallMarketScore: number      // 0-100
+  marketGrade: DDGrade
+  marketRedFlags: DDRedFlag[]
+  marketStrengths: string[]
 }
 
 // -----------------------------------------------------
@@ -235,11 +310,61 @@ export interface DocumentVerificationResult {
   }
 }
 
+export interface DDTeamAssessmentInput {
+  applicationId: string
+  companyName: string
+  founders: {
+    name: string
+    role: string | null
+    yearsExperience: number | null
+    hasStartedBefore: boolean
+    previousStartupOutcome: string | null
+    linkedin: string | null
+  }[]
+  interviewTranscript: { role: string; content: string; section?: string }[] | null
+  companyDescription: string | null
+  stage: string | null
+}
+
+export interface DDTeamAssessmentResult {
+  success: boolean
+  assessment: DDTeamAssessment | null
+  error?: string
+  metadata: {
+    foundersEnriched: number
+    tavilySearches: number
+    processingTimeMs: number
+  }
+}
+
+export interface DDMarketAssessmentInput {
+  applicationId: string
+  companyName: string
+  companyDescription: string | null
+  targetCustomer: string | null
+  stage: string | null
+  companyWebsite: string | null
+  interviewTranscript: { role: string; content: string; section?: string }[] | null
+}
+
+export interface DDMarketAssessmentResult {
+  success: boolean
+  assessment: DDMarketAssessment | null
+  error?: string
+  metadata: {
+    tavilySearches: number
+    competitorsFound: number
+    processingTimeMs: number
+  }
+}
+
 export interface DDReportInput {
   applicationId: string
   companyName: string
   claims: DDClaim[]
   omissions: DDOmission[]
+  teamAssessment?: DDTeamAssessment | null
+  marketAssessment?: DDMarketAssessment | null
 }
 
 export interface DDReportResult {

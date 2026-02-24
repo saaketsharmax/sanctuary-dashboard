@@ -18,6 +18,8 @@ import type {
   DDRecommendation,
   DDRecommendationVerdict,
   DDGrade,
+  DDTeamAssessment,
+  DDMarketAssessment,
   DueDiligenceReport,
   DDReportInput,
   DDReportResult,
@@ -45,19 +47,42 @@ export class DDReportGenerator {
     const startTime = Date.now()
 
     try {
-      const { applicationId, companyName, claims, omissions } = input
+      const { applicationId, companyName, claims, omissions, teamAssessment, marketAssessment } = input
 
       // 1. Calculate category scores (deterministic)
       const categoryScores = this.calculateCategoryScores(claims)
 
-      // 2. Calculate overall DD score (deterministic)
-      const overallDDScore = this.calculateOverallScore(categoryScores)
+      // 2. Calculate overall DD score (deterministic) — team + market assessments adjust score
+      let overallDDScore = this.calculateOverallScore(categoryScores)
+      const hasTeam = !!teamAssessment
+      const hasMarket = !!marketAssessment
+      if (hasTeam && hasMarket) {
+        // Blend: 55% claims + 25% team + 20% market
+        overallDDScore = Math.round(overallDDScore * 0.55 + teamAssessment.overallTeamScore * 0.25 + marketAssessment.overallMarketScore * 0.20)
+      } else if (hasTeam) {
+        // Blend: 75% claims + 25% team
+        overallDDScore = Math.round(overallDDScore * 0.75 + teamAssessment.overallTeamScore * 0.25)
+      } else if (hasMarket) {
+        // Blend: 80% claims + 20% market
+        overallDDScore = Math.round(overallDDScore * 0.80 + marketAssessment.overallMarketScore * 0.20)
+      }
 
       // 3. Determine grade (deterministic)
       const ddGrade = this.calculateGrade(overallDDScore)
 
-      // 4. Identify red flags (deterministic) — including omission-based flags
+      // 4. Identify red flags (deterministic) — including omission-based and team flags
       const redFlags = this.identifyRedFlags(claims, omissions)
+      if (teamAssessment) {
+        redFlags.push(...teamAssessment.teamRedFlags)
+      }
+      if (marketAssessment) {
+        redFlags.push(...marketAssessment.marketRedFlags)
+      }
+      if (teamAssessment || marketAssessment) {
+        // Re-sort by severity after merging
+        const severityOrder = { critical: 0, high: 1, medium: 2 }
+        redFlags.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity])
+      }
 
       // 5. Calculate verification coverage (deterministic)
       const claimsWithVerification = claims.filter(
@@ -76,13 +101,38 @@ export class DDReportGenerator {
           }
         }
       }
+      // Include team evidence URLs
+      if (teamAssessment) {
+        for (const fp of teamAssessment.founderProfiles) {
+          for (const url of fp.evidenceUrls) {
+            allUrls.add(url)
+          }
+        }
+      }
+      // Include market evidence URLs
+      if (marketAssessment) {
+        for (const url of marketAssessment.tamValidation.sources) {
+          allUrls.add(url)
+        }
+        for (const comp of marketAssessment.competitorMap) {
+          if (comp.sourceUrl) allUrls.add(comp.sourceUrl)
+        }
+      }
       const totalSources = allUrls.size
 
       // 7. Determine preliminary recommendation verdict (deterministic)
-      const preliminaryVerdict = this.determineRecommendationVerdict(ddGrade, redFlags)
+      const preliminaryVerdict = this.determineRecommendationVerdict(ddGrade, redFlags, teamAssessment, marketAssessment)
 
       // 8. Generate deterministic follow-up questions from structured data
       const deterministicQuestions = this.generateDeterministicFollowUps(claims, omissions)
+      // Add team-sourced follow-up questions
+      if (teamAssessment) {
+        this.addTeamFollowUps(deterministicQuestions, teamAssessment)
+      }
+      // Add market-sourced follow-up questions
+      if (marketAssessment) {
+        this.addMarketFollowUps(deterministicQuestions, marketAssessment)
+      }
 
       // 9. Generate executive summary + AI follow-ups + recommendation with Claude
       const aiResult = await this.generateExecutiveSummaryAndExtras(
@@ -93,7 +143,9 @@ export class DDReportGenerator {
         redFlags,
         verificationCoverage,
         omissions,
-        preliminaryVerdict
+        preliminaryVerdict,
+        teamAssessment,
+        marketAssessment
       )
 
       // 10. Merge follow-up questions (deterministic + AI), deduplicate, cap at 12
@@ -119,6 +171,8 @@ export class DDReportGenerator {
         omissions,
         followUpQuestions,
         recommendation,
+        teamAssessment: teamAssessment || null,
+        marketAssessment: marketAssessment || null,
         totalSources,
         verificationCoverage,
         generatedAt: new Date().toISOString(),
@@ -326,13 +380,36 @@ export class DDReportGenerator {
   // RECOMMENDATION LOGIC
   // ═══════════════════════════════════════════════════════════════════════════
 
-  determineRecommendationVerdict(grade: DDGrade, redFlags: DDRedFlag[]): DDRecommendationVerdict {
+  determineRecommendationVerdict(
+    grade: DDGrade,
+    redFlags: DDRedFlag[],
+    teamAssessment?: DDTeamAssessment | null,
+    marketAssessment?: DDMarketAssessment | null
+  ): DDRecommendationVerdict {
     const criticalFlags = redFlags.filter(f => f.severity === 'critical').length
     const highFlags = redFlags.filter(f => f.severity === 'high').length
     const totalSignificantFlags = criticalFlags + highFlags
 
+    // Team grade D/F can downgrade recommendation
+    if (teamAssessment) {
+      const tg = teamAssessment.teamGrade
+      if (tg === 'F') return 'pass'
+      if (tg === 'D' && grade !== 'A') return 'needs_more_info'
+    }
+
+    // Market grade F → pass (no viable market)
+    if (marketAssessment) {
+      const mg = marketAssessment.marketGrade
+      if (mg === 'F') return 'pass'
+      if (mg === 'D' && grade !== 'A' && grade !== 'B') return 'needs_more_info'
+    }
+
     // Grade A/B + no critical flags → invest
-    if ((grade === 'A' || grade === 'B') && criticalFlags === 0 && highFlags <= 1) {
+    // Team/market grade A/B boosts: relax high flag threshold
+    const teamBoost = teamAssessment && (teamAssessment.teamGrade === 'A' || teamAssessment.teamGrade === 'B')
+    const marketBoost = marketAssessment && (marketAssessment.marketGrade === 'A' || marketAssessment.marketGrade === 'B')
+    const highFlagThreshold = (teamBoost ? 1 : 0) + (marketBoost ? 1 : 0) + 1
+    if ((grade === 'A' || grade === 'B') && criticalFlags === 0 && highFlags <= highFlagThreshold) {
       return 'invest'
     }
 
@@ -409,6 +486,80 @@ export class DDReportGenerator {
     return questions
   }
 
+  private addTeamFollowUps(questions: DDFollowUpQuestion[], team: DDTeamAssessment): void {
+    // Unverified founder experience
+    for (const fp of team.founderProfiles) {
+      if (!fp.experienceVerified && fp.founderScore < 60) {
+        questions.push({
+          category: 'team_background',
+          question: `Can you provide references from your time at previous companies, ${fp.name}?`,
+          reason: `Web search could not verify ${fp.name}'s claimed experience`,
+          priority: 'high',
+          source: 'unverified_claim',
+        })
+      }
+    }
+
+    // Missing roles
+    for (const role of team.missingRoles) {
+      questions.push({
+        category: 'team_background',
+        question: `How do you plan to fill the ${role} role? Do you have candidates in mind?`,
+        reason: `Team completeness assessment identified ${role} as a gap`,
+        priority: 'medium',
+        source: 'omission',
+      })
+    }
+
+    // Concerning interview signals
+    for (const sig of team.interviewSignals.filter(s => s.sentiment === 'concerning')) {
+      questions.push({
+        category: 'team_background',
+        question: `During the interview, we noticed: "${sig.signal}". Can you elaborate on this?`,
+        reason: `Interview signal flagged as concerning`,
+        priority: 'medium',
+        source: 'ai_generated',
+      })
+    }
+  }
+
+  private addMarketFollowUps(questions: DDFollowUpQuestion[], market: DDMarketAssessment): void {
+    // Low-confidence TAM
+    if (market.tamValidation.confidence < 0.4) {
+      questions.push({
+        category: 'market_size',
+        question: 'Can you provide data sources or methodology for your total addressable market estimate?',
+        reason: `Market research could only estimate TAM with ${Math.round(market.tamValidation.confidence * 100)}% confidence`,
+        priority: 'high',
+        source: 'ai_generated',
+      })
+    }
+
+    // High-threat competitors
+    const highThreats = market.competitorMap.filter(c => c.threatLevel === 'high')
+    if (highThreats.length > 0) {
+      const names = highThreats.map(c => c.name).join(', ')
+      questions.push({
+        category: 'competitive',
+        question: `How do you plan to differentiate and win against ${names}? What's your specific competitive advantage?`,
+        reason: `${highThreats.length} high-threat competitor(s) identified in the market`,
+        priority: 'high',
+        source: 'ai_generated',
+      })
+    }
+
+    // Low market timing score
+    if (market.marketTimingScore < 40) {
+      questions.push({
+        category: 'market_size',
+        question: 'What market dynamics or upcoming changes make this the right time to enter this market?',
+        reason: `Market timing score is ${market.marketTimingScore}/100 — market appears to be maturing or declining`,
+        priority: 'medium',
+        source: 'ai_generated',
+      })
+    }
+  }
+
   private mergeFollowUpQuestions(
     deterministic: DDFollowUpQuestion[],
     aiGenerated: DDFollowUpQuestion[]
@@ -446,7 +597,9 @@ export class DDReportGenerator {
     redFlags: DDRedFlag[],
     verificationCoverage: number,
     omissions: DDOmission[],
-    preliminaryVerdict: DDRecommendationVerdict
+    preliminaryVerdict: DDRecommendationVerdict,
+    teamAssessment?: DDTeamAssessment | null,
+    marketAssessment?: DDMarketAssessment | null
   ): Promise<{
     executiveSummary: string
     followUpQuestions: DDFollowUpQuestion[]
@@ -468,6 +621,38 @@ export class DDReportGenerator {
       ? omissions.map(o => `- [${o.severity.toUpperCase()}] ${o.category}: ${o.expectedInfo} — ${o.reasoning}`).join('\n')
       : 'No significant omissions identified.'
 
+    // Build team assessment context for the prompt
+    let teamContext = 'Team assessment not available.'
+    if (teamAssessment) {
+      const founderSummaries = teamAssessment.founderProfiles.map(fp =>
+        `- ${fp.name} (${fp.role || 'no role specified'}): Score ${fp.founderScore}/100, experience ${fp.experienceVerified ? 'verified' : 'unverified'}${fp.redFlags.length > 0 ? `, red flags: ${fp.redFlags.join('; ')}` : ''}${fp.strengths.length > 0 ? `, strengths: ${fp.strengths.join('; ')}` : ''}`
+      ).join('\n')
+
+      teamContext = `TEAM ASSESSMENT — Overall Score: ${teamAssessment.overallTeamScore}/100, Grade: ${teamAssessment.teamGrade}
+Completeness: ${teamAssessment.teamCompletenessScore}/100
+${teamAssessment.missingRoles.length > 0 ? `Missing roles: ${teamAssessment.missingRoles.join(', ')}` : 'All key roles filled.'}
+Strengths: ${teamAssessment.teamStrengths.join(', ') || 'None identified'}
+Founders:
+${founderSummaries}
+${teamAssessment.interviewSignals.length > 0 ? `Interview signals: ${teamAssessment.interviewSignals.map(s => `[${s.sentiment}] ${s.signal}`).join('; ')}` : ''}`
+    }
+
+    // Build market assessment context for the prompt
+    let marketContext = ''
+    if (marketAssessment) {
+      const compSummary = marketAssessment.competitorMap.slice(0, 5).map(c =>
+        `- ${c.name} (${c.threatLevel} threat${c.funding ? `, ${c.funding}` : ''}): ${c.positioning}`
+      ).join('\n')
+
+      marketContext = `\nMARKET ASSESSMENT — Overall Score: ${marketAssessment.overallMarketScore}/100, Grade: ${marketAssessment.marketGrade}
+TAM Estimate: ${marketAssessment.tamValidation.estimated} (confidence: ${Math.round(marketAssessment.tamValidation.confidence * 100)}%)
+Market Timing: ${marketAssessment.marketTimingScore}/100 — ${marketAssessment.marketTimingReasoning}
+Competitors (${marketAssessment.competitorMap.length} found):
+${compSummary}
+${marketAssessment.adjacentMarkets.length > 0 ? `Adjacent markets: ${marketAssessment.adjacentMarkets.join(', ')}` : ''}
+Strengths: ${marketAssessment.marketStrengths.join(', ') || 'None identified'}`
+    }
+
     const verdictLabel = {
       invest: 'INVEST — Strong DD profile',
       conditional_invest: 'CONDITIONAL INVEST — Issues to resolve first',
@@ -483,7 +668,9 @@ export class DDReportGenerator {
       redFlagsDescription,
       verificationCoverage,
       omissionsDescription,
-      verdictLabel
+      verdictLabel,
+      teamContext,
+      marketContext
     )
 
     try {
@@ -571,7 +758,7 @@ export class MockDDReportGenerator {
   async generateReport(input: DDReportInput): Promise<DDReportResult> {
     await new Promise(resolve => setTimeout(resolve, 1000))
 
-    const { applicationId, companyName, claims, omissions } = input
+    const { applicationId, companyName, claims, omissions, teamAssessment, marketAssessment } = input
 
     const categoryScores: DDCategoryScore[] = [
       {
@@ -654,6 +841,8 @@ export class MockDDReportGenerator {
         conditions: ['Provide verified revenue documentation', 'Disclose burn rate and runway'],
         reasoning: '[MOCK] DD reveals a mixed picture. Core team claims verified but financial metrics need third-party confirmation. Conditional investment recommended pending documentation.',
       },
+      teamAssessment: teamAssessment || null,
+      marketAssessment: marketAssessment || null,
       totalSources: 4,
       verificationCoverage: 0.6,
       generatedAt: new Date().toISOString(),
