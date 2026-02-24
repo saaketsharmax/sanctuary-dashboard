@@ -1,4 +1,28 @@
-// Shared UI components
-// Components will be moved here from apps/dashboard/src/components/ui
-
+// Utility
 export { cn } from './utils'
+
+// Components
+export { Avatar, AvatarImage, AvatarFallback, AvatarBadge, AvatarGroup, AvatarGroupCount } from './components/avatar'
+export { Badge, badgeVariants } from './components/badge'
+export { Button, buttonVariants } from './components/button'
+export { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent } from './components/card'
+export { Checkbox } from './components/checkbox'
+export { Collapsible, CollapsibleTrigger, CollapsibleContent } from './components/collapsible'
+export { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger } from './components/dialog'
+export { DropdownMenu, DropdownMenuPortal, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuGroup, DropdownMenuLabel, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from './components/dropdown-menu'
+export { Input } from './components/input'
+export { Label } from './components/label'
+export { Progress } from './components/progress'
+export { RadioGroup, RadioGroupItem } from './components/radio-group'
+export { ScrollArea, ScrollBar } from './components/scroll-area'
+export { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue } from './components/select'
+export { Separator } from './components/separator'
+export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetFooter, SheetTitle, SheetDescription } from './components/sheet'
+export { Skeleton } from './components/skeleton'
+export { Slider } from './components/slider'
+export { Toaster } from './components/sonner'
+export { Switch } from './components/switch'
+export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption } from './components/table'
+export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants } from './components/tabs'
+export { Textarea } from './components/textarea'
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './components/tooltip'
