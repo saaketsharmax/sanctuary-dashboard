@@ -453,3 +453,88 @@ Added live updates to all 4 investment pages using Supabase Realtime (Postgres C
 - **Migration 008:** Created, needs to be run in Supabase
 - **Build:** Passes ✓
 - **Branch:** `main`, uncommitted changes
+
+---
+
+## Session: 2026-02-21 (resume) — Tier 1 Housekeeping
+
+### What Was Done
+
+1. **Build verified:** `npm run build:dashboard` passes (zero errors, cached)
+2. **All uncommitted changes committed:** `b073bc1` — "Add investment & credits tracking system with realtime updates" (23 files, 1667 insertions). Covers 4 sessions of work: Investment system, Credit Visibility, Cash/Credits split, Realtime tracking.
+3. **Migrations 007 + 008 pushed to remote Supabase:** Both applied successfully. `investments` and `investment_transactions` tables created. Realtime publication added.
+4. **E2E test started but hit blocker:** `applications` table has a CHECK constraint (`applications_status_check`) that doesn't include `'approved'` or `'rejected'` as valid values. The initial schema (migration 001, applied manually before migration tracking) has a limited set of statuses. Need to:
+   - Determine current valid statuses (dump schema or check Supabase SQL Editor)
+   - Create migration 009 to ALTER the constraint to include `'approved'` and `'rejected'`
+   - Then re-run E2E test
+
+### Current State
+
+- **Committed:** All changes up to realtime tracking ✓ (`b073bc1` on `main`)
+- **Migrations 007 + 008:** Applied to remote Supabase ✓
+- **Working tree:** Clean
+- **Build:** Passes ✓
+- **Blocker:** `applications_status_check` constraint needs to be updated to allow `'approved'`/`'rejected'` statuses
+
+### What's Next (Resume Checklist)
+
+1. Fix `applications_status_check` constraint (migration 009) — add `'approved'`, `'rejected'` to allowed statuses
+2. Push migration 009
+3. Re-run E2E test: approve Spacekayak → investment auto-created → request → approve/deny → verify balances
+4. Start Tier 2: Interview Agent V2
+
+---
+
+## Session: 2026-02-24 — DD Phase 1 Upgrades (Professional-Grade Due Diligence)
+
+### What Was Done
+
+Implemented 5 DD upgrades: Source Credibility Tiers, Benchmark Comparison, Omission Analysis, Follow-up Questions, and Conditional Recommendations. No new external API dependencies — all improvements via prompt engineering, type extensions, and deterministic logic.
+
+**Migration Created (1):**
+
+1. `supabase/migrations/010_dd_phase1_columns.sql` — Adds `benchmark_flag TEXT` to `dd_claims`, `source_credibility_score DECIMAL(3,2)` to `dd_verifications`
+
+**Files Modified (11):**
+
+1. `lib/ai/types/due-diligence.ts` — Added 5 new types (`DDOmission`, `DDFollowUpQuestion`, `DDRecommendation`, `DDBenchmarkFlag`, `DDRecommendationVerdict`), `SOURCE_CREDIBILITY_TIERS` constant + `getSourceCredibilityTier()` helper, `STAGE_BENCHMARKS` constant + `getStageBenchmarks()` helper. Extended `DDClaim` with `benchmarkFlag`, `DDVerification` with `sourceCredibilityScore`, `DueDiligenceReport` with `omissions`/`followUpQuestions`/`recommendation`, `ClaimExtractionResult` with `omissions`, `DDReportInput` with `omissions`
+2. `lib/ai/agents/claim-extraction-agent.ts` — Passes stage benchmarks to prompt (5th param), captures `benchmarkFlag` and `omissions` from Claude response, validates both
+3. `lib/ai/agents/claim-verification-agent.ts` — Looks up source credibility tier for each evidence URL, computes `avgSourceWeight`, adjusts `confidence = rawConfidence * avgSourceWeight`, sets `sourceCredibilityScore`
+4. `lib/ai/agents/dd-report-generator.ts` — Added `determineRecommendationVerdict()` (grade + flag based logic), `generateDeterministicFollowUps()` (templates from unverified/disputed/omission/benchmark), `mergeFollowUpQuestions()` (dedup + cap at 12), omission→red flag integration in `identifyRedFlags()`, updated AI prompt call to include omissions + recommendation
+5. `lib/ai/agents/document-verification-agent.ts` — Added `sourceCredibilityScore: 0.85` to verifications and mock
+6. `lib/ai/prompts/claim-extraction-system.ts` — Added benchmark comparison instructions, omission analysis instructions, `benchmarkFlag` and `omissions` to JSON output schema, 5th parameter for benchmark context
+7. `lib/ai/prompts/claim-verification-system.ts` — Added SOURCE QUALITY AWARENESS section with 4-tier hierarchy
+8. `lib/ai/prompts/dd-report-system.ts` — Updated system prompt for follow-up questions + recommendation, updated user prompt with omissions + preliminary verdict, expanded JSON output schema
+9. `app/api/applications/[id]/dd/route.ts` — Threads `benchmark_flag` on claim inserts, `source_credibility_score` on verification inserts, passes `omissions` to report generator, includes recommendation in agent run log
+10. `app/api/applications/[id]/dd/report/route.ts` — Added `benchmarkFlag` and `sourceCredibilityScore` to claim/verification mapping, recovers omissions from existing report_data for regeneration, passes `omissions` to report generator
+11. `app/api/applications/[id]/dd/claims/route.ts` — Added `benchmarkFlag` and `sourceCredibilityScore` to response mapping
+
+**Files Created (3 new UI components):**
+
+12. `components/dd/dd-recommendation.tsx` — Recommendation verdict banner (invest/conditional_invest/pass/needs_more_info) with conditions list
+13. `components/dd/dd-follow-up-questions.tsx` — Follow-up questions list with priority badges, category tags, source labels
+14. `components/dd/dd-omissions.tsx` — Omissions list with severity badges
+
+**Files Modified (3 existing UI):**
+
+15. `components/dd/claim-row.tsx` — Added `BenchmarkBadge` component (above/below/unrealistic)
+16. `components/dd/index.ts` — Added barrel exports for 3 new components
+17. `app/partner/applications/[id]/dd/page.tsx` — Added Recommendation banner to overview, new "Follow-up" tab, Omissions section in overview + red flags tabs
+
+**Mock agents updated:** All 4 mock classes (extraction, verification, document, report) include new fields with sensible defaults.
+
+**Build:** `npm run build:dashboard` passes with zero errors.
+
+### Current State
+
+- **DD Phase 1:** Fully implemented ✓
+- **Migration 010:** Created, needs to be applied to remote Supabase
+- **Build:** Passes ✓
+- **Branch:** `main`, uncommitted changes
+
+### What's Next
+
+1. Apply migration 010 to remote Supabase
+2. Fix `applications_status_check` constraint (migration 009) — still a blocker
+3. Run DD pipeline on an existing application to verify all new fields
+4. Interview Agent V2

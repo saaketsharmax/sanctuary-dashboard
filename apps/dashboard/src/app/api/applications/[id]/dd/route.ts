@@ -10,7 +10,7 @@ import { getClaimExtractionAgent } from '@/lib/ai/agents/claim-extraction-agent'
 import { getClaimVerificationAgent } from '@/lib/ai/agents/claim-verification-agent'
 import { getDocumentVerificationAgent } from '@/lib/ai/agents/document-verification-agent'
 import { getDDReportGenerator } from '@/lib/ai/agents/dd-report-generator'
-import type { DDClaim, DDVerification } from '@/lib/ai/types/due-diligence'
+import type { DDClaim, DDVerification, DDOmission } from '@/lib/ai/types/due-diligence'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -155,21 +155,27 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Claim extraction failed', details: extractionResult.error }, { status: 500 })
     }
 
+    // Capture omissions from extraction
+    const omissions: DDOmission[] = extractionResult.omissions || []
+
     // Log extraction agent run
     await supabase.from('agent_runs').insert({
       agent_type: 'dd_claim_extraction',
-      agent_version: '1.0.0',
+      agent_version: '1.1.0',
       application_id: id,
       trigger_type: 'manual',
       status: 'completed',
       completed_at: new Date().toISOString(),
-      output_summary: { totalClaims: extractionResult.metadata.totalClaims },
+      output_summary: {
+        totalClaims: extractionResult.metadata.totalClaims,
+        totalOmissions: omissions.length,
+      },
     })
 
     // Delete existing claims if re-running
     await supabase.from('dd_claims').delete().eq('application_id', id)
 
-    // Insert claims into DB
+    // Insert claims into DB (with benchmark_flag)
     const claimInserts = extractionResult.claims.map(c => ({
       application_id: id,
       category: c.category,
@@ -183,6 +189,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       verification_confidence: c.verificationConfidence,
       contradicts: [],
       corroborates: [],
+      benchmark_flag: c.benchmarkFlag,
     }))
 
     const { data: insertedClaims, error: insertError } = await supabase
@@ -213,6 +220,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       verificationConfidence: c.verification_confidence ? Number(c.verification_confidence) : null,
       contradicts: c.contradicts || [],
       corroborates: c.corroborates || [],
+      benchmarkFlag: c.benchmark_flag || null,
       verifications: [],
     }))
 
@@ -250,7 +258,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // ─── Step 5: Store verifications ───
+    // ─── Step 5: Store verifications (with source_credibility_score) ───
     const allVerifications = [
       ...(verificationResult.success ? verificationResult.verifications : []),
       ...docVerifications,
@@ -271,6 +279,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         evidence: v.evidence,
         evidence_urls: v.evidenceUrls,
         notes: v.notes,
+        source_credibility_score: v.sourceCredibilityScore ?? null,
       }))
 
       await supabase.from('dd_verifications').insert(verificationInserts)
@@ -279,7 +288,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // Log verification agent run
     await supabase.from('agent_runs').insert({
       agent_type: 'dd_claim_verification',
-      agent_version: '1.0.0',
+      agent_version: '1.1.0',
       application_id: id,
       trigger_type: 'manual',
       status: verificationResult.success ? 'completed' : 'failed',
@@ -334,6 +343,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       verificationConfidence: c.verification_confidence ? Number(c.verification_confidence) : null,
       contradicts: c.contradicts || [],
       corroborates: c.corroborates || [],
+      benchmarkFlag: c.benchmark_flag || null,
       verifications: (allDbVerifications || [])
         .filter((v: any) => v.claim_id === c.id)
         .map((v: any) => ({
@@ -347,15 +357,17 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           evidence: v.evidence,
           evidenceUrls: v.evidence_urls || [],
           notes: v.notes,
+          sourceCredibilityScore: v.source_credibility_score ? Number(v.source_credibility_score) : null,
         })),
     }))
 
-    // ─── Step 8: Generate DD report ───
+    // ─── Step 8: Generate DD report (with omissions) ───
     const reportGenerator = getDDReportGenerator()
     const reportResult = await reportGenerator.generateReport({
       applicationId: id,
       companyName: application.company_name,
       claims: fullClaims,
+      omissions,
     })
 
     if (!reportResult.success || !reportResult.report) {
@@ -389,12 +401,16 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // Log report generation
     await supabase.from('agent_runs').insert({
       agent_type: 'dd_report_generation',
-      agent_version: '1.0.0',
+      agent_version: '1.1.0',
       application_id: id,
       trigger_type: 'manual',
       status: 'completed',
       completed_at: new Date().toISOString(),
-      output_summary: { score: reportResult.report.overallDDScore, grade: reportResult.report.ddGrade },
+      output_summary: {
+        score: reportResult.report.overallDDScore,
+        grade: reportResult.report.ddGrade,
+        recommendation: reportResult.report.recommendation.verdict,
+      },
     })
 
     // ─── Step 9: Mark DD as completed ───
@@ -413,8 +429,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       metadata: {
         totalClaims: fullClaims.length,
         totalVerifications: allVerifications.length,
+        totalOmissions: omissions.length,
         score: reportResult.report.overallDDScore,
         grade: reportResult.report.ddGrade,
+        recommendation: reportResult.report.recommendation.verdict,
       },
     })
   } catch (error) {

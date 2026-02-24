@@ -123,6 +123,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       verificationConfidence: c.verification_confidence ? Number(c.verification_confidence) : null,
       contradicts: c.contradicts || [],
       corroborates: c.corroborates || [],
+      benchmarkFlag: c.benchmark_flag || null,
       verifications: (verifications || [])
         .filter((v: any) => v.claim_id === c.id)
         .map((v: any) => ({
@@ -136,8 +137,20 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           evidence: v.evidence,
           evidenceUrls: v.evidence_urls || [],
           notes: v.notes,
+          sourceCredibilityScore: v.source_credibility_score ? Number(v.source_credibility_score) : null,
         })),
     }))
+
+    // Try to recover omissions from the existing report's report_data
+    let existingOmissions: any[] = []
+    const { data: existingReport } = await supabase
+      .from('dd_reports')
+      .select('report_data')
+      .eq('application_id', id)
+      .single()
+    if (existingReport?.report_data?.omissions) {
+      existingOmissions = existingReport.report_data.omissions
+    }
 
     // Generate report
     const generator = getDDReportGenerator()
@@ -145,6 +158,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       applicationId: id,
       companyName: application.company_name,
       claims: fullClaims,
+      omissions: existingOmissions,
     })
 
     if (!result.success || !result.report) {

@@ -18,6 +18,15 @@ CONFIDENCE SCORING:
 - 0.3-0.5: Very limited evidence, mostly inference
 - 0.0-0.3: Essentially no useful evidence found
 
+SOURCE QUALITY AWARENESS:
+When evaluating evidence, consider the credibility of sources:
+- Tier 1 (highest): Official filings (SEC, patents), authoritative databases (Crunchbase, PitchBook), major financial press (Bloomberg, WSJ, Reuters), professional profiles (LinkedIn)
+- Tier 2: Reputable tech/business press (TechCrunch, Forbes), industry reports (Gartner, Statista)
+- Tier 3: Blogs, social media, general web content
+- Tier 4 (lowest): The company's own website or press releases (self-reported, treat as unverified)
+
+Weight your confidence scores accordingly — a claim confirmed by Tier 1 sources deserves higher confidence than one only backed by the company's own blog post.
+
 IMPORTANT:
 - Self-reported metrics (revenue, users) often CANNOT be externally verified for early-stage startups. Mark these as "unconfirmed" with appropriate notes, not "disputed" unless you find contradicting evidence.
 - Founder backgrounds CAN often be partially verified through LinkedIn, press, and company records.

@@ -72,6 +72,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       verificationConfidence: c.verification_confidence ? Number(c.verification_confidence) : null,
       contradicts: c.contradicts || [],
       corroborates: c.corroborates || [],
+      benchmarkFlag: c.benchmark_flag || null,
       verifications: (verifications || [])
         .filter((v: any) => v.claim_id === c.id)
         .map((v: any) => ({
@@ -85,6 +86,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           evidence: v.evidence,
           evidenceUrls: v.evidence_urls || [],
           notes: v.notes,
+          sourceCredibilityScore: v.source_credibility_score ? Number(v.source_credibility_score) : null,
         })),
     }))
 

@@ -11,9 +11,12 @@ import {
 import type {
   DDClaim,
   DDClaimCategory,
+  DDOmission,
+  DDBenchmarkFlag,
   ClaimExtractionInput,
   ClaimExtractionResult,
 } from '../types/due-diligence'
+import { getStageBenchmarks } from '../types/due-diligence'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CLAIM EXTRACTION AGENT CLASS
@@ -36,12 +39,14 @@ export class ClaimExtractionAgent {
       const applicationData = this.formatApplicationData(input)
       const interviewData = this.formatInterviewData(input.interviewTranscript)
       const researchData = this.formatResearchData(input.researchData)
+      const benchmarkContext = this.formatBenchmarkContext(input.applicationData.stage)
 
       const prompt = CLAIM_EXTRACTION_PROMPT(
         input.companyName,
         applicationData,
         interviewData,
-        researchData
+        researchData,
+        benchmarkContext
       )
 
       const response = await this.client.messages.create({
@@ -64,6 +69,7 @@ export class ClaimExtractionAgent {
       const parsed = JSON.parse(jsonMatch[0])
       const rawClaims = parsed.claims || []
       const contradictions = parsed.contradictions || []
+      const rawOmissions = parsed.omissions || []
 
       // Build claims with contradiction links
       const claims: Omit<DDClaim, 'id' | 'verifications'>[] = rawClaims.map(
@@ -85,9 +91,18 @@ export class ClaimExtractionAgent {
             verificationConfidence: null,
             contradicts: contradictingIndices.map((i: number) => `__idx_${i}`), // placeholder
             corroborates: [],
+            benchmarkFlag: this.validateBenchmarkFlag(c.benchmarkFlag),
           }
         }
       )
+
+      // Parse omissions
+      const omissions: DDOmission[] = rawOmissions.map((o: any) => ({
+        category: this.validateCategory(o.category || 'traction'),
+        expectedInfo: o.expectedInfo || '',
+        severity: this.validateSeverity(o.severity),
+        reasoning: o.reasoning || '',
+      }))
 
       // Calculate category counts
       const categoryCounts = {} as Record<DDClaimCategory, number>
@@ -98,6 +113,7 @@ export class ClaimExtractionAgent {
       return {
         success: true,
         claims,
+        omissions,
         metadata: {
           totalClaims: claims.length,
           categoryCounts,
@@ -109,6 +125,7 @@ export class ClaimExtractionAgent {
       return {
         success: false,
         claims: [],
+        omissions: [],
         error: error instanceof Error ? error.message : 'Unknown error',
         metadata: {
           totalClaims: 0,
@@ -174,12 +191,39 @@ export class ClaimExtractionAgent {
     return JSON.stringify(data, null, 2)
   }
 
+  private formatBenchmarkContext(stage: string | null): string {
+    const benchmarks = getStageBenchmarks(stage)
+    if (!benchmarks) {
+      return 'No stage benchmarks available (stage not specified or not recognized).'
+    }
+
+    const lines = [`Stage: ${stage}`, '', 'Typical ranges for this stage:']
+    for (const b of benchmarks) {
+      lines.push(`- ${b.metric} (${b.category}): ${b.description}`)
+    }
+    lines.push('')
+    lines.push('Use these ranges to set benchmarkFlag on quantitative claims. Claims wildly outside these ranges (>3x above max or <0.3x below min) should be flagged as "unrealistic".')
+    return lines.join('\n')
+  }
+
   private validateCategory(cat: string): DDClaimCategory {
     const valid: DDClaimCategory[] = [
       'revenue_metrics', 'user_customer', 'team_background', 'market_size',
       'competitive', 'technology_ip', 'customer_reference', 'traction', 'fundraising',
     ]
     return valid.includes(cat as DDClaimCategory) ? (cat as DDClaimCategory) : 'traction'
+  }
+
+  private validateBenchmarkFlag(flag: any): DDBenchmarkFlag {
+    const valid = ['above_benchmark', 'below_benchmark', 'unrealistic']
+    if (typeof flag === 'string' && valid.includes(flag)) return flag as DDBenchmarkFlag
+    return null
+  }
+
+  private validateSeverity(severity: any): DDOmission['severity'] {
+    const valid = ['critical', 'high', 'medium', 'low']
+    if (typeof severity === 'string' && valid.includes(severity)) return severity as DDOmission['severity']
+    return 'medium'
   }
 }
 
@@ -205,6 +249,7 @@ export class MockClaimExtractionAgent {
         verificationConfidence: null,
         contradicts: [],
         corroborates: [],
+        benchmarkFlag: null,
       },
       {
         applicationId: input.applicationId,
@@ -219,6 +264,7 @@ export class MockClaimExtractionAgent {
         verificationConfidence: null,
         contradicts: [],
         corroborates: [],
+        benchmarkFlag: null,
       },
       {
         applicationId: input.applicationId,
@@ -233,6 +279,7 @@ export class MockClaimExtractionAgent {
         verificationConfidence: null,
         contradicts: [],
         corroborates: [],
+        benchmarkFlag: null,
       },
       ...input.founders.map(f => ({
         applicationId: input.applicationId,
@@ -247,6 +294,7 @@ export class MockClaimExtractionAgent {
         verificationConfidence: null,
         contradicts: [] as string[],
         corroborates: [] as string[],
+        benchmarkFlag: null as DDBenchmarkFlag,
       })),
       {
         applicationId: input.applicationId,
@@ -261,12 +309,29 @@ export class MockClaimExtractionAgent {
         verificationConfidence: null,
         contradicts: [],
         corroborates: [],
+        benchmarkFlag: null,
+      },
+    ]
+
+    const omissions: DDOmission[] = [
+      {
+        category: 'revenue_metrics',
+        expectedInfo: 'Burn rate / monthly expenses',
+        severity: 'high',
+        reasoning: 'Without burn rate, runway cannot be assessed — critical for investment timing.',
+      },
+      {
+        category: 'competitive',
+        expectedInfo: 'Named competitors and differentiation',
+        severity: 'medium',
+        reasoning: 'No competitive landscape provided; difficult to assess market positioning.',
       },
     ]
 
     return {
       success: true,
       claims,
+      omissions,
       metadata: {
         totalClaims: claims.length,
         categoryCounts: {

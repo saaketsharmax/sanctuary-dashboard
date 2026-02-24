@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { ClaimStatusBadge, ClaimPriorityBadge, VerificationVerdictBadge } from './verification-badge'
 import { DD_CATEGORY_LABELS } from '@/lib/ai/types/due-diligence'
-import type { DDClaim } from '@/lib/ai/types/due-diligence'
+import type { DDClaim, DDBenchmarkFlag } from '@/lib/ai/types/due-diligence'
 
 interface ClaimRowProps {
   claim: DDClaim
@@ -39,6 +39,9 @@ export function ClaimRow({ claim }: ClaimRowProps) {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            {claim.benchmarkFlag && (
+              <BenchmarkBadge flag={claim.benchmarkFlag} />
+            )}
             <ClaimPriorityBadge priority={claim.priority} />
             <ClaimStatusBadge status={claim.status} />
             {verificationCount > 0 && (
@@ -122,4 +125,18 @@ export function ClaimRow({ claim }: ClaimRowProps) {
       </CollapsibleContent>
     </Collapsible>
   )
+}
+
+// ─── Benchmark Badge ───
+
+const benchmarkConfig: Record<string, { label: string; className: string }> = {
+  above_benchmark: { label: 'Above Benchmark', className: 'bg-emerald-100 text-emerald-700' },
+  below_benchmark: { label: 'Below Benchmark', className: 'bg-amber-100 text-amber-700' },
+  unrealistic: { label: 'Unrealistic', className: 'bg-red-100 text-red-700' },
+}
+
+function BenchmarkBadge({ flag }: { flag: NonNullable<DDBenchmarkFlag> }) {
+  const config = benchmarkConfig[flag]
+  if (!config) return null
+  return <Badge className={`${config.className} text-xs`}>{config.label}</Badge>
 }

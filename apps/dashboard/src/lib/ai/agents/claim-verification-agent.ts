@@ -16,6 +16,7 @@ import type {
   ClaimVerificationInput,
   ClaimVerificationResult,
 } from '../types/due-diligence'
+import { getSourceCredibilityTier } from '../types/due-diligence'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CLAIM VERIFICATION AGENT CLASS
@@ -160,16 +161,26 @@ ${specificEvidence ? `CLAIM-SPECIFIC EVIDENCE:\n${specificEvidence}` : ''}`
 
     const verifications: Omit<DDVerification, 'id'>[] = rawVerifications.map((v: any) => {
       const claim = claims[v.claimIndex] || claims[0]
+      const urls: string[] = v.evidenceUrls || []
+      const rawConfidence = Math.min(1, Math.max(0, v.confidence || 0.5))
+
+      // Compute source credibility score as average weight of evidence URLs
+      const sourceCredibilityScore = this.computeSourceCredibilityScore(urls, companyWebsite)
+
+      // Adjust confidence: rawConfidence * avgSourceWeight (clamped 0-1)
+      const adjustedConfidence = Math.min(1, Math.max(0, rawConfidence * sourceCredibilityScore))
+
       return {
         claimId: claim.id,
         sourceType: 'ai_research' as const,
         sourceName: 'Tavily Web Search + Claude Analysis',
         sourceCredentials: null,
         verdict: this.validateVerdict(v.verdict),
-        confidence: Math.min(1, Math.max(0, v.confidence || 0.5)),
+        confidence: adjustedConfidence,
         evidence: v.evidence || 'No evidence summary provided',
-        evidenceUrls: v.evidenceUrls || [],
+        evidenceUrls: urls,
         notes: v.notes || null,
+        sourceCredibilityScore,
       }
     })
 
@@ -294,6 +305,16 @@ ${specificEvidence ? `CLAIM-SPECIFIC EVIDENCE:\n${specificEvidence}` : ''}`
     return lines.join('\n') || 'No search results found.'
   }
 
+  private computeSourceCredibilityScore(urls: string[], companyWebsite: string | null): number {
+    if (urls.length === 0) return 0.65 // default tier3 weight when no URLs
+    let totalWeight = 0
+    for (const url of urls) {
+      const { weight } = getSourceCredibilityTier(url, companyWebsite)
+      totalWeight += weight
+    }
+    return totalWeight / urls.length
+  }
+
   private validateVerdict(verdict: string): DDVerification['verdict'] {
     const valid = ['confirmed', 'partially_confirmed', 'unconfirmed', 'disputed', 'refuted']
     return valid.includes(verdict) ? (verdict as DDVerification['verdict']) : 'unconfirmed'
@@ -322,6 +343,7 @@ export class MockClaimVerificationAgent {
       evidence: `[MOCK] Evidence for: "${claim.claimText}". Based on web search results, this claim has been evaluated.`,
       evidenceUrls: ['https://example.com/mock-source'],
       notes: '[MOCK] This is a simulated verification result.',
+      sourceCredibilityScore: 0.65,
     }))
 
     return {

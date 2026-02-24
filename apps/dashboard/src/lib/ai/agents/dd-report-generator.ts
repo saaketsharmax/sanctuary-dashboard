@@ -13,18 +13,18 @@ import type {
   DDClaimCategory,
   DDCategoryScore,
   DDRedFlag,
+  DDOmission,
+  DDFollowUpQuestion,
+  DDRecommendation,
+  DDRecommendationVerdict,
   DDGrade,
   DueDiligenceReport,
   DDReportInput,
   DDReportResult,
-  DD_CATEGORY_LABELS,
-  DD_CATEGORY_WEIGHTS,
-  DD_PRIORITY_ORDER,
 } from '../types/due-diligence'
 import {
   DD_CATEGORY_LABELS as LABELS,
   DD_CATEGORY_WEIGHTS as WEIGHTS,
-  DD_PRIORITY_ORDER as PRIORITY,
 } from '../types/due-diligence'
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -45,7 +45,7 @@ export class DDReportGenerator {
     const startTime = Date.now()
 
     try {
-      const { applicationId, companyName, claims } = input
+      const { applicationId, companyName, claims, omissions } = input
 
       // 1. Calculate category scores (deterministic)
       const categoryScores = this.calculateCategoryScores(claims)
@@ -56,8 +56,8 @@ export class DDReportGenerator {
       // 3. Determine grade (deterministic)
       const ddGrade = this.calculateGrade(overallDDScore)
 
-      // 4. Identify red flags (deterministic)
-      const redFlags = this.identifyRedFlags(claims)
+      // 4. Identify red flags (deterministic) — including omission-based flags
+      const redFlags = this.identifyRedFlags(claims, omissions)
 
       // 5. Calculate verification coverage (deterministic)
       const claimsWithVerification = claims.filter(
@@ -78,15 +78,33 @@ export class DDReportGenerator {
       }
       const totalSources = allUrls.size
 
-      // 7. Generate executive summary with Claude (AI step)
-      const executiveSummary = await this.generateExecutiveSummary(
+      // 7. Determine preliminary recommendation verdict (deterministic)
+      const preliminaryVerdict = this.determineRecommendationVerdict(ddGrade, redFlags)
+
+      // 8. Generate deterministic follow-up questions from structured data
+      const deterministicQuestions = this.generateDeterministicFollowUps(claims, omissions)
+
+      // 9. Generate executive summary + AI follow-ups + recommendation with Claude
+      const aiResult = await this.generateExecutiveSummaryAndExtras(
         companyName,
         overallDDScore,
         ddGrade,
         categoryScores,
         redFlags,
-        verificationCoverage
+        verificationCoverage,
+        omissions,
+        preliminaryVerdict
       )
+
+      // 10. Merge follow-up questions (deterministic + AI), deduplicate, cap at 12
+      const followUpQuestions = this.mergeFollowUpQuestions(deterministicQuestions, aiResult.followUpQuestions)
+
+      // 11. Build recommendation
+      const recommendation: DDRecommendation = {
+        verdict: preliminaryVerdict,
+        conditions: aiResult.recommendationConditions,
+        reasoning: aiResult.recommendationReasoning,
+      }
 
       const report: DueDiligenceReport = {
         id: '', // Set by DB
@@ -94,10 +112,13 @@ export class DDReportGenerator {
         companyName,
         overallDDScore,
         ddGrade,
-        executiveSummary,
+        executiveSummary: aiResult.executiveSummary,
         categoryScores,
         claims,
         redFlags,
+        omissions,
+        followUpQuestions,
+        recommendation,
         totalSources,
         verificationCoverage,
         generatedAt: new Date().toISOString(),
@@ -211,7 +232,7 @@ export class DDReportGenerator {
     return 'F'
   }
 
-  private identifyRedFlags(claims: DDClaim[]): DDRedFlag[] {
+  private identifyRedFlags(claims: DDClaim[], omissions: DDOmission[]): DDRedFlag[] {
     const flags: DDRedFlag[] = []
 
     for (const claim of claims) {
@@ -266,6 +287,32 @@ export class DDReportGenerator {
           evidence: `This claim contradicts ${claim.contradicts.length} other claim(s) in the application`,
         })
       }
+
+      // Unrealistic benchmark flags
+      if (claim.benchmarkFlag === 'unrealistic') {
+        flags.push({
+          claimId: claim.id,
+          claimText: claim.claimText,
+          category: claim.category,
+          severity: 'high',
+          reason: 'Metric is unrealistic for reported stage',
+          evidence: `This claim falls wildly outside the expected benchmark range for the company's stage`,
+        })
+      }
+    }
+
+    // Critical/high omissions become red flags
+    for (const omission of omissions) {
+      if (omission.severity === 'critical' || omission.severity === 'high') {
+        flags.push({
+          claimId: 'omission',
+          claimText: `Missing: ${omission.expectedInfo}`,
+          category: omission.category as DDClaimCategory,
+          severity: omission.severity === 'critical' ? 'high' : 'medium',
+          reason: 'Key information omitted from application',
+          evidence: omission.reasoning,
+        })
+      }
     }
 
     // Sort by severity
@@ -276,17 +323,136 @@ export class DDReportGenerator {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // AI-GENERATED SUMMARY
+  // RECOMMENDATION LOGIC
   // ═══════════════════════════════════════════════════════════════════════════
 
-  private async generateExecutiveSummary(
+  determineRecommendationVerdict(grade: DDGrade, redFlags: DDRedFlag[]): DDRecommendationVerdict {
+    const criticalFlags = redFlags.filter(f => f.severity === 'critical').length
+    const highFlags = redFlags.filter(f => f.severity === 'high').length
+    const totalSignificantFlags = criticalFlags + highFlags
+
+    // Grade A/B + no critical flags → invest
+    if ((grade === 'A' || grade === 'B') && criticalFlags === 0 && highFlags <= 1) {
+      return 'invest'
+    }
+
+    // Grade A/B + critical flags OR Grade C → conditional_invest
+    if ((grade === 'A' || grade === 'B') || grade === 'C') {
+      return 'conditional_invest'
+    }
+
+    // Grade D + few flags → needs_more_info
+    if (grade === 'D' && totalSignificantFlags <= 2) {
+      return 'needs_more_info'
+    }
+
+    // Grade D + many flags or Grade F → pass
+    return 'pass'
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FOLLOW-UP QUESTION GENERATION (DETERMINISTIC)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private generateDeterministicFollowUps(claims: DDClaim[], omissions: DDOmission[]): DDFollowUpQuestion[] {
+    const questions: DDFollowUpQuestion[] = []
+
+    // From unverified critical claims
+    const unverifiedCritical = claims.filter(c => c.priority === 'critical' && c.status === 'unverified')
+    for (const claim of unverifiedCritical) {
+      questions.push({
+        category: claim.category,
+        question: `Can you provide third-party evidence or documentation to support: "${claim.claimText}"?`,
+        reason: `This critical claim could not be verified through external research`,
+        priority: 'critical',
+        source: 'unverified_claim',
+      })
+    }
+
+    // From disputed claims
+    const disputedClaims = claims.filter(c => c.status === 'disputed')
+    for (const claim of disputedClaims) {
+      const disputeEvidence = claim.verifications?.find(v => v.verdict === 'disputed')?.evidence || 'external evidence'
+      questions.push({
+        category: claim.category,
+        question: `External evidence disputes "${claim.claimText}". Can you clarify or provide updated data?`,
+        reason: `Dispute found: ${disputeEvidence}`,
+        priority: claim.priority === 'critical' ? 'critical' : 'high',
+        source: 'disputed_claim',
+      })
+    }
+
+    // From omissions (critical and high)
+    for (const omission of omissions.filter(o => o.severity === 'critical' || o.severity === 'high')) {
+      questions.push({
+        category: omission.category,
+        question: `Your application did not include ${omission.expectedInfo.toLowerCase()}. Can you provide this information?`,
+        reason: omission.reasoning,
+        priority: omission.severity === 'critical' ? 'high' : 'medium',
+        source: 'omission',
+      })
+    }
+
+    // From benchmark flags (unrealistic or above_benchmark)
+    const flaggedClaims = claims.filter(c => c.benchmarkFlag === 'unrealistic' || c.benchmarkFlag === 'above_benchmark')
+    for (const claim of flaggedClaims) {
+      const label = claim.benchmarkFlag === 'unrealistic' ? 'unusually high for your reported stage' : 'above typical benchmarks'
+      questions.push({
+        category: claim.category,
+        question: `"${claim.claimText}" appears ${label}. Can you explain the methodology or provide supporting data?`,
+        reason: `Benchmark analysis flagged this metric as ${claim.benchmarkFlag}`,
+        priority: claim.benchmarkFlag === 'unrealistic' ? 'high' : 'medium',
+        source: 'benchmark_flag',
+      })
+    }
+
+    return questions
+  }
+
+  private mergeFollowUpQuestions(
+    deterministic: DDFollowUpQuestion[],
+    aiGenerated: DDFollowUpQuestion[]
+  ): DDFollowUpQuestion[] {
+    const all = [...deterministic, ...aiGenerated]
+
+    // Deduplicate by similar question text (simple substring match)
+    const seen = new Set<string>()
+    const unique: DDFollowUpQuestion[] = []
+    for (const q of all) {
+      const key = q.question.toLowerCase().slice(0, 60)
+      if (!seen.has(key)) {
+        seen.add(key)
+        unique.push(q)
+      }
+    }
+
+    // Sort by priority
+    const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 }
+    unique.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
+
+    // Cap at 12
+    return unique.slice(0, 12)
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // AI-GENERATED SUMMARY + EXTRAS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private async generateExecutiveSummaryAndExtras(
     companyName: string,
     score: number,
     grade: DDGrade,
     categoryScores: DDCategoryScore[],
     redFlags: DDRedFlag[],
-    verificationCoverage: number
-  ): Promise<string> {
+    verificationCoverage: number,
+    omissions: DDOmission[],
+    preliminaryVerdict: DDRecommendationVerdict
+  ): Promise<{
+    executiveSummary: string
+    followUpQuestions: DDFollowUpQuestion[]
+    recommendationConditions: string[]
+    recommendationReasoning: string
+  }> {
     const categoryBreakdown = categoryScores
       .map(cs => {
         const label = LABELS[cs.category]
@@ -298,37 +464,80 @@ export class DDReportGenerator {
       ? redFlags.map(f => `- [${f.severity.toUpperCase()}] ${f.claimText}: ${f.reason} — ${f.evidence}`).join('\n')
       : 'No red flags identified.'
 
+    const omissionsDescription = omissions.length > 0
+      ? omissions.map(o => `- [${o.severity.toUpperCase()}] ${o.category}: ${o.expectedInfo} — ${o.reasoning}`).join('\n')
+      : 'No significant omissions identified.'
+
+    const verdictLabel = {
+      invest: 'INVEST — Strong DD profile',
+      conditional_invest: 'CONDITIONAL INVEST — Issues to resolve first',
+      pass: 'PASS — Too many concerns',
+      needs_more_info: 'NEEDS MORE INFO — Insufficient data for decision',
+    }[preliminaryVerdict]
+
     const prompt = DD_EXECUTIVE_SUMMARY_PROMPT(
       companyName,
       score,
       grade,
       categoryBreakdown,
       redFlagsDescription,
-      verificationCoverage
+      verificationCoverage,
+      omissionsDescription,
+      verdictLabel
     )
 
     try {
       const response = await this.client.messages.create({
         model: this.model,
-        max_tokens: 2048,
+        max_tokens: 3072,
         system: DD_REPORT_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: prompt }],
       })
 
       const textContent = response.content.find(c => c.type === 'text')
       if (!textContent || textContent.type !== 'text') {
-        return this.fallbackSummary(companyName, score, grade, categoryScores, redFlags)
+        return this.fallbackResult(companyName, score, grade, categoryScores, redFlags, preliminaryVerdict)
       }
 
       const jsonMatch = textContent.text.match(/\{[\s\S]*\}/)
       if (!jsonMatch) {
-        return this.fallbackSummary(companyName, score, grade, categoryScores, redFlags)
+        return this.fallbackResult(companyName, score, grade, categoryScores, redFlags, preliminaryVerdict)
       }
 
       const parsed = JSON.parse(jsonMatch[0])
-      return parsed.executiveSummary || this.fallbackSummary(companyName, score, grade, categoryScores, redFlags)
+
+      const aiFollowUps: DDFollowUpQuestion[] = (parsed.followUpQuestions || []).map((q: any) => ({
+        category: q.category || 'traction',
+        question: q.question || '',
+        reason: q.reason || '',
+        priority: q.priority || 'medium',
+        source: 'ai_generated' as const,
+      }))
+
+      return {
+        executiveSummary: parsed.executiveSummary || this.fallbackSummary(companyName, score, grade, categoryScores, redFlags),
+        followUpQuestions: aiFollowUps,
+        recommendationConditions: parsed.recommendationConditions || [],
+        recommendationReasoning: parsed.recommendationReasoning || this.fallbackReasoningText(preliminaryVerdict),
+      }
     } catch {
-      return this.fallbackSummary(companyName, score, grade, categoryScores, redFlags)
+      return this.fallbackResult(companyName, score, grade, categoryScores, redFlags, preliminaryVerdict)
+    }
+  }
+
+  private fallbackResult(
+    companyName: string,
+    score: number,
+    grade: DDGrade,
+    categoryScores: DDCategoryScore[],
+    redFlags: DDRedFlag[],
+    verdict: DDRecommendationVerdict
+  ) {
+    return {
+      executiveSummary: this.fallbackSummary(companyName, score, grade, categoryScores, redFlags),
+      followUpQuestions: [],
+      recommendationConditions: verdict === 'conditional_invest' ? ['Resolve all identified red flags'] : [],
+      recommendationReasoning: this.fallbackReasoningText(verdict),
     }
   }
 
@@ -343,6 +552,15 @@ export class DDReportGenerator {
     const totalConfirmed = categoryScores.reduce((sum, cs) => sum + cs.confirmedClaims, 0)
     return `Due diligence on ${companyName} produced a score of ${score}/100 (Grade: ${grade}). Of ${totalClaims} claims extracted, ${totalConfirmed} were confirmed through external verification. ${redFlags.length} red flag(s) were identified requiring attention.`
   }
+
+  private fallbackReasoningText(verdict: DDRecommendationVerdict): string {
+    switch (verdict) {
+      case 'invest': return 'Strong DD profile with verified claims and minimal red flags. Proceed with standard investment terms.'
+      case 'conditional_invest': return 'DD reveals some concerns that should be addressed before finalizing investment. Resolution of flagged items is recommended.'
+      case 'needs_more_info': return 'Insufficient verified data to make a confident investment decision. Additional information from the founders is needed.'
+      case 'pass': return 'DD reveals significant concerns including multiple red flags. Investment is not recommended at this time.'
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -353,7 +571,7 @@ export class MockDDReportGenerator {
   async generateReport(input: DDReportInput): Promise<DDReportResult> {
     await new Promise(resolve => setTimeout(resolve, 1000))
 
-    const { applicationId, companyName, claims } = input
+    const { applicationId, companyName, claims, omissions } = input
 
     const categoryScores: DDCategoryScore[] = [
       {
@@ -407,6 +625,35 @@ export class MockDDReportGenerator {
           evidence: 'No external evidence found to confirm or deny this claim',
         },
       ],
+      omissions: omissions.length > 0 ? omissions : [
+        {
+          category: 'revenue_metrics',
+          expectedInfo: 'Burn rate / monthly expenses',
+          severity: 'high',
+          reasoning: 'Without burn rate, runway cannot be assessed.',
+        },
+      ],
+      followUpQuestions: [
+        {
+          category: 'revenue_metrics',
+          question: `Can you provide third-party evidence for ${companyName}'s revenue claims?`,
+          reason: 'Revenue metrics could not be verified externally',
+          priority: 'critical',
+          source: 'unverified_claim',
+        },
+        {
+          category: 'revenue_metrics',
+          question: 'What is your current burn rate and runway?',
+          reason: 'Burn rate was not disclosed in the application',
+          priority: 'high',
+          source: 'omission',
+        },
+      ],
+      recommendation: {
+        verdict: 'conditional_invest',
+        conditions: ['Provide verified revenue documentation', 'Disclose burn rate and runway'],
+        reasoning: '[MOCK] DD reveals a mixed picture. Core team claims verified but financial metrics need third-party confirmation. Conditional investment recommended pending documentation.',
+      },
       totalSources: 4,
       verificationCoverage: 0.6,
       generatedAt: new Date().toISOString(),

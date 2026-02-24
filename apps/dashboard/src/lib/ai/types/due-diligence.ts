@@ -50,6 +50,14 @@ export type DDStatus =
   | 'completed'
   | 'failed'
 
+export type DDBenchmarkFlag = 'above_benchmark' | 'below_benchmark' | 'unrealistic' | null
+
+export type DDRecommendationVerdict =
+  | 'invest'
+  | 'conditional_invest'
+  | 'pass'
+  | 'needs_more_info'
+
 // -----------------------------------------------------
 // CORE ENTITIES
 // -----------------------------------------------------
@@ -68,6 +76,7 @@ export interface DDClaim {
   verificationConfidence: number | null // 0-1
   contradicts: string[] // claim IDs
   corroborates: string[] // claim IDs
+  benchmarkFlag: DDBenchmarkFlag
   verifications?: DDVerification[]
 }
 
@@ -82,6 +91,7 @@ export interface DDVerification {
   evidence: string
   evidenceUrls: string[]
   notes: string | null
+  sourceCredibilityScore: number | null // 0-1
 }
 
 export interface DDCategoryScore {
@@ -104,6 +114,27 @@ export interface DDRedFlag {
   evidence: string
 }
 
+export interface DDOmission {
+  category: DDClaimCategory | string
+  expectedInfo: string
+  severity: 'critical' | 'high' | 'medium' | 'low'
+  reasoning: string
+}
+
+export interface DDFollowUpQuestion {
+  category: DDClaimCategory | string
+  question: string
+  reason: string
+  priority: 'critical' | 'high' | 'medium' | 'low'
+  source: 'omission' | 'unverified_claim' | 'disputed_claim' | 'benchmark_flag' | 'ai_generated'
+}
+
+export interface DDRecommendation {
+  verdict: DDRecommendationVerdict
+  conditions: string[]
+  reasoning: string
+}
+
 export interface DueDiligenceReport {
   id: string
   applicationId: string
@@ -114,6 +145,9 @@ export interface DueDiligenceReport {
   categoryScores: DDCategoryScore[]
   claims: DDClaim[]
   redFlags: DDRedFlag[]
+  omissions: DDOmission[]
+  followUpQuestions: DDFollowUpQuestion[]
+  recommendation: DDRecommendation
   totalSources: number
   verificationCoverage: number // 0-1
   generatedAt: string
@@ -154,6 +188,7 @@ export interface ClaimExtractionInput {
 export interface ClaimExtractionResult {
   success: boolean
   claims: Omit<DDClaim, 'id' | 'verifications'>[]
+  omissions: DDOmission[]
   error?: string
   metadata: {
     totalClaims: number
@@ -204,6 +239,7 @@ export interface DDReportInput {
   applicationId: string
   companyName: string
   claims: DDClaim[]
+  omissions: DDOmission[]
 }
 
 export interface DDReportResult {
@@ -213,6 +249,135 @@ export interface DDReportResult {
   metadata: {
     processingTimeMs: number
   }
+}
+
+// -----------------------------------------------------
+// SOURCE CREDIBILITY TIERS
+// -----------------------------------------------------
+
+export interface SourceCredibilityTier {
+  pattern: RegExp
+  tier: 'tier1' | 'tier2' | 'tier3' | 'tier4'
+  weight: number
+  label: string
+}
+
+export const SOURCE_CREDIBILITY_TIERS: SourceCredibilityTier[] = [
+  // Tier 1: Official / authoritative (weight 1.0)
+  { pattern: /crunchbase\.com/i, tier: 'tier1', weight: 1.0, label: 'Crunchbase' },
+  { pattern: /pitchbook\.com/i, tier: 'tier1', weight: 1.0, label: 'PitchBook' },
+  { pattern: /sec\.gov/i, tier: 'tier1', weight: 1.0, label: 'SEC Filing' },
+  { pattern: /bloomberg\.com/i, tier: 'tier1', weight: 1.0, label: 'Bloomberg' },
+  { pattern: /reuters\.com/i, tier: 'tier1', weight: 1.0, label: 'Reuters' },
+  { pattern: /wsj\.com/i, tier: 'tier1', weight: 1.0, label: 'WSJ' },
+  { pattern: /ft\.com/i, tier: 'tier1', weight: 1.0, label: 'Financial Times' },
+  { pattern: /linkedin\.com/i, tier: 'tier1', weight: 1.0, label: 'LinkedIn' },
+  { pattern: /github\.com/i, tier: 'tier1', weight: 1.0, label: 'GitHub' },
+  { pattern: /patents\.google\.com/i, tier: 'tier1', weight: 1.0, label: 'Google Patents' },
+  // Tier 2: Reputable press / industry (weight 0.85)
+  { pattern: /techcrunch\.com/i, tier: 'tier2', weight: 0.85, label: 'TechCrunch' },
+  { pattern: /forbes\.com/i, tier: 'tier2', weight: 0.85, label: 'Forbes' },
+  { pattern: /businessinsider\.com|insider\.com/i, tier: 'tier2', weight: 0.85, label: 'Business Insider' },
+  { pattern: /theinformation\.com/i, tier: 'tier2', weight: 0.85, label: 'The Information' },
+  { pattern: /venturebeat\.com/i, tier: 'tier2', weight: 0.85, label: 'VentureBeat' },
+  { pattern: /producthunt\.com/i, tier: 'tier2', weight: 0.85, label: 'Product Hunt' },
+  { pattern: /ycombinator\.com/i, tier: 'tier2', weight: 0.85, label: 'Y Combinator' },
+  { pattern: /statista\.com/i, tier: 'tier2', weight: 0.85, label: 'Statista' },
+  { pattern: /gartner\.com/i, tier: 'tier2', weight: 0.85, label: 'Gartner' },
+  { pattern: /mckinsey\.com/i, tier: 'tier2', weight: 0.85, label: 'McKinsey' },
+  // Tier 3: General web / blogs (weight 0.65)
+  { pattern: /medium\.com/i, tier: 'tier3', weight: 0.65, label: 'Medium' },
+  { pattern: /substack\.com/i, tier: 'tier3', weight: 0.65, label: 'Substack' },
+  { pattern: /twitter\.com|x\.com/i, tier: 'tier3', weight: 0.65, label: 'X/Twitter' },
+  { pattern: /reddit\.com/i, tier: 'tier3', weight: 0.65, label: 'Reddit' },
+  { pattern: /wikipedia\.org/i, tier: 'tier3', weight: 0.65, label: 'Wikipedia' },
+  // Tier 4: Company's own website (weight 0.4 — self-reported)
+  // The company website pattern is dynamically added at runtime
+]
+
+/**
+ * Get the credibility tier for a given URL.
+ * Company's own website gets tier4 (self-reported).
+ * Unknown domains default to tier3.
+ */
+export function getSourceCredibilityTier(
+  url: string,
+  companyWebsite?: string | null
+): { tier: SourceCredibilityTier['tier']; weight: number; label: string } {
+  // Check if URL matches company's own website (self-reported = low credibility)
+  if (companyWebsite) {
+    try {
+      const companyHost = new URL(companyWebsite).hostname.replace(/^www\./, '')
+      const urlHost = new URL(url).hostname.replace(/^www\./, '')
+      if (urlHost === companyHost || urlHost.endsWith(`.${companyHost}`)) {
+        return { tier: 'tier4', weight: 0.4, label: 'Company Website (self-reported)' }
+      }
+    } catch {
+      // Invalid URL, skip company match
+    }
+  }
+
+  for (const tier of SOURCE_CREDIBILITY_TIERS) {
+    if (tier.pattern.test(url)) {
+      return { tier: tier.tier, weight: tier.weight, label: tier.label }
+    }
+  }
+
+  // Default: tier 3 for unknown domains
+  return { tier: 'tier3', weight: 0.65, label: 'General Web' }
+}
+
+// -----------------------------------------------------
+// STAGE BENCHMARKS
+// -----------------------------------------------------
+
+export interface StageBenchmark {
+  metric: string
+  category: DDClaimCategory
+  min: number | null
+  max: number | null
+  unit: string
+  description: string
+}
+
+export const STAGE_BENCHMARKS: Record<string, StageBenchmark[]> = {
+  'pre-seed': [
+    { metric: 'mrr', category: 'revenue_metrics', min: 0, max: 5000, unit: 'USD', description: '$0–$5K MRR' },
+    { metric: 'users', category: 'user_customer', min: 0, max: 1000, unit: 'count', description: '0–1K users' },
+    { metric: 'team_size', category: 'team_background', min: 1, max: 5, unit: 'people', description: '1–5 people' },
+    { metric: 'raise_amount', category: 'fundraising', min: 50000, max: 1000000, unit: 'USD', description: '$50K–$1M raise' },
+  ],
+  'seed': [
+    { metric: 'mrr', category: 'revenue_metrics', min: 1000, max: 50000, unit: 'USD', description: '$1K–$50K MRR' },
+    { metric: 'users', category: 'user_customer', min: 100, max: 10000, unit: 'count', description: '100–10K users' },
+    { metric: 'team_size', category: 'team_background', min: 3, max: 15, unit: 'people', description: '3–15 people' },
+    { metric: 'raise_amount', category: 'fundraising', min: 500000, max: 5000000, unit: 'USD', description: '$500K–$5M raise' },
+  ],
+  'series-a': [
+    { metric: 'mrr', category: 'revenue_metrics', min: 25000, max: 500000, unit: 'USD', description: '$25K–$500K MRR' },
+    { metric: 'users', category: 'user_customer', min: 1000, max: 100000, unit: 'count', description: '1K–100K users' },
+    { metric: 'team_size', category: 'team_background', min: 10, max: 50, unit: 'people', description: '10–50 people' },
+    { metric: 'raise_amount', category: 'fundraising', min: 3000000, max: 20000000, unit: 'USD', description: '$3M–$20M raise' },
+  ],
+}
+
+/**
+ * Get stage benchmarks for a given stage string.
+ * Normalizes common stage name variants.
+ */
+export function getStageBenchmarks(stage: string | null): StageBenchmark[] | null {
+  if (!stage) return null
+  const normalized = stage.toLowerCase().replace(/[\s_]+/g, '-').replace(/series\s*/i, 'series-')
+  if (normalized.includes('pre-seed') || normalized.includes('idea') || normalized.includes('concept')) {
+    return STAGE_BENCHMARKS['pre-seed']
+  }
+  if (normalized.includes('series-a') || normalized.includes('series a')) {
+    return STAGE_BENCHMARKS['series-a']
+  }
+  if (normalized.includes('seed')) {
+    return STAGE_BENCHMARKS['seed']
+  }
+  return null
 }
 
 // -----------------------------------------------------

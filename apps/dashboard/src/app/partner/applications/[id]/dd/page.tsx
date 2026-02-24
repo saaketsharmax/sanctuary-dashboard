@@ -13,6 +13,9 @@ import {
   DDCategoryCard,
   DDRedFlags,
   ClaimRow,
+  DDRecommendationBanner,
+  DDFollowUpQuestions,
+  DDOmissions,
 } from '@/components/dd'
 import type { DueDiligenceReport, DDClaim } from '@/lib/ai/types/due-diligence'
 
@@ -279,10 +282,18 @@ export default function DDPage({ params }: DDPageProps) {
             <TabsTrigger value="redflags">
               Red Flags ({report.redFlags?.length || 0})
             </TabsTrigger>
+            <TabsTrigger value="followup">
+              Follow-up ({report.followUpQuestions?.length || 0})
+            </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
+            {/* Recommendation Banner */}
+            {report.recommendation && (
+              <DDRecommendationBanner recommendation={report.recommendation} />
+            )}
+
             <DDScoreHeader
               grade={report.ddGrade}
               overallScore={report.overallDDScore}
@@ -325,6 +336,11 @@ export default function DDPage({ params }: DDPageProps) {
 
             {/* Red Flags */}
             <DDRedFlags redFlags={report.redFlags || []} />
+
+            {/* Omissions */}
+            {report.omissions && report.omissions.length > 0 && (
+              <DDOmissions omissions={report.omissions} />
+            )}
           </TabsContent>
 
           {/* Claims Tab */}
@@ -374,8 +390,24 @@ export default function DDPage({ params }: DDPageProps) {
           </TabsContent>
 
           {/* Red Flags Tab */}
-          <TabsContent value="redflags">
+          <TabsContent value="redflags" className="space-y-6">
             <DDRedFlags redFlags={report.redFlags || []} />
+            {report.omissions && report.omissions.length > 0 && (
+              <DDOmissions omissions={report.omissions} />
+            )}
+          </TabsContent>
+
+          {/* Follow-up Questions Tab */}
+          <TabsContent value="followup" className="space-y-6">
+            {report.followUpQuestions && report.followUpQuestions.length > 0 ? (
+              <DDFollowUpQuestions questions={report.followUpQuestions} />
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                  No follow-up questions generated.
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       )}

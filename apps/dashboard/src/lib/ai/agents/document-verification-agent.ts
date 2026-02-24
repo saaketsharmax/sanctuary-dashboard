@@ -149,6 +149,7 @@ export class DocumentVerificationAgent {
               evidence: v.evidence || 'No evidence summary',
               evidenceUrls: [doc.fileUrl],
               notes: v.notes || null,
+              sourceCredibilityScore: 0.85, // documents are tier2-equivalent
             })
           }
         } catch (docError) {
@@ -215,6 +216,7 @@ export class MockDocumentVerificationAgent {
           evidence: `[MOCK] Document "${doc.name}" provides partial support for this claim.`,
           evidenceUrls: [doc.fileUrl],
           notes: '[MOCK] Simulated document verification.',
+          sourceCredibilityScore: 0.85,
         }))
       )
 

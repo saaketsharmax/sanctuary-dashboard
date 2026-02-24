@@ -108,6 +108,17 @@ Application → Interview → Assessment → Research → Memo → Due Diligence
 - DB: `supabase/migrations/005_due_diligence_schema.sql` (dd_claims, dd_verifications, dd_reports tables)
 - **Migration 005 must be run in Supabase before DD works with real data**
 
+**Investment & Credits (built 2026-02-21):**
+- System: $50k cash + $50k credits auto-allocated on application approval
+- Founder: request/cancel flow, category breakdown, usage analytics, service catalog
+- Partner: portfolio summary, single investment detail, approve/deny transactions
+- Realtime: Supabase Realtime toast notifications on all 4 investment pages
+- API: `/api/founder/investment` (GET with `?view=cash|credits`), `/api/founder/investment/transactions` (POST/PATCH)
+- API: `/api/partner/investments` (GET portfolio), `/api/partner/investments/[id]` (GET detail), `/api/partner/investments/transactions` (GET/PATCH)
+- Pages: `/founder/investment/cash`, `/founder/investment/credits`, `/partner/investments`, `/partner/investments/[id]`
+- DB: Migrations 007 (schema) + 008 (realtime) — both applied
+- **BLOCKER:** `applications_status_check` constraint missing `'approved'`/`'rejected'` — needs migration 009
+
 ## Rules
 
 - Always read `docs/SESSION-LOG.md` before starting work
