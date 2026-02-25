@@ -1,19 +1,17 @@
 'use client'
 
+import { Bell, Search, Plus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
-  Button,
-  Input,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@sanctuary/ui'
-import { Bell, Search, Plus } from 'lucide-react'
+} from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuthStore, useUser } from '@/lib/stores/auth-store'
 import { useRouter } from 'next/navigation'
 

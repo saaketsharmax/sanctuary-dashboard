@@ -1,19 +1,11 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-  Button,
-  Checkbox,
-  cn,
-} from '@sanctuary/ui'
 import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   ChevronDown,
   ChevronRight,
@@ -24,6 +16,7 @@ import {
   Flag,
   Sparkles,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import type { ProposedProgramme, ProposedProgrammeWeek, Stage } from '@/types'
 import { getStageInfo } from '@/types'
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -7,17 +8,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  Button,
-  Input,
-  Label,
-  Textarea,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@sanctuary/ui'
-import { useState } from 'react'
+} from '@/components/ui/select'
 import {
   CREDIT_CATEGORIES,
   CREDIT_SERVICES,

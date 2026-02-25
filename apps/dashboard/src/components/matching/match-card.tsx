@@ -1,16 +1,11 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  Badge,
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-  cn,
-} from '@sanctuary/ui'
 import Link from 'next/link'
 import { User, Building2, ArrowRight } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { cn } from '@/lib/utils'
 import { ExpertiseBadge } from '@/components/mentors'
 import type { MatchWithDetails, ConfidenceLevel } from '@/types'
 

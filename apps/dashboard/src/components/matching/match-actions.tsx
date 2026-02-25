@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@sanctuary/ui'
 import { Check, X, Send, MessageSquare } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import type { MatchStatus } from '@/types'
 
 interface MatchActionsProps {

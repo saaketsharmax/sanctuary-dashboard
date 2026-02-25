@@ -1,7 +1,9 @@
 'use client'
 
-import { Card, CardContent, cn } from '@sanctuary/ui'
+import { Card, CardContent } from '@/components/ui/card'
 import { formatInvestmentCurrency } from '@/types'
+import { cn } from '@/lib/utils'
+
 interface RunwayCardProps {
   cashRemaining: number
   monthlyBurnRate: number

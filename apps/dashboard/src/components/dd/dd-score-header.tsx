@@ -1,10 +1,8 @@
 'use client'
-import {
-  Card,
-  CardContent,
-  Badge,
-  Progress,
-} from '@sanctuary/ui'
+
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
 
 interface DDScoreHeaderProps {
   grade: string

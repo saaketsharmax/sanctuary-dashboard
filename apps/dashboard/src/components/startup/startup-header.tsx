@@ -1,7 +1,9 @@
 'use client'
 
-import { Button, Badge, cn } from '@sanctuary/ui'
 import { Building2, Globe, Presentation, Play, Edit, MapPin, Calendar } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import type { Startup, Cohort } from '@/types'
 import { getStageInfo, getRiskInfo } from '@/types'
 import { format } from 'date-fns'

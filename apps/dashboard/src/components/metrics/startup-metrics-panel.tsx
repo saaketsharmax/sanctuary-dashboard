@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent } from '@sanctuary/ui'
+import { Card, CardContent } from '@/components/ui/card'
 import { Activity } from 'lucide-react'
 
 interface StartupMetricsPanelProps {

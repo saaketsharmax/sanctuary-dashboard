@@ -1,6 +1,7 @@
 'use client'
 
-import { Card, CardContent, Progress } from '@sanctuary/ui'
+import { Card, CardContent } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
 import { formatInvestmentCurrency } from '@/types'
 
 interface BalanceCardProps {

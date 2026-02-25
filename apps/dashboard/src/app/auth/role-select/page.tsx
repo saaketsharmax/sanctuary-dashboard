@@ -1,21 +1,14 @@
 'use client'
 
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  RadioGroup,
-  RadioGroupItem,
-  Label,
-} from '@sanctuary/ui'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { updateUserType, getUserProfile } from '@/lib/supabase/auth'
 import { useAuthStore, type UserRole, type PartnerSubType } from '@/lib/stores/auth-store'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Label } from '@/components/ui/label'
 import {
   Rocket,
   Briefcase,

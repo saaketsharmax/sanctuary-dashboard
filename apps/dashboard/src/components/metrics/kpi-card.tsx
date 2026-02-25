@@ -1,7 +1,8 @@
 'use client'
 
-import { Card, CardContent, cn } from '@sanctuary/ui'
 import { DollarSign, Users, Percent, Star, TrendingUp, Activity } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 import { TrendIndicator } from './trend-indicator'
 import type { TrendDirection } from '@/types'
 

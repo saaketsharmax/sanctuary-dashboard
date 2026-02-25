@@ -1,15 +1,15 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge'
 import {
-  Badge,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-  Button,
-} from '@sanctuary/ui'
+} from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
 import { CreditCategoryBadge } from './credit-category-badge'
 import {
   formatInvestmentCurrency,

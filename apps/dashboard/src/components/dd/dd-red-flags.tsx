@@ -1,12 +1,7 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import type { DDRedFlag } from '@/lib/ai/types/due-diligence'
 import { DD_CATEGORY_LABELS } from '@/lib/ai/types/due-diligence'
 

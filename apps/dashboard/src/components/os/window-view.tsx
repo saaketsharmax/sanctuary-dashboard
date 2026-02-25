@@ -1,8 +1,8 @@
 'use client'
 
-import { cn } from '@sanctuary/ui'
 import { X, Maximize2, Minimize2 } from 'lucide-react'
 import { useState } from 'react'
+import { cn } from '@/lib/utils'
 import type { NavSection } from './os-layout'
 import { FounderCompanyContent } from './window-content/founder-company'
 import { FounderDocumentsContent } from './window-content/founder-documents'

@@ -1,7 +1,8 @@
 'use client'
 
-import { Button } from '@sanctuary/ui'
 import { Calendar, Clock, CheckSquare, Sparkles, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+
 interface MyDayPanelProps {
   isOpen: boolean
   onClose: () => void

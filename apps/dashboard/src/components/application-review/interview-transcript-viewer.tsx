@@ -1,20 +1,13 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-  Button,
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-  ScrollArea,
-  cn,
-} from '@sanctuary/ui'
 import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Bot, User, ChevronDown, ChevronRight, Clock, Cpu, Quote } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import type { Interview, InterviewMessage, InterviewSection, TranscriptHighlight } from '@/types'
 import { INTERVIEW_SECTIONS, getInterviewSectionInfo } from '@/types'
 

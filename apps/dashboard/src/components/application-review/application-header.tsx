@@ -1,11 +1,8 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  Button,
-  Badge,
-} from '@sanctuary/ui'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Check, X, Users, DollarSign, Calendar } from 'lucide-react'
 import type { ApplicationWithFounders, Assessment } from '@/types'
 import { getApplicationStageInfo, formatCurrency } from '@/types'

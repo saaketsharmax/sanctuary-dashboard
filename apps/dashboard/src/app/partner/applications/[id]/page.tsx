@@ -1,22 +1,14 @@
 'use client'
 
-import {
-  Button,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-  Toaster,
-} from '@sanctuary/ui'
 import { use, useState, useEffect } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, FileText, Loader2, RefreshCw, Brain, Search, Shield } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
 import {
   ReviewDecisionModal,

@@ -1,5 +1,6 @@
 'use client'
-import { Badge } from '@sanctuary/ui'
+
+import { Badge } from '@/components/ui/badge'
 
 const verdictConfig: Record<string, { label: string; className: string }> = {
   confirmed: { label: 'Confirmed', className: 'bg-green-100 text-green-700' },

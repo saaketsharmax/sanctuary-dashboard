@@ -1,7 +1,8 @@
 'use client'
 
-import { Button } from '@sanctuary/ui'
 import { TrendingUp, TrendingDown, CheckCircle2, Circle, Target, FileText, ExternalLink } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+
 interface MetricCardProps {
   label: string
   value: string

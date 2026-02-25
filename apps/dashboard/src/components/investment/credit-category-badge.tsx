@@ -1,6 +1,6 @@
 'use client'
 
-import { Badge } from '@sanctuary/ui'
+import { Badge } from '@/components/ui/badge'
 import { type CreditCategory, getCreditCategoryInfo } from '@/types'
 
 const categoryColorClasses: Record<string, string> = {

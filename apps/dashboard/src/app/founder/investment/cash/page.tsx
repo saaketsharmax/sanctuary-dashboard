@@ -1,18 +1,9 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Button,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  Toaster,
-} from '@sanctuary/ui'
 import { useEffect, useState, useCallback } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   BalanceCard,
   TransactionTable,
@@ -31,6 +22,7 @@ import {
 } from '@/types'
 import { DollarSign, Loader2, Info } from 'lucide-react'
 import { toast } from 'sonner'
+import { Toaster } from '@/components/ui/sonner'
 import { useInvestmentRealtime } from '@/hooks/use-investment-realtime'
 
 export default function CashInvestmentPage() {

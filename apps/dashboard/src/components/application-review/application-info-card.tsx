@@ -1,11 +1,6 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Building2, Target, Lightbulb, AlertTriangle, Heart, HelpCircle } from 'lucide-react'
 import type { Application } from '@/types'
 

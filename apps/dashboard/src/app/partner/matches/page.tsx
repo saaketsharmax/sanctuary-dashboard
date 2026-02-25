@@ -1,13 +1,7 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@sanctuary/ui'
+import { Card, CardContent } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { GitCompare } from 'lucide-react'
 
 export default function MatchesPage() {

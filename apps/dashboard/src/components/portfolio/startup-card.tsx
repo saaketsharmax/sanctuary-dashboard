@@ -1,18 +1,12 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Badge,
-  Progress,
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-  cn,
-} from '@sanctuary/ui'
 import Link from 'next/link'
 import { Building2, Users, TrendingUp, AlertTriangle } from 'lucide-react'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { cn } from '@/lib/utils'
 import type { StartupWithFounders } from '@/types'
 import { getStageInfo, getRiskInfo } from '@/types'
 

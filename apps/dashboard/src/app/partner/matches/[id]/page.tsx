@@ -1,9 +1,11 @@
 'use client'
 
-import { Button, Card, CardContent } from '@sanctuary/ui'
 import { use } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Link2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+
 interface MatchPageProps {
   params: Promise<{ id: string }>
 }

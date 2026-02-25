@@ -1,6 +1,7 @@
 'use client'
 
-import { Badge, cn } from '@sanctuary/ui'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import type { ProblemArchetype } from '@/types'
 import { getProblemArchetypeInfo } from '@/types'
 

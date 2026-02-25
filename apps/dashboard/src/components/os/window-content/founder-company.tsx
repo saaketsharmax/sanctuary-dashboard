@@ -1,7 +1,9 @@
 'use client'
 
-import { Badge, Button } from '@sanctuary/ui'
 import { TrendingUp, DollarSign, Users, Target, MoreVertical, Calendar, MapPin, Globe, Building2, MessageSquare, FileText, CheckCircle } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+
 const companyInfo = {
   name: 'TechFlow AI',
   logo: 'T',

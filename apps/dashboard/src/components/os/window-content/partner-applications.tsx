@@ -1,7 +1,9 @@
 'use client'
 
-import { Badge, Button } from '@sanctuary/ui'
 import { FileText, Clock, CheckCircle2, XCircle, Eye, MoreVertical, User } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+
 const applications = [
   {
     id: '1',

@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@sanctuary/ui'
 import { useRef } from 'react'
+import { Button } from '@/components/ui/button'
 import { Download, Printer } from 'lucide-react'
 import type { StartupMemo } from '@/types'
 

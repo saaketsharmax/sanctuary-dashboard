@@ -1,13 +1,9 @@
 'use client'
 
-import {
-  Badge,
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@sanctuary/ui'
 import { useState } from 'react'
 import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { ClaimStatusBadge, ClaimPriorityBadge, VerificationVerdictBadge } from './verification-badge'
 import { DD_CATEGORY_LABELS } from '@/lib/ai/types/due-diligence'
 import type { DDClaim, DDBenchmarkFlag } from '@/lib/ai/types/due-diligence'
