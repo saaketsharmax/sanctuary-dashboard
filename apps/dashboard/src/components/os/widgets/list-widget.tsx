@@ -24,9 +24,9 @@ const statusIcons = {
 }
 
 const statusColors = {
-  completed: 'text-success',
-  pending: 'text-info',
-  warning: 'text-warning',
+  completed: 'text-green-600',
+  pending: 'text-blue-600',
+  warning: 'text-yellow-600',
 }
 
 export function ListWidget({ items, title = 'Items', onViewAll }: ListWidgetProps) {

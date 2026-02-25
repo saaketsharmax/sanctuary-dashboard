@@ -123,16 +123,16 @@ function WindowContent({ section, role }: { section: NavSection; role?: 'founder
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
-        <div className="bg-muted/50 border border-black/[0.06] rounded-2xl p-6 text-center transition-all duration-200 hover:shadow-md hover:scale-105">
+        <div className="bg-gray-50 border border-black/[0.06] rounded-2xl p-6 text-center transition-all duration-200 hover:shadow-md hover:scale-105">
           <p className="text-black/50">Content module 1</p>
         </div>
-        <div className="bg-muted/50 border border-black/[0.06] rounded-2xl p-6 text-center transition-all duration-200 hover:shadow-md hover:scale-105">
+        <div className="bg-gray-50 border border-black/[0.06] rounded-2xl p-6 text-center transition-all duration-200 hover:shadow-md hover:scale-105">
           <p className="text-black/50">Content module 2</p>
         </div>
-        <div className="bg-muted/50 border border-black/[0.06] rounded-2xl p-6 text-center transition-all duration-200 hover:shadow-md hover:scale-105">
+        <div className="bg-gray-50 border border-black/[0.06] rounded-2xl p-6 text-center transition-all duration-200 hover:shadow-md hover:scale-105">
           <p className="text-black/50">Content module 3</p>
         </div>
-        <div className="bg-muted/50 border border-black/[0.06] rounded-2xl p-6 text-center transition-all duration-200 hover:shadow-md hover:scale-105">
+        <div className="bg-gray-50 border border-black/[0.06] rounded-2xl p-6 text-center transition-all duration-200 hover:shadow-md hover:scale-105">
           <p className="text-black/50">Content module 4</p>
         </div>
       </div>

@@ -82,9 +82,9 @@ export default function PartnerDashboard() {
             subtitle: app.companyOneLiner || app.status,
             icon: (
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white text-lg font-bold ${
-                i === 0 ? 'bg-gradient-to-br from-info to-purple-600'
-                : i === 1 ? 'bg-gradient-to-br from-success to-emerald-600'
-                : 'bg-gradient-to-br from-destructive to-pink-600'
+                i === 0 ? 'bg-gradient-to-br from-blue-500 to-purple-600'
+                : i === 1 ? 'bg-gradient-to-br from-green-500 to-emerald-600'
+                : 'bg-gradient-to-br from-red-500 to-pink-600'
               }`}>
                 {app.companyName.charAt(0)}
               </div>
@@ -108,21 +108,21 @@ export default function PartnerDashboard() {
           id: '1',
           title: 'Pending Applications',
           subtitle: `${pendingApplications.length} need review`,
-          icon: <div className="w-10 h-10 bg-warning/15 rounded-lg flex items-center justify-center"><FileText className="w-5 h-5 text-warning" /></div>,
+          icon: <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center"><FileText className="w-5 h-5 text-orange-600" /></div>,
           onClick: () => router.push('/partner/applications'),
         },
         {
           id: '2',
           title: 'Portfolio Analytics',
           subtitle: 'View insights',
-          icon: <div className="w-10 h-10 bg-info/15 rounded-lg flex items-center justify-center"><TrendingUp className="w-5 h-5 text-info" /></div>,
+          icon: <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"><TrendingUp className="w-5 h-5 text-blue-600" /></div>,
           onClick: () => router.push('/partner/metrics'),
         },
         {
           id: '3',
           title: 'Investments',
           subtitle: 'Track portfolio',
-          icon: <div className="w-10 h-10 bg-success/15 rounded-lg flex items-center justify-center"><DollarSign className="w-5 h-5 text-success" /></div>,
+          icon: <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center"><DollarSign className="w-5 h-5 text-green-600" /></div>,
           onClick: () => router.push('/partner/investments'),
         },
       ],
@@ -148,7 +148,7 @@ export default function PartnerDashboard() {
           id: '3',
           title: 'Settings',
           subtitle: 'Account settings',
-          icon: <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center"><Calendar className="w-5 h-5 text-muted-foreground" /></div>,
+          icon: <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center"><Calendar className="w-5 h-5 text-gray-600" /></div>,
           onClick: () => router.push('/partner/settings'),
         },
       ],

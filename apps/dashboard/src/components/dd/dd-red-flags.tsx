@@ -15,9 +15,9 @@ interface DDRedFlagsProps {
 }
 
 const severityConfig: Record<string, { className: string }> = {
-  critical: { className: 'bg-destructive/15 text-destructive' },
-  high: { className: 'bg-warning/15 text-warning' },
-  medium: { className: 'bg-warning/15 text-warning' },
+  critical: { className: 'bg-red-100 text-red-700' },
+  high: { className: 'bg-orange-100 text-orange-700' },
+  medium: { className: 'bg-yellow-100 text-yellow-700' },
 }
 
 export function DDRedFlags({ redFlags }: DDRedFlagsProps) {
@@ -46,7 +46,7 @@ export function DDRedFlags({ redFlags }: DDRedFlagsProps) {
         {redFlags.map((flag, idx) => (
           <div
             key={idx}
-            className="p-3 rounded-lg border border-destructive/30 bg-destructive/5 space-y-1"
+            className="p-3 rounded-lg border border-red-200 bg-red-50/50 space-y-1"
           >
             <div className="flex items-center gap-2">
               <Badge className={severityConfig[flag.severity]?.className || ''}>
@@ -58,7 +58,7 @@ export function DDRedFlags({ redFlags }: DDRedFlagsProps) {
             </div>
             <p className="text-sm font-medium">{flag.claimText}</p>
             <p className="text-xs text-muted-foreground">{flag.reason}</p>
-            <p className="text-xs text-destructive">{flag.evidence}</p>
+            <p className="text-xs text-red-700">{flag.evidence}</p>
           </div>
         ))}
       </CardContent>

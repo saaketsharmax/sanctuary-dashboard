@@ -124,8 +124,8 @@ export default function PartnerInvestmentDetailPage({
         <Badge
           className={
             investment.status === 'active'
-              ? 'bg-success/15 text-success'
-              : 'bg-muted text-foreground'
+              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+              : 'bg-gray-100 text-gray-800'
           }
         >
           {investment.status.charAt(0).toUpperCase() + investment.status.slice(1)}
@@ -139,14 +139,14 @@ export default function PartnerInvestmentDetailPage({
           totalCents={investment.cashAmountCents}
           usedCents={investment.cashUsed}
           pendingCents={investment.pendingCash}
-          colorClass="text-success"
+          colorClass="text-green-600 dark:text-green-400"
         />
         <BalanceCard
           label="Credits Remaining"
           totalCents={investment.creditsAmountCents}
           usedCents={investment.creditsUsed}
           pendingCents={investment.pendingCredits}
-          colorClass="text-info"
+          colorClass="text-blue-600 dark:text-blue-400"
         />
       </div>
 

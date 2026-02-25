@@ -19,26 +19,26 @@ const verdictConfig: Record<string, {
   invest: {
     label: 'Invest',
     icon: CheckCircle2,
-    className: 'border-success/30 bg-success/10',
-    badgeClass: 'bg-success/15 text-success',
+    className: 'border-green-200 bg-green-50',
+    badgeClass: 'bg-green-100 text-green-800',
   },
   conditional_invest: {
     label: 'Conditional Invest',
     icon: AlertTriangle,
-    className: 'border-warning/30 bg-warning/10',
-    badgeClass: 'bg-warning/15 text-warning',
+    className: 'border-yellow-200 bg-yellow-50',
+    badgeClass: 'bg-yellow-100 text-yellow-800',
   },
   needs_more_info: {
     label: 'Needs More Info',
     icon: HelpCircle,
-    className: 'border-info/30 bg-info/10',
-    badgeClass: 'bg-info/15 text-info',
+    className: 'border-blue-200 bg-blue-50',
+    badgeClass: 'bg-blue-100 text-blue-800',
   },
   pass: {
     label: 'Pass',
     icon: XCircle,
-    className: 'border-destructive/30 bg-destructive/10',
-    badgeClass: 'bg-destructive/15 text-destructive',
+    className: 'border-red-200 bg-red-50',
+    badgeClass: 'bg-red-100 text-red-800',
   },
 }
 

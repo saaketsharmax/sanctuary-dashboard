@@ -22,13 +22,13 @@ export default function MatchesPage() {
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">Pending</p>
-            <p className="text-2xl font-bold text-warning">0</p>
+            <p className="text-2xl font-bold text-yellow-600">0</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">Approved</p>
-            <p className="text-2xl font-bold text-success">0</p>
+            <p className="text-2xl font-bold text-green-600">0</p>
           </CardContent>
         </Card>
         <Card>

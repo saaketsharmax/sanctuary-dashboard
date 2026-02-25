@@ -26,23 +26,23 @@ interface DDTeamAssessmentProps {
 }
 
 const gradeColors: Record<string, string> = {
-  A: 'bg-success text-white',
-  B: 'bg-info text-white',
-  C: 'bg-warning text-white',
-  D: 'bg-warning text-white',
-  F: 'bg-destructive text-white',
+  A: 'bg-green-500 text-white',
+  B: 'bg-blue-500 text-white',
+  C: 'bg-yellow-500 text-white',
+  D: 'bg-orange-500 text-white',
+  F: 'bg-red-500 text-white',
 }
 
 const scoreColor = (score: number) => {
-  if (score >= 75) return 'text-success'
-  if (score >= 50) return 'text-warning'
-  return 'text-destructive'
+  if (score >= 75) return 'text-green-600'
+  if (score >= 50) return 'text-yellow-600'
+  return 'text-red-600'
 }
 
 const sentimentConfig = {
-  positive: { color: 'bg-success/15 text-success', icon: CheckCircle2 },
-  neutral: { color: 'bg-muted text-foreground', icon: MessageSquare },
-  concerning: { color: 'bg-destructive/15 text-destructive', icon: AlertTriangle },
+  positive: { color: 'bg-green-100 text-green-800', icon: CheckCircle2 },
+  neutral: { color: 'bg-gray-100 text-gray-800', icon: MessageSquare },
+  concerning: { color: 'bg-red-100 text-red-800', icon: AlertTriangle },
 }
 
 function FounderCard({ profile }: { profile: DDFounderProfile }) {
@@ -66,10 +66,10 @@ function FounderCard({ profile }: { profile: DDFounderProfile }) {
             <div className="flex items-center gap-2">
               <h4 className="font-semibold truncate">{profile.name}</h4>
               {profile.linkedinFound && (
-                <Linkedin className="h-4 w-4 text-info shrink-0" />
+                <Linkedin className="h-4 w-4 text-blue-600 shrink-0" />
               )}
               {profile.githubFound && (
-                <Github className="h-4 w-4 text-foreground shrink-0" />
+                <Github className="h-4 w-4 text-gray-700 shrink-0" />
               )}
             </div>
             {profile.role && (
@@ -79,9 +79,9 @@ function FounderCard({ profile }: { profile: DDFounderProfile }) {
             {/* Experience verification */}
             <div className="mt-2 flex items-center gap-1 text-sm">
               {profile.experienceVerified ? (
-                <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+                <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
               ) : (
-                <XCircle className="h-4 w-4 text-warning shrink-0" />
+                <XCircle className="h-4 w-4 text-orange-500 shrink-0" />
               )}
               <span className="text-muted-foreground">
                 {profile.experienceVerified ? 'Experience verified' : 'Experience unverified'}
@@ -110,7 +110,7 @@ function FounderCard({ profile }: { profile: DDFounderProfile }) {
                   {profile.previousStartups.map((ps, i) => (
                     <Badge key={i} variant="outline" className="text-[10px]">
                       {ps.name}: {ps.outcome}
-                      {ps.verified && <CheckCircle2 className="h-3 w-3 ml-1 text-success" />}
+                      {ps.verified && <CheckCircle2 className="h-3 w-3 ml-1 text-green-500" />}
                     </Badge>
                   ))}
                 </div>
@@ -121,7 +121,7 @@ function FounderCard({ profile }: { profile: DDFounderProfile }) {
             {profile.strengths.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {profile.strengths.map((s, i) => (
-                  <Badge key={i} variant="secondary" className="text-[10px] bg-success/10 text-success">
+                  <Badge key={i} variant="secondary" className="text-[10px] bg-green-50 text-green-700">
                     {s}
                   </Badge>
                 ))}
@@ -155,7 +155,7 @@ function FounderCard({ profile }: { profile: DDFounderProfile }) {
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] text-info hover:underline"
+                      className="inline-flex items-center gap-1 text-[10px] text-blue-600 hover:underline"
                     >
                       <ExternalLink className="h-3 w-3" />
                       {label}
@@ -248,7 +248,7 @@ export function DDTeamAssessment({ assessment }: DDTeamAssessmentProps) {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-success" />
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
                 Team Strengths
               </CardTitle>
             </CardHeader>
@@ -256,7 +256,7 @@ export function DDTeamAssessment({ assessment }: DDTeamAssessmentProps) {
               <ul className="space-y-1">
                 {assessment.teamStrengths.map((s, i) => (
                   <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                    <span className="text-success shrink-0 mt-1">+</span>
+                    <span className="text-green-500 shrink-0 mt-1">+</span>
                     {s}
                   </li>
                 ))}
@@ -269,7 +269,7 @@ export function DDTeamAssessment({ assessment }: DDTeamAssessmentProps) {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Users className="h-4 w-4 text-warning" />
+                <Users className="h-4 w-4 text-orange-500" />
                 Missing Roles
               </CardTitle>
             </CardHeader>
@@ -277,7 +277,7 @@ export function DDTeamAssessment({ assessment }: DDTeamAssessmentProps) {
               <ul className="space-y-1">
                 {assessment.missingRoles.map((r, i) => (
                   <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                    <span className="text-warning shrink-0 mt-1">-</span>
+                    <span className="text-orange-500 shrink-0 mt-1">-</span>
                     {r}
                   </li>
                 ))}
@@ -305,14 +305,14 @@ export function DDTeamAssessment({ assessment }: DDTeamAssessmentProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-destructive" />
+              <AlertTriangle className="h-4 w-4 text-red-500" />
               Team Red Flags
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {assessment.teamRedFlags.map((rf, i) => (
-                <div key={i} className="border-l-2 border-destructive/70 pl-3 py-1">
+                <div key={i} className="border-l-2 border-red-400 pl-3 py-1">
                   <div className="flex items-center gap-2">
                     <Badge
                       variant={rf.severity === 'critical' ? 'destructive' : 'outline'}

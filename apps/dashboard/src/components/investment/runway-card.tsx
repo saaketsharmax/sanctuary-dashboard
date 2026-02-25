@@ -11,10 +11,10 @@ interface RunwayCardProps {
 export function RunwayCard({ cashRemaining, monthlyBurnRate, runwayMonths }: RunwayCardProps) {
   const runwayColor =
     runwayMonths > 6
-      ? 'text-success'
+      ? 'text-green-600 dark:text-green-400'
       : runwayMonths >= 3
-        ? 'text-warning'
-        : 'text-destructive'
+        ? 'text-yellow-600 dark:text-yellow-400'
+        : 'text-red-600 dark:text-red-400'
 
   return (
     <Card>

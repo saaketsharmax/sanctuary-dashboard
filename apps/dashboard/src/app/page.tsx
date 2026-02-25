@@ -80,8 +80,8 @@ export default function LandingPage() {
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
             <CardHeader className="pb-4">
-              <div className="w-14 h-14 rounded-xl bg-info/10 flex items-center justify-center mb-4">
-                <Rocket className="h-7 w-7 text-info" />
+              <div className="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4">
+                <Rocket className="h-7 w-7 text-blue-500" />
               </div>
               <CardTitle className="text-2xl">I&apos;m a Founder</CardTitle>
               <CardDescription className="text-base">
@@ -91,23 +91,23 @@ export default function LandingPage() {
             <CardContent>
               <ul className="space-y-2 text-sm text-muted-foreground mb-6">
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-info" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                   AI-powered interview process
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-info" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                   Get matched with expert mentors
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-info" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                   Track milestones and progress
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-info" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                   Access investor network
                 </li>
               </ul>
-              <Button className="w-full group-hover:bg-info" size="lg">
+              <Button className="w-full group-hover:bg-blue-600" size="lg">
                 Apply as Founder
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
@@ -121,8 +121,8 @@ export default function LandingPage() {
           >
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
             <CardHeader className="pb-4">
-              <div className="w-14 h-14 rounded-xl bg-success/10 flex items-center justify-center mb-4">
-                <TrendingUp className="h-7 w-7 text-success" />
+              <div className="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">
+                <TrendingUp className="h-7 w-7 text-emerald-500" />
               </div>
               <CardTitle className="text-2xl">I&apos;m a Partner</CardTitle>
               <CardDescription className="text-base">
@@ -132,23 +132,23 @@ export default function LandingPage() {
             <CardContent>
               <ul className="space-y-2 text-sm text-muted-foreground mb-6">
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-success" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   Review AI-assessed applications
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-success" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   Intelligent mentor-startup matching
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-success" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   Real-time portfolio metrics
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-success" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   Automated startup insights
                 </li>
               </ul>
-              <Button className="w-full group-hover:bg-success" variant="default" size="lg">
+              <Button className="w-full group-hover:bg-emerald-600" variant="default" size="lg">
                 Join as Partner
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>

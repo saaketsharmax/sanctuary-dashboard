@@ -27,18 +27,18 @@ interface StartupTableProps {
 
 export function StartupTable({ startups, linkPrefix = '/startup' }: StartupTableProps) {
   const riskColorClass = {
-    low: 'bg-success/10 text-success border-success/20',
-    normal: 'bg-info/10 text-info border-info/20',
-    elevated: 'bg-warning/10 text-warning border-warning/20',
-    high: 'bg-destructive/10 text-destructive border-destructive/20',
+    low: 'bg-green-500/10 text-green-700 border-green-500/20',
+    normal: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
+    elevated: 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20',
+    high: 'bg-red-500/10 text-red-700 border-red-500/20',
   }
 
   const stageColorClass = {
     problem_discovery: 'bg-purple-500/10 text-purple-700 border-purple-500/20',
-    solution_shaping: 'bg-info/10 text-info border-info/20',
+    solution_shaping: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
     user_value: 'bg-cyan-500/10 text-cyan-700 border-cyan-500/20',
-    growth: 'bg-success/10 text-success border-success/20',
-    capital_ready: 'bg-warning/10 text-warning border-warning/20',
+    growth: 'bg-green-500/10 text-green-700 border-green-500/20',
+    capital_ready: 'bg-orange-500/10 text-orange-700 border-orange-500/20',
   }
 
   return (

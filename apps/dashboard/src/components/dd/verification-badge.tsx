@@ -2,41 +2,41 @@
 import { Badge } from '@sanctuary/ui'
 
 const verdictConfig: Record<string, { label: string; className: string }> = {
-  confirmed: { label: 'Confirmed', className: 'bg-success/15 text-success' },
-  partially_confirmed: { label: 'Partial', className: 'bg-info/15 text-info' },
-  unconfirmed: { label: 'Unconfirmed', className: 'bg-muted text-muted-foreground' },
-  disputed: { label: 'Disputed', className: 'bg-warning/15 text-warning' },
-  refuted: { label: 'Refuted', className: 'bg-destructive/15 text-destructive' },
+  confirmed: { label: 'Confirmed', className: 'bg-green-100 text-green-700' },
+  partially_confirmed: { label: 'Partial', className: 'bg-blue-100 text-blue-700' },
+  unconfirmed: { label: 'Unconfirmed', className: 'bg-gray-100 text-gray-600' },
+  disputed: { label: 'Disputed', className: 'bg-yellow-100 text-yellow-700' },
+  refuted: { label: 'Refuted', className: 'bg-red-100 text-red-700' },
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  unverified: { label: 'Unverified', className: 'bg-muted text-muted-foreground' },
-  ai_verified: { label: 'AI Verified', className: 'bg-info/15 text-info' },
+  unverified: { label: 'Unverified', className: 'bg-gray-100 text-gray-600' },
+  ai_verified: { label: 'AI Verified', className: 'bg-blue-100 text-blue-700' },
   mentor_verified: { label: 'Mentor Verified', className: 'bg-purple-100 text-purple-700' },
-  disputed: { label: 'Disputed', className: 'bg-warning/15 text-warning' },
-  confirmed: { label: 'Confirmed', className: 'bg-success/15 text-success' },
-  refuted: { label: 'Refuted', className: 'bg-destructive/15 text-destructive' },
-  unverifiable: { label: 'Unverifiable', className: 'bg-muted text-muted-foreground' },
+  disputed: { label: 'Disputed', className: 'bg-yellow-100 text-yellow-700' },
+  confirmed: { label: 'Confirmed', className: 'bg-green-100 text-green-700' },
+  refuted: { label: 'Refuted', className: 'bg-red-100 text-red-700' },
+  unverifiable: { label: 'Unverifiable', className: 'bg-gray-100 text-gray-500' },
 }
 
 const priorityConfig: Record<string, { label: string; className: string }> = {
-  critical: { label: 'Critical', className: 'bg-destructive/15 text-destructive' },
-  high: { label: 'High', className: 'bg-warning/15 text-warning' },
-  medium: { label: 'Medium', className: 'bg-info/15 text-info' },
-  low: { label: 'Low', className: 'bg-muted text-muted-foreground' },
+  critical: { label: 'Critical', className: 'bg-red-100 text-red-700' },
+  high: { label: 'High', className: 'bg-orange-100 text-orange-700' },
+  medium: { label: 'Medium', className: 'bg-blue-100 text-blue-700' },
+  low: { label: 'Low', className: 'bg-gray-100 text-gray-600' },
 }
 
 export function VerificationVerdictBadge({ verdict }: { verdict: string }) {
-  const config = verdictConfig[verdict] || { label: verdict, className: 'bg-muted text-muted-foreground' }
+  const config = verdictConfig[verdict] || { label: verdict, className: 'bg-gray-100 text-gray-600' }
   return <Badge className={config.className}>{config.label}</Badge>
 }
 
 export function ClaimStatusBadge({ status }: { status: string }) {
-  const config = statusConfig[status] || { label: status, className: 'bg-muted text-muted-foreground' }
+  const config = statusConfig[status] || { label: status, className: 'bg-gray-100 text-gray-600' }
   return <Badge className={config.className}>{config.label}</Badge>
 }
 
 export function ClaimPriorityBadge({ priority }: { priority: string }) {
-  const config = priorityConfig[priority] || { label: priority, className: 'bg-muted text-muted-foreground' }
+  const config = priorityConfig[priority] || { label: priority, className: 'bg-gray-100 text-gray-600' }
   return <Badge variant="outline" className={config.className}>{config.label}</Badge>
 }

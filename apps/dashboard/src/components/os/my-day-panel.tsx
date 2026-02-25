@@ -118,7 +118,7 @@ export function MyDayPanel({ isOpen, onClose }: MyDayPanelProps) {
                     <div
                       className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
                         task.completed
-                          ? 'bg-success border-success'
+                          ? 'bg-green-600 border-green-600'
                           : 'border-muted-foreground/30 group-hover:border-primary'
                       }`}
                     >
@@ -142,10 +142,10 @@ export function MyDayPanel({ isOpen, onClose }: MyDayPanelProps) {
             <div>
               <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-4">AI Insights</h3>
               <div className="space-y-4">
-                <div className="py-4 border-l-2 border-success pl-4">
+                <div className="py-4 border-l-2 border-green-600 pl-4">
                   <div className="flex items-start gap-3">
-                    <div className="w-7 h-7 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="w-7 h-7 rounded-lg bg-green-600/10 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                       </svg>
                     </div>
@@ -160,10 +160,10 @@ export function MyDayPanel({ isOpen, onClose }: MyDayPanelProps) {
                   </div>
                 </div>
 
-                <div className="py-4 border-l-2 border-warning pl-4">
+                <div className="py-4 border-l-2 border-orange-600 pl-4">
                   <div className="flex items-start gap-3">
-                    <div className="w-7 h-7 rounded-lg bg-warning/10 flex items-center justify-center flex-shrink-0">
-                      <Calendar className="w-4 h-4 text-warning" />
+                    <div className="w-7 h-7 rounded-lg bg-orange-600/10 flex items-center justify-center flex-shrink-0">
+                      <Calendar className="w-4 h-4 text-orange-600" />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-foreground mb-1">

@@ -35,7 +35,7 @@ export function BalanceCard({
             <span>of {formatInvestmentCurrency(totalCents)}</span>
           </div>
           {pendingCents > 0 && (
-            <p className="text-xs text-warning">
+            <p className="text-xs text-yellow-600 dark:text-yellow-400">
               {formatInvestmentCurrency(pendingCents)} pending approval
             </p>
           )}

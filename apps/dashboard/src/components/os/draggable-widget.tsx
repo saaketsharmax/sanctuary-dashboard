@@ -233,7 +233,7 @@ export function DraggableWidget({
           data-resize-handle
           className={cn(
             'absolute opacity-0 group-hover:opacity-100 transition-opacity',
-            'hover:bg-info/50',
+            'hover:bg-blue-500/50',
             className
           )}
           onMouseDown={(e) => handleResizeStart(e, direction)}
@@ -242,16 +242,16 @@ export function DraggableWidget({
 
       {/* Corner resize indicators */}
       <div className="absolute top-0 right-0 w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-        <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-info/70" />
+        <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-500/70" />
       </div>
       <div className="absolute bottom-0 right-0 w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-        <div className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-info/70" />
+        <div className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-500/70" />
       </div>
       <div className="absolute top-0 left-0 w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-        <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-info/70" />
+        <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-blue-500/70" />
       </div>
       <div className="absolute bottom-0 left-0 w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-        <div className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-info/70" />
+        <div className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-blue-500/70" />
       </div>
     </div>
   )

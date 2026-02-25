@@ -60,7 +60,7 @@ export default function PreviewCashPage() {
         totalCents={investment.cashAmountCents}
         usedCents={investment.cashUsed}
         pendingCents={investment.pendingCash}
-        colorClass="text-success"
+        colorClass="text-green-600 dark:text-green-400"
       />
 
       {/* Runway */}

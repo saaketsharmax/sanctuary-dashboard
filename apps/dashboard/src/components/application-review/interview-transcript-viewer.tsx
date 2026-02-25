@@ -37,7 +37,7 @@ function MessageBubble({ message, isHighlighted }: MessageBubbleProps) {
       className={cn(
         'flex gap-3 max-w-[85%]',
         isAssistant ? 'self-start' : 'self-end flex-row-reverse',
-        isHighlighted && 'ring-2 ring-warning ring-offset-2 rounded-2xl'
+        isHighlighted && 'ring-2 ring-yellow-400 ring-offset-2 rounded-2xl'
       )}
     >
       <div
@@ -117,7 +117,7 @@ function SectionGroup({ section, messages, highlights, defaultOpen = false }: Se
               {messages.length} messages
             </Badge>
             {hasHighlights && (
-              <Quote className="h-4 w-4 text-warning" />
+              <Quote className="h-4 w-4 text-yellow-500" />
             )}
           </div>
           <span className="text-xs text-muted-foreground">{sectionInfo.duration}</span>
@@ -192,7 +192,7 @@ export function InterviewTranscriptViewer({
           <CardTitle className="text-base">Transcript</CardTitle>
           {highlights && highlights.length > 0 && (
             <p className="text-xs text-muted-foreground mt-1">
-              <Quote className="h-3 w-3 inline mr-1 text-warning" />
+              <Quote className="h-3 w-3 inline mr-1 text-yellow-500" />
               {highlights.length} highlighted quotes from assessment
             </p>
           )}
@@ -219,7 +219,7 @@ export function InterviewTranscriptViewer({
           </CardHeader>
           <CardContent className="space-y-4">
             {highlights.map((highlight, index) => (
-              <div key={index} className="border-l-2 border-warning/70 pl-4 py-2">
+              <div key={index} className="border-l-2 border-yellow-400 pl-4 py-2">
                 <p className="text-sm italic">"{highlight.quote}"</p>
                 <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                   <Clock className="h-3 w-3" />

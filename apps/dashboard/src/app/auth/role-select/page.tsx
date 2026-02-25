@@ -177,8 +177,8 @@ export default function RoleSelectPage() {
             }}
           >
             <CardHeader className="pb-2">
-              <div className="w-12 h-12 rounded-lg bg-info/15 flex items-center justify-center mb-2">
-                <Rocket className="h-6 w-6 text-info" />
+              <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-2">
+                <Rocket className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
               <CardTitle className="flex items-center justify-between">
                 Founder / Startup
@@ -212,8 +212,8 @@ export default function RoleSelectPage() {
             }}
           >
             <CardHeader className="pb-2">
-              <div className="w-12 h-12 rounded-lg bg-success/15 flex items-center justify-center mb-2">
-                <Briefcase className="h-6 w-6 text-success" />
+              <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-2">
+                <Briefcase className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
               <CardTitle className="flex items-center justify-between">
                 Partner

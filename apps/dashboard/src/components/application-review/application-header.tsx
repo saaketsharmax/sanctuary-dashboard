@@ -11,15 +11,15 @@ import type { ApplicationWithFounders, Assessment } from '@/types'
 import { getApplicationStageInfo, formatCurrency } from '@/types'
 
 const statusColors: Record<string, string> = {
-  draft: 'bg-muted text-foreground',
-  submitted: 'bg-info/15 text-info',
+  draft: 'bg-gray-100 text-gray-700',
+  submitted: 'bg-blue-100 text-blue-700',
   interview_scheduled: 'bg-purple-100 text-purple-700',
   interview_completed: 'bg-indigo-100 text-indigo-700',
-  assessment_generated: 'bg-warning/15 text-warning',
-  under_review: 'bg-warning/15 text-warning',
-  approved: 'bg-success/15 text-success',
-  rejected: 'bg-destructive/15 text-destructive',
-  withdrawn: 'bg-muted text-foreground',
+  assessment_generated: 'bg-yellow-100 text-yellow-700',
+  under_review: 'bg-orange-100 text-orange-700',
+  approved: 'bg-green-100 text-green-700',
+  rejected: 'bg-red-100 text-red-700',
+  withdrawn: 'bg-gray-100 text-gray-700',
 }
 
 interface ApplicationHeaderProps {
@@ -93,7 +93,7 @@ export function ApplicationHeader({
 
           {isDecided && (
             <Badge
-              className={application.status === 'approved' ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'}
+              className={application.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}
             >
               {application.status === 'approved' ? 'Approved' : 'Declined'}
             </Badge>

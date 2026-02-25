@@ -120,7 +120,7 @@ export function FounderDocumentsContent() {
                         {doc.shared && (
                           <>
                             <span>·</span>
-                            <span className="flex items-center gap-1 text-success">
+                            <span className="flex items-center gap-1 text-green-600">
                               <Share2 className="w-3 h-3" />
                               Shared
                             </span>
