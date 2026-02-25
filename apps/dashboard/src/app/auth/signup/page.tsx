@@ -94,8 +94,8 @@ export default function SignupPage() {
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-background to-muted/30">
         <div className="w-full max-w-md text-center">
           <div className="mb-6">
-            <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+            <div className="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="h-8 w-8 text-success" />
             </div>
           </div>
           <h1 className="text-2xl font-bold mb-2">Check your email</h1>

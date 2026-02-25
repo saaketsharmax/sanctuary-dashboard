@@ -16,11 +16,11 @@ import { Check, X, Send, ArrowRight, AlertCircle, CheckCircle, Link2 } from 'luc
 import type { Match } from '@/types'
 
 const statusColors: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-700',
-  approved: 'bg-green-100 text-green-700',
-  rejected: 'bg-red-100 text-red-700',
-  intro_sent: 'bg-blue-100 text-blue-700',
-  completed: 'bg-gray-100 text-gray-700',
+  pending: 'bg-warning/15 text-warning',
+  approved: 'bg-success/15 text-success',
+  rejected: 'bg-destructive/15 text-destructive',
+  intro_sent: 'bg-info/15 text-info',
+  completed: 'bg-muted text-foreground',
 }
 
 interface MatchDetailProps {

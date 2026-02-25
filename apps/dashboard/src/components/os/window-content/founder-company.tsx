@@ -9,7 +9,7 @@ const companyInfo = {
   industry: 'B2B SaaS',
   stage: 'Solution Shaping',
   cohort: '2026-A',
-  bgColor: 'from-blue-500 to-purple-600',
+  bgColor: 'from-info to-purple-600',
   website: 'techflow.ai',
   location: 'San Francisco, CA',
   founded: 'January 2025',

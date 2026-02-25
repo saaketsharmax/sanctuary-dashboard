@@ -38,30 +38,30 @@ interface CheckpointsSectionProps {
 const statusConfig = {
   completed: {
     icon: CheckCircle2,
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
-    borderColor: 'border-green-200',
+    color: 'text-success',
+    bgColor: 'bg-success/15',
+    borderColor: 'border-success/30',
     label: 'Completed',
   },
   in_progress: {
     icon: Clock,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
-    borderColor: 'border-blue-200',
+    color: 'text-info',
+    bgColor: 'bg-info/15',
+    borderColor: 'border-info/30',
     label: 'In Progress',
   },
   blocked: {
     icon: AlertCircle,
-    color: 'text-red-600',
-    bgColor: 'bg-red-100',
-    borderColor: 'border-red-200',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/15',
+    borderColor: 'border-destructive/30',
     label: 'Blocked',
   },
   pending: {
     icon: Circle,
-    color: 'text-gray-400',
-    bgColor: 'bg-gray-100',
-    borderColor: 'border-gray-200',
+    color: 'text-muted-foreground',
+    bgColor: 'bg-muted',
+    borderColor: 'border-border',
     label: 'Pending',
   },
 }
@@ -140,7 +140,7 @@ function CheckpointCard({ checkpoint }: CheckpointCardProps) {
                       className="flex items-center gap-2 text-sm"
                     >
                       {task.completed ? (
-                        <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+                        <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                       ) : (
                         <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
                       )}

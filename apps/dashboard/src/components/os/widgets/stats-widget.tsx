@@ -31,10 +31,10 @@ export function StatsWidget({ stats, title = 'Quick Stats' }: StatsWidgetProps) 
               {stat.trend && stat.change !== undefined && (
                 <div className="flex items-center gap-0.5">
                   {stat.trend === 'up' && (
-                    <TrendingUp className="w-3 h-3 text-green-600" />
+                    <TrendingUp className="w-3 h-3 text-success" />
                   )}
                   {stat.trend === 'down' && (
-                    <TrendingDown className="w-3 h-3 text-red-600" />
+                    <TrendingDown className="w-3 h-3 text-destructive" />
                   )}
                   {stat.trend === 'neutral' && (
                     <Minus className="w-3 h-3 text-black/40" />
@@ -42,9 +42,9 @@ export function StatsWidget({ stats, title = 'Quick Stats' }: StatsWidgetProps) 
                   <span
                     className={`text-[10px] font-medium ${
                       stat.trend === 'up'
-                        ? 'text-green-600'
+                        ? 'text-success'
                         : stat.trend === 'down'
-                        ? 'text-red-600'
+                        ? 'text-destructive'
                         : 'text-black/40'
                     }`}
                   >

@@ -28,11 +28,11 @@ interface Document {
 }
 
 const documentTypes: Record<string, { label: string; color: string }> = {
-  pitch_deck: { label: 'Pitch Deck', color: 'bg-blue-100 text-blue-700' },
-  financials: { label: 'Financials', color: 'bg-green-100 text-green-700' },
+  pitch_deck: { label: 'Pitch Deck', color: 'bg-info/15 text-info' },
+  financials: { label: 'Financials', color: 'bg-success/15 text-success' },
   legal: { label: 'Legal', color: 'bg-purple-100 text-purple-700' },
-  product: { label: 'Product', color: 'bg-orange-100 text-orange-700' },
-  other: { label: 'Other', color: 'bg-gray-100 text-gray-700' },
+  product: { label: 'Product', color: 'bg-warning/15 text-warning' },
+  other: { label: 'Other', color: 'bg-muted text-foreground' },
 }
 
 export default function DocumentsPage() {

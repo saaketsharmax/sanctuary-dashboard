@@ -101,8 +101,8 @@ export default function InterviewCompletePage() {
     <div className="max-w-2xl mx-auto space-y-8">
       {/* Success Header */}
       <div className="text-center">
-        <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-6">
-          <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
+        <div className="w-20 h-20 rounded-full bg-success/15 flex items-center justify-center mx-auto mb-6">
+          <CheckCircle2 className="h-10 w-10 text-success" />
         </div>
         <Badge variant="secondary" className="mb-4">
           Interview Complete

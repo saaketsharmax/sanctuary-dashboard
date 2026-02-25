@@ -44,21 +44,21 @@ interface Request {
 }
 
 const requestTypes: Record<string, { label: string; icon: any; color: string; description: string }> = {
-  mentor: { label: 'Mentor Request', icon: Users, color: 'bg-blue-100 text-blue-700', description: 'Request a mentor match' },
+  mentor: { label: 'Mentor Request', icon: Users, color: 'bg-info/15 text-info', description: 'Request a mentor match' },
   intro: { label: 'Introduction', icon: Users, color: 'bg-indigo-100 text-indigo-700', description: 'Request an introduction' },
   feature: { label: 'Feature Request', icon: Lightbulb, color: 'bg-purple-100 text-purple-700', description: 'Suggest a new feature' },
-  feedback: { label: 'Feedback', icon: MessageSquare, color: 'bg-green-100 text-green-700', description: 'Request feedback' },
-  other: { label: 'Other', icon: HelpCircle, color: 'bg-gray-100 text-gray-700', description: 'Other requests' },
+  feedback: { label: 'Feedback', icon: MessageSquare, color: 'bg-success/15 text-success', description: 'Request feedback' },
+  other: { label: 'Other', icon: HelpCircle, color: 'bg-muted text-foreground', description: 'Other requests' },
 }
 
 const statusColors: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-700',
-  in_progress: 'bg-blue-100 text-blue-700',
-  in_review: 'bg-blue-100 text-blue-700',
-  approved: 'bg-green-100 text-green-700',
-  completed: 'bg-green-100 text-green-700',
-  declined: 'bg-red-100 text-red-700',
-  cancelled: 'bg-gray-100 text-gray-700',
+  pending: 'bg-warning/15 text-warning',
+  in_progress: 'bg-info/15 text-info',
+  in_review: 'bg-info/15 text-info',
+  approved: 'bg-success/15 text-success',
+  completed: 'bg-success/15 text-success',
+  declined: 'bg-destructive/15 text-destructive',
+  cancelled: 'bg-muted text-foreground',
 }
 
 export default function RequestsPage() {
@@ -346,7 +346,7 @@ export default function RequestsPage() {
                           <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{request.description}</p>
                         )}
                         {request.resolutionNotes && (
-                          <p className="text-sm text-green-600 mt-2">Resolution: {request.resolutionNotes}</p>
+                          <p className="text-sm text-success mt-2">Resolution: {request.resolutionNotes}</p>
                         )}
                       </div>
                     </div>
