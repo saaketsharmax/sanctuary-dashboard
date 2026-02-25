@@ -59,7 +59,7 @@ export default function PreviewCreditsPage() {
         totalCents={investment.creditsAmountCents}
         usedCents={investment.creditsUsed}
         pendingCents={investment.pendingCredits}
-        colorClass="text-blue-600 dark:text-blue-400"
+        colorClass="text-info"
       />
 
       {/* Category Breakdown */}

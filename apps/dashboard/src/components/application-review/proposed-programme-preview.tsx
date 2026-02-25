@@ -64,7 +64,7 @@ function WeekCard({ week, defaultOpen = false }: WeekCardProps) {
                 </Badge>
               )}
               {week.isCustomWeek && (
-                <Badge className="bg-blue-100 text-blue-700 text-xs">
+                <Badge className="bg-info/15 text-info text-xs">
                   <Sparkles className="h-3 w-3 mr-1" />
                   Custom
                 </Badge>
@@ -204,7 +204,7 @@ export function ProposedProgrammePreview({ programme, weeks }: ProposedProgramme
           {programme.conditions.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <AlertCircle className="h-4 w-4 text-orange-600" />
+                <AlertCircle className="h-4 w-4 text-warning" />
                 <span className="text-sm font-medium">Conditions</span>
               </div>
               <ul className="space-y-2">
@@ -237,10 +237,10 @@ export function ProposedProgrammePreview({ programme, weeks }: ProposedProgramme
                       className={cn(
                         'text-xs',
                         rec.priority === 1
-                          ? 'bg-red-100 text-red-700'
+                          ? 'bg-destructive/15 text-destructive'
                           : rec.priority === 2
-                            ? 'bg-orange-100 text-orange-700'
-                            : 'bg-gray-100 text-gray-700'
+                            ? 'bg-warning/15 text-warning'
+                            : 'bg-muted text-foreground'
                       )}
                     >
                       P{rec.priority}

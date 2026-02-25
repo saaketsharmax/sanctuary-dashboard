@@ -104,13 +104,13 @@ export default function MatchesPage() {
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">Pending Review</p>
-            <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+            <p className="text-2xl font-bold text-warning">{stats.pending}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">Approved</p>
-            <p className="text-2xl font-bold text-green-600">{stats.approved}</p>
+            <p className="text-2xl font-bold text-success">{stats.approved}</p>
           </CardContent>
         </Card>
         <Card>

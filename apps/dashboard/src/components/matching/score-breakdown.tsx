@@ -17,17 +17,17 @@ const dimensions = [
 ] as const
 
 function getScoreColor(score: number) {
-  if (score >= 80) return 'text-green-600'
-  if (score >= 60) return 'text-blue-600'
-  if (score >= 40) return 'text-yellow-600'
-  return 'text-red-600'
+  if (score >= 80) return 'text-success'
+  if (score >= 60) return 'text-info'
+  if (score >= 40) return 'text-warning'
+  return 'text-destructive'
 }
 
 function getProgressColor(score: number) {
-  if (score >= 80) return '[&>div]:bg-green-500'
-  if (score >= 60) return '[&>div]:bg-blue-500'
-  if (score >= 40) return '[&>div]:bg-yellow-500'
-  return '[&>div]:bg-red-500'
+  if (score >= 80) return '[&>div]:bg-success'
+  if (score >= 60) return '[&>div]:bg-info'
+  if (score >= 40) return '[&>div]:bg-warning'
+  return '[&>div]:bg-destructive'
 }
 
 export function ScoreBreakdown({ reasoning, showLabels = true }: ScoreBreakdownProps) {

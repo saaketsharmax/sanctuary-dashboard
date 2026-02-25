@@ -28,9 +28,9 @@ import { useInvestmentRealtime } from '@/hooks/use-investment-realtime'
 import Link from 'next/link'
 
 const statusColors: Record<string, string> = {
-  active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  frozen: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-  closed: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
+  active: 'bg-success/15 text-success',
+  frozen: 'bg-warning/15 text-warning',
+  closed: 'bg-muted text-foreground',
 }
 
 export default function PartnerInvestmentsPage() {
@@ -145,14 +145,14 @@ export default function PartnerInvestmentsPage() {
           totalCents={summary.totalInvestments * 5000000}
           usedCents={summary.totalCashDeployed}
           pendingCents={0}
-          colorClass="text-green-600 dark:text-green-400"
+          colorClass="text-success"
         />
         <BalanceCard
           label="Credits Used"
           totalCents={summary.totalInvestments * 5000000}
           usedCents={summary.totalCreditsUsed}
           pendingCents={0}
-          colorClass="text-blue-600 dark:text-blue-400"
+          colorClass="text-info"
         />
         <Card>
           <CardContent className="pt-6">
@@ -230,7 +230,7 @@ export default function PartnerInvestmentsPage() {
                   <TableCell className="font-medium">{inv.companyName}</TableCell>
                   <TableCell className="text-right font-mono">
                     <div>
-                      <span className="text-green-600 dark:text-green-400">
+                      <span className="text-success">
                         {formatInvestmentCurrency(inv.cashRemaining)}
                       </span>
                       <span className="text-xs text-muted-foreground ml-1">
@@ -240,7 +240,7 @@ export default function PartnerInvestmentsPage() {
                   </TableCell>
                   <TableCell className="text-right font-mono">
                     <div>
-                      <span className="text-blue-600 dark:text-blue-400">
+                      <span className="text-info">
                         {formatInvestmentCurrency(inv.creditsRemaining)}
                       </span>
                       <span className="text-xs text-muted-foreground ml-1">

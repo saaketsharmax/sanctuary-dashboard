@@ -77,7 +77,7 @@ export function OSLayout({
         className="fixed top-8 right-8 z-30 px-6 py-3 bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/50 hover:bg-white/90 hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 group"
       >
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-gradient-to-br from-info to-purple-600 animate-pulse" />
           <span className="text-sm font-semibold text-black/90">My Day</span>
         </div>
       </button>

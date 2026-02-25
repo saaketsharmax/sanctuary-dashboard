@@ -371,8 +371,8 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
           {aiMode && (
             <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
               aiMode === 'live'
-                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                ? 'bg-success/15 text-success'
+                : 'bg-warning/15 text-warning'
             }`}>
               {aiMode === 'live' ? <Sparkles className="h-3 w-3" /> : <Cpu className="h-3 w-3" />}
               {aiMode === 'live' ? 'AI' : 'Demo'}

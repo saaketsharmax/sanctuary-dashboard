@@ -79,14 +79,14 @@ interface Application {
 }
 
 const statusColors: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-700',
-  submitted: 'bg-blue-100 text-blue-700',
+  draft: 'bg-muted text-foreground',
+  submitted: 'bg-info/15 text-info',
   interview_scheduled: 'bg-purple-100 text-purple-700',
   interview_completed: 'bg-indigo-100 text-indigo-700',
-  assessment_generated: 'bg-yellow-100 text-yellow-700',
-  under_review: 'bg-orange-100 text-orange-700',
-  approved: 'bg-green-100 text-green-700',
-  rejected: 'bg-red-100 text-red-700',
+  assessment_generated: 'bg-warning/15 text-warning',
+  under_review: 'bg-warning/15 text-warning',
+  approved: 'bg-success/15 text-success',
+  rejected: 'bg-destructive/15 text-destructive',
 }
 
 export default function ApplicationDetailPage({ params }: ApplicationDetailPageProps) {
@@ -324,7 +324,7 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold">{application.companyName}</h1>
-                <Badge className={statusColors[application.status] || 'bg-gray-100 text-gray-700'}>
+                <Badge className={statusColors[application.status] || 'bg-muted text-foreground'}>
                   {application.status.replace(/_/g, ' ')}
                 </Badge>
                 {isMock && <Badge variant="outline">Demo Mode</Badge>}
@@ -585,10 +585,10 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                       <Badge
                         className={
                           application.aiAssessment.recommendation === 'accept'
-                            ? 'bg-green-100 text-green-700'
+                            ? 'bg-success/15 text-success'
                             : application.aiAssessment.recommendation === 'decline'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-yellow-100 text-yellow-700'
+                            ? 'bg-destructive/15 text-destructive'
+                            : 'bg-warning/15 text-warning'
                         }
                       >
                         {application.aiAssessment.recommendation}
@@ -616,11 +616,11 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                   )}
                   {application.aiAssessment?.keyStrengths?.length > 0 && (
                     <div>
-                      <h4 className="font-medium text-sm text-green-600">Key Strengths</h4>
+                      <h4 className="font-medium text-sm text-success">Key Strengths</h4>
                       <ul className="text-sm mt-1 space-y-1">
                         {application.aiAssessment.keyStrengths.map((s: any, i: number) => (
                           <li key={i} className="flex items-start gap-2">
-                            <span className="text-green-600">•</span>
+                            <span className="text-success">•</span>
                             <span>{s.title || s}</span>
                           </li>
                         ))}
@@ -629,11 +629,11 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                   )}
                   {application.aiAssessment?.keyRisks?.length > 0 && (
                     <div>
-                      <h4 className="font-medium text-sm text-red-600">Key Risks</h4>
+                      <h4 className="font-medium text-sm text-destructive">Key Risks</h4>
                       <ul className="text-sm mt-1 space-y-1">
                         {application.aiAssessment.keyRisks.map((r: any, i: number) => (
                           <li key={i} className="flex items-start gap-2">
-                            <span className="text-red-600">•</span>
+                            <span className="text-destructive">•</span>
                             <span>{r.title || r}</span>
                           </li>
                         ))}
