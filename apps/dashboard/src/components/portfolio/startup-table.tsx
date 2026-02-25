@@ -1,7 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-import { Building2, ExternalLink } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -9,12 +7,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+  Badge,
+  Progress,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Button,
+  cn,
+} from '@sanctuary/ui'
+import Link from 'next/link'
+import { Building2, ExternalLink } from 'lucide-react'
 import type { StartupWithFounders } from '@/types'
 import { getStageInfo, getRiskInfo } from '@/types'
 

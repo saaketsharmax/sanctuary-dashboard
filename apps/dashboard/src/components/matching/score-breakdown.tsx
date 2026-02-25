@@ -1,7 +1,6 @@
 'use client'
 
-import { Progress } from '@/components/ui/progress'
-import { cn } from '@/lib/utils'
+import { Progress, cn } from '@sanctuary/ui'
 import type { MatchReasoning } from '@/types'
 
 interface ScoreBreakdownProps {

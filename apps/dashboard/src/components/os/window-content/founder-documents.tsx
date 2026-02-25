@@ -1,8 +1,7 @@
 'use client'
 
+import { Button, Badge } from '@sanctuary/ui'
 import { FileText, Upload, Eye, Share2, Download, MoreVertical, MoreHorizontal, Plus, File, Image, FileSpreadsheet } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { useState } from 'react'
 
 interface Document {

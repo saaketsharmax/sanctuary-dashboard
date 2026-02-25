@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -8,10 +7,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
+  Button,
+  Textarea,
+  Label,
+} from '@sanctuary/ui'
+import { useState } from 'react'
 import { AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 interface ReviewDecisionModalProps {

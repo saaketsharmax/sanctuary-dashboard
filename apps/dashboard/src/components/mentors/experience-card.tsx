@@ -1,7 +1,12 @@
 'use client'
 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@sanctuary/ui'
 import { Calendar, Building2, CheckCircle2 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ExpertiseBadge } from './expertise-badge'
 import { getStageInfo } from '@/types'
 import type { MentorExperience } from '@/types'

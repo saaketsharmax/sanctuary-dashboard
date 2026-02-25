@@ -1,10 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Loader2, Users, Lightbulb, Target, Zap, Info } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -12,18 +7,21 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Slider } from '@/components/ui/slider'
-import {
+  Button,
+  Input,
+  Label,
+  Slider,
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
+  cn,
+} from '@sanctuary/ui'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Loader2, Users, Lightbulb, Target, Zap, Info } from 'lucide-react'
 import type { Startup } from '@/types'
 import { calculateOverallScore, calculateRiskLevel } from '@/types'
 

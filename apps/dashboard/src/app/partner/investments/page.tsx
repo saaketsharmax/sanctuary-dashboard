@@ -1,17 +1,21 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+  Button,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+  Toaster,
+} from '@sanctuary/ui'
+import { useEffect, useState, useCallback } from 'react'
 import { BalanceCard } from '@/components/investment'
 import {
   formatInvestmentCurrency,
@@ -20,7 +24,6 @@ import {
 } from '@/types'
 import { DollarSign, CreditCard, Clock, TrendingUp, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Toaster } from '@/components/ui/sonner'
 import { useInvestmentRealtime } from '@/hooks/use-investment-realtime'
 import Link from 'next/link'
 

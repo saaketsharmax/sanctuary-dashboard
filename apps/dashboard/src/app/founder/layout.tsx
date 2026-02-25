@@ -1,5 +1,11 @@
 'use client'
 
+import {
+  Button,
+  Avatar,
+  AvatarFallback,
+  cn,
+} from '@sanctuary/ui'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/auth-store'
@@ -17,10 +23,6 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-
 const founderNavItems = [
   { href: '/founder/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/founder/company', label: 'My Company', icon: Building2 },

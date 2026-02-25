@@ -1,7 +1,6 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent, Tabs, TabsContent, TabsList, TabsTrigger } from '@sanctuary/ui'
 import { TrendingUp, DollarSign, Users, Percent, BarChart3, Shield } from 'lucide-react'
 import { DDAccuracyDashboard } from '@/components/dd'
 

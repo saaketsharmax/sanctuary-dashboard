@@ -1,7 +1,7 @@
 'use client'
 
+import { cn } from '@sanctuary/ui'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import type { TrendDirection } from '@/types'
 
 interface TrendIndicatorProps {

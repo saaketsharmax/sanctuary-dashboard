@@ -1,8 +1,11 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+import {
+  Badge,
+  Button,
+  Separator,
+  cn,
+} from '@sanctuary/ui'
 import {
   MemoSection,
   ScoreDisplay,
@@ -23,8 +26,6 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import type { StartupMemo } from '@/types'
-import { cn } from '@/lib/utils'
-
 interface MemoViewerProps {
   memo: StartupMemo
   onExportPDF?: () => void

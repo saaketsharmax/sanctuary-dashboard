@@ -1,8 +1,7 @@
 'use client'
 
+import { Button, Textarea } from '@sanctuary/ui'
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { InterviewMessage, TypingIndicator } from './InterviewMessage'
 import { InterviewProgressCompact } from './InterviewProgress'
 import { useInterviewStore } from '@/lib/stores/interview-store'

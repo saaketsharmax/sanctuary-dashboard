@@ -1,8 +1,13 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Progress,
+  Badge,
+} from '@sanctuary/ui'
 import type { DDCategoryScore } from '@/lib/ai/types/due-diligence'
 import { DD_CATEGORY_LABELS } from '@/lib/ai/types/due-diligence'
 
