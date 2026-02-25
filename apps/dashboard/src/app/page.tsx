@@ -1,11 +1,16 @@
 'use client'
 
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@sanctuary/ui'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Rocket, TrendingUp, ArrowRight, Play } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-
 export default function LandingPage() {
   const router = useRouter()
 

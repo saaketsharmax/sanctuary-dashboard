@@ -1,10 +1,16 @@
 'use client'
 
+import {
+  Card,
+  CardContent,
+  Button,
+  Badge,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@sanctuary/ui'
 import { useEffect, useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Eye, Loader2, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 

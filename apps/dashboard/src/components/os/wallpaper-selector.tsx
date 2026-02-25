@@ -1,9 +1,8 @@
 'use client'
 
+import { cn } from '@sanctuary/ui'
 import { useState } from 'react'
 import { Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react'
-import { cn } from '@/lib/utils'
-
 const wallpapers = [
   { id: 1, name: 'Wallpaper 1', path: '/assets/wallpapers/wallpaper-bg.jpg', isGradient: false },
   { id: 2, name: 'Wallpaper 2', path: '/assets/wallpapers/wallpaper-bg-2.png', isGradient: false },

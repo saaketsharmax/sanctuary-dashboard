@@ -1,8 +1,8 @@
 'use client'
 
+import { Button } from '@sanctuary/ui'
 import { useState, useRef, useEffect } from 'react'
 import { Sparkles, Send, X, Minimize2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { DynamicComponent } from './DynamicComponents'
 
 interface Message {

@@ -1,8 +1,13 @@
 'use client'
 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+} from '@sanctuary/ui'
 import { CheckCircle2, AlertTriangle, XCircle, HelpCircle } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import type { DDRecommendation } from '@/lib/ai/types/due-diligence'
 
 const verdictConfig: Record<string, {

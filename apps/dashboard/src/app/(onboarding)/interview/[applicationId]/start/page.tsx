@@ -1,12 +1,11 @@
 'use client'
 
+import { Button } from '@sanctuary/ui'
 import { useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { InterviewChat } from '@/components/onboarding/interview'
 import { useInterviewStore } from '@/lib/stores/interview-store'
 import { AlertCircle, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-
 interface Application {
   id: string
   companyName: string

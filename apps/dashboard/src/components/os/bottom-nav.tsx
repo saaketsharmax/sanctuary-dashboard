@@ -1,7 +1,7 @@
 'use client'
 
+import { cn } from '@sanctuary/ui'
 import { Home, Briefcase, FileText, Users, BarChart3, Settings, Building2, MessageSquare, CheckSquare } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import type { NavSection } from './os-layout'
 
 interface BottomNavProps {

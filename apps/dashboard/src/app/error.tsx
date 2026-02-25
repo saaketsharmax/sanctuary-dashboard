@@ -1,7 +1,7 @@
 'use client'
 
+import { Button } from '@sanctuary/ui'
 import { useEffect } from 'react'
-import { Button } from '@/components/ui/button'
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
 import Link from 'next/link'
 

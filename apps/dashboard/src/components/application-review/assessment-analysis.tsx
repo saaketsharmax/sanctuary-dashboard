@@ -1,7 +1,13 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+  cn,
+} from '@sanctuary/ui'
 import {
   CheckCircle2,
   AlertTriangle,
@@ -11,7 +17,6 @@ import {
   Calendar,
   Shield,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import type { Assessment, AssessmentStrength, AssessmentRisk } from '@/types'
 
 interface AssessmentAnalysisProps {

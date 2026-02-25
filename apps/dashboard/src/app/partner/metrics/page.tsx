@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@sanctuary/ui'
 import { TrendingUp, DollarSign, Users, Percent, BarChart3 } from 'lucide-react'
 
 export default function PartnerMetricsPage() {

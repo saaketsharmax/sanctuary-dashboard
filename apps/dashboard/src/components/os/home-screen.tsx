@@ -1,11 +1,8 @@
 'use client'
 
+import { Input, Button, cn } from '@sanctuary/ui'
 import { useState } from 'react'
 import { Search, Mic, Paperclip, ChevronDown } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-
 interface QuickAction {
   label: string
   onClick: () => void

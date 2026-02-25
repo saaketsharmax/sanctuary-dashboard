@@ -1,5 +1,6 @@
 'use client'
 
+import { Button, Separator, cn } from '@sanctuary/ui'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -14,9 +15,6 @@ import {
   Users,
   Handshake,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { useAuthStore, useUser } from '@/lib/stores/auth-store'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'

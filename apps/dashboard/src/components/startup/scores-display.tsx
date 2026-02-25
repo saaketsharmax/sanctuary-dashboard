@@ -1,10 +1,15 @@
 'use client'
 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Progress,
+  Button,
+  cn,
+} from '@sanctuary/ui'
 import { TrendingUp, Users, Lightbulb, Target, Zap } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import type { Startup } from '@/types'
 import { getRiskInfo } from '@/types'
 

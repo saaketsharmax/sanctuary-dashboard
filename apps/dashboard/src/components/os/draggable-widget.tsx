@@ -1,8 +1,7 @@
 'use client'
 
+import { cn } from '@sanctuary/ui'
 import { ReactNode, useRef, useState, useEffect } from 'react'
-import { cn } from '@/lib/utils'
-
 interface DraggableWidgetProps {
   id: string
   children: ReactNode

@@ -1,11 +1,15 @@
 'use client'
 
+import {
+  Button,
+  Card,
+  CardContent,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from '@sanctuary/ui'
 import { useState } from 'react'
 import { LayoutGrid, List, Briefcase } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-
 type ViewMode = 'grid' | 'list'
 
 export default function PartnerPortfolioPage() {

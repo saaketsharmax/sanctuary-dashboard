@@ -1,6 +1,11 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@sanctuary/ui'
 import { MetricChart } from './metric-chart'
 import { formatCompactNumber } from '@/types'
 import type { MetricDataPoint } from '@/types'

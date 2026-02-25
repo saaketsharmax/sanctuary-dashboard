@@ -1,10 +1,15 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+  Progress,
+  cn,
+} from '@sanctuary/ui'
 import { TrendingUp, Users, Lightbulb, Target, Zap, CheckCircle2, AlertCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import type { Assessment } from '@/types'
 import { getRecommendationInfo } from '@/types'
 
