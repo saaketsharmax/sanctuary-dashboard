@@ -5,6 +5,169 @@
 
 ---
 
+## Session: 2026-02-25 (b) — Design System Migration (applied then reverted)
+
+### What Was Done
+
+**Import migration** (commit `b7a5248`, reverted in `b9efd46`):
+- Rewrote 116 files: all `@/components/ui/*` → `@sanctuary/ui` (single consolidated import per file)
+- Migrated `cn()` imports from `@/lib/utils` → `@sanctuary/ui`
+- Deleted 24 duplicate component files from `apps/dashboard/src/components/ui/`
+- Deleted `apps/dashboard/src/lib/utils.ts` (no remaining consumers)
+- Added `"@sanctuary/ui": "*"` workspace dependency to dashboard `package.json`
+
+**Color conversion** (commit `d709418`, reverted in `b734a5a`):
+- Replaced 806 hardcoded Tailwind color classes across 73 files
+- green → `success`, blue → `info`, red → `destructive`, yellow/orange/amber → `warning`, gray → `muted`/`muted-foreground`/`foreground`
+- Removed redundant `dark:` overrides (now handled by CSS custom properties in globals.css)
+- Kept purple/indigo/cyan/teal/pink/rose/violet for decorative variety
+
+**Reverted both** at user request. Commits are in history and can be cherry-picked back:
+- `git cherry-pick b7a5248` (import migration)
+- `git cherry-pick d709418` (color conversion)
+
+### Current State
+
+- **Branch:** `design-merge` at `b9efd46` (pushed to GitHub)
+- **Codebase:** back to pre-migration state (same as `292e8af` functionally)
+- **Build:** clean
+- **Vercel CLI:** installed but token expired — needs `vercel login`
+
+### What's Next
+
+1. **Re-apply design migration** when ready (cherry-pick `b7a5248` + `d709418`)
+2. **Implement backend plan** — migration 009, PATCH handler refactor, feedback API
+3. **Authenticate `gh`** and create PR for `design-merge` → `main`
+4. **Programme Agent** (P1) — after decision flow is complete
+
+---
+
+## Session: 2026-02-25 — Backend Planning: Migration 009 + Decision Flow
+
+### What Was Done
+
+Planning session only — no code changes made. Explored codebase thoroughly and produced a ready-to-execute implementation plan.
+
+**Installed `gh` CLI:** Downloaded v2.87.3 directly (no Homebrew) to `~/bin/gh`. Not yet authenticated — user needs to run `~/bin/gh auth login` in a separate terminal.
+
+**Plan produced (saved to `.claude/plans/atomic-watching-pancake.md`):**
+
+1. **Migration 009** (`supabase/migrations/009_expand_application_statuses.sql`):
+   - Data migration: `'accepted'` -> `'approved'`, `'interviewing'` -> `'interview_completed'`
+   - Drop old CHECK, add new constraint matching TypeScript `APPLICATION_STATUSES`: `('draft', 'submitted', 'interview_scheduled', 'interview_completed', 'assessment_generated', 'under_review', 'approved', 'rejected', 'withdrawn')`
+   - Add missing columns: `assessment_completed_at`, `proposed_programme`
+
+2. **Startup auto-creation on approval** (modify `apps/dashboard/src/app/api/partner/applications/[id]/route.ts`):
+   - On approve: create startup record from application data, link founder (`users.startup_id`), link application (`applications.startup_id`), create investment with `startup_id`
+   - Idempotency guard, stage mapping helper, fire-and-forget pattern
+
+3. **Partner feedback API** (new `apps/dashboard/src/app/api/applications/[id]/feedback/route.ts`):
+   - POST: insert into `assessment_feedback` table (agreement booleans, adjusted scores, qualitative text)
+   - GET: retrieve all feedback for an application
+
+4. **Schema sync** — update `supabase/schema.sql` line 95 to match new constraint
+
+### Current State
+
+- **Branch:** `design-merge` (no new commits this session)
+- **Only uncommitted change:** `docs/SESSION-LOG.md`
+- **Plan file:** `.claude/plans/atomic-watching-pancake.md` — approved plan ready to implement
+- **gh CLI:** installed at `~/bin/gh`, needs `gh auth login` before PR creation
+- **Frontend design merge:** running in parallel by user separately
+
+### What's Next
+
+1. **Implement the plan** — migration 009, PATCH handler refactor, feedback API, schema.sql sync
+2. **Authenticate `gh`** and create PR for `design-merge` -> `main`
+3. **Programme Agent** (P1) — after decision flow is complete
+4. **Calibration Engine** (P1) — partner feedback -> signal weight adjustment
+
+---
+
+## Session: 2026-02-24 (b) — OS-Style Dashboard Merge + DD Phase 2
+
+### What Was Done
+
+Merged designer's OS-style desktop metaphor into the engineering codebase, preserving all real data wiring (APIs, Supabase, auth, stores).
+
+**Design tokens & theme:**
+- Created `apps/dashboard/src/app/theme.css` — OKLCH gray scale, spacing, shadows, focus rings, transitions
+- Updated `apps/dashboard/src/app/globals.css` — warm OKLCH palette (hue 85 tint), 6 new semantic tokens (`--success`, `--warning`, `--info` + foregrounds), radius changed to 0.5rem
+- Added warm utility classes: `.text-warm`, `.bg-warm`, `.border-warm`
+
+**OS components copied from designer (20+ files):**
+- `components/os/`: os-layout, home-screen, bottom-nav, wallpaper-selector, my-day-panel, widget-card, draggable-widget, window-view
+- `components/os/widgets/`: carousel, chart, list, news, progress, stats, welcome
+- `components/os/window-content/`: founder-company, founder-documents, founder-progress, partner-applications, partner-portfolio
+- `components/chat/`: ChatWidget, DynamicComponents
+- Fixed `window-view.tsx`: converted `require()` calls to ES imports
+
+**Dashboard pages rewritten with OS layout:**
+- `founder/dashboard/page.tsx` — OS layout + HomeScreen + ChatWidget, wired to `/api/applications`
+- `partner/dashboard/page.tsx` — Same OS pattern, wired to `/api/partner/applications`
+- Both show real data (company names, statuses, pending counts)
+
+**Layout hybrid approach:**
+- `founder/layout.tsx` + `partner/layout.tsx` — dashboard route renders children directly (OS layout), all other routes use sidebar
+- Updated sidebar styling (bg-card, hover states, user card)
+
+**Other:**
+- Updated `badge.tsx` with designer's softer CVA variants
+- Copied 4 wallpaper images to `public/assets/wallpapers/`
+- DD Phase 2 agents (team/market assessment) included in commit
+
+**Commit:** `292e8af` on `design-merge`, pushed to `origin/design-merge`
+
+### Current State
+
+- **Branch:** `design-merge` (pushed to origin)
+- **Only uncommitted change:** This session log update
+- **PR not created:** `gh` CLI not installed (Homebrew also missing). Create PR manually at: `https://github.com/saaketsharmax/sanctuary-dashboard/compare/main...design-merge`
+
+### What's Next
+
+1. Create PR for `design-merge` → `main` (install `gh` or create manually on GitHub)
+2. Convert ~269 hardcoded Tailwind colors to semantic tokens (Task #7, deferred)
+3. Per-page restyling with designer screenshots as input
+4. Responsive pass (768px, 375px)
+5. Migrate `apps/dashboard/` imports to `@sanctuary/ui` package
+
+---
+
+## Session: 2026-02-24 — Extract Shubhy Design System into @sanctuary/ui
+
+### What Was Done
+
+Extracted the full design system from `sanctuary-shubhy` into `packages/ui/` as a standalone `@sanctuary/ui` package.
+
+**Files created/updated in `packages/ui/`:**
+- `package.json` — Updated with 14 Radix UI primitives, lucide-react, sonner, next-themes deps + CSS export paths
+- `src/styles/theme.css` — Foundation tokens (OKLCH gray scale, spacing, border-radius, shadows, focus rings, transitions)
+- `src/styles/globals.css` — Tailwind setup + warm OKLCH palette (light + dark mode) + utility classes
+- `src/components/` — 24 UI components:
+  - 20 from shubhy: avatar, badge, button, card, checkbox, collapsible, dialog, dropdown-menu, input, label, progress, radio-group, scroll-area, select, separator, skeleton, sonner, table, tabs, textarea
+  - 4 from dashboard: sheet, slider, switch, tooltip
+- `src/index.ts` — Barrel exports all 24 components + `cn()` utility
+- All imports rewired: `@/lib/utils` → `../utils`, `@/components/ui/button` → `./button`
+
+**Verification:** TypeScript compiles clean, `npm run build:dashboard` passes, zero changes to `apps/dashboard/`.
+
+**Commit:** `a281a6e` on `design-merge` branch, pushed to origin.
+
+### Current State
+
+- **Branch:** `design-merge` (pushed to origin, PR not yet created — `gh` CLI not installed)
+- **Unstaged changes:** DD Phase 2 work (team/market assessment agents, migration 011) — not part of this commit
+- **Blocker for PR:** Need `gh` CLI installed (Homebrew also not installed on this machine)
+
+### What's Next
+
+1. Install Homebrew + `gh` CLI, then create PR for `design-merge`
+2. Future: Migrate `apps/dashboard/` imports from `@/components/ui/*` → `@sanctuary/ui` and delete duplicated components
+3. Continue DD Phase 2 work (team/market assessment agents) on separate branch
+
+---
+
 ## Session: 2026-02-12 — Initial State Capture
 
 ### What Was Done Before This Log Existed
@@ -755,3 +918,128 @@ Merged the designer's frontend code (from `sanctuary-shubhy/packages/ui`) into t
 4. **Per-page restyling** (with designer screenshots as input): founder pages, partner pages, onboarding flow
 5. **Responsive pass** — Mobile/tablet designs (768px, 375px)
 6. **Merge `design-merge` → `main`** after final review
+
+---
+
+## Session: 2026-02-27 — God Mode Build (Parallel Execution)
+
+### What Was Done
+
+**Migration 009** — `supabase/migrations/009_fix_application_status_constraint.sql`
+- Drops old `applications_status_check` constraint
+- Adds new constraint with: draft, submitted, interviewing, under_review, approved, rejected, withdrawn
+- Adds `decision_made_at` and `decision_notes` columns
+- Adds indexes on `status` and `decision_made_at`
+- **Unblocks the full investment + decision flow**
+
+**Migration 012** — `supabase/migrations/012_decision_flow.sql`
+- Adds `application_id` to startups table (for linking on auto-creation)
+- Updates `agent_runs` constraint for all new agent types
+- Adds outcome tracking columns to applications (for accuracy metrics)
+- Adds RLS policies for partner decisions and startup creation
+
+**God Mode DD Agent** (4 new files):
+- Types: `lib/ai/types/god-mode-dd.ts` — 9 unique metric interfaces + composite GodModeDDReport
+- Prompt: `lib/ai/prompts/god-mode-dd-system.ts` — 1500+ word system prompt as contrarian first-principles thinker
+- Agent: `lib/ai/agents/god-mode-dd-agent.ts` — GodModeDDAgent + MockGodModeDDAgent + factory
+- API: `app/api/applications/[id]/dd/god-mode/route.ts` — POST runs analysis, GET returns report
+- **9 Unique Metrics**: Behavioral Fingerprint, Signal Consistency Index, Revenue Quality Score, Capital Efficiency Predictor, Network Effect Potential, Competitive Moat Durability (12-36mo projection), Market Timing Index, Contrarian Signals, Pattern Matching
+- Composite godModeScore calculated as weighted average of all sub-scores
+
+**DD Accuracy Metrics** (3 new files):
+- Types: `lib/ai/types/dd-accuracy.ts` — DDAccuracyMetrics + DDAccuracyInput
+- Agent: `lib/ai/agents/dd-accuracy-agent.ts` — Primarily computational (no LLM for math), Claude for insight generation
+- API: `app/api/applications/dd/accuracy/route.ts` — GET with ?period=weekly|monthly|quarterly
+- Tracks: prediction accuracy, confidence calibration, partner overrides, signal effectiveness, claim verification accuracy, drift detection, performance over time
+
+**Voice Interview Agent** (4 new files):
+- Types: `lib/ai/types/voice-interview.ts` — VoiceConfig, VoiceTranscriptEntry, ElevenLabsWebSocketMessage
+- Prompt: `lib/ai/prompts/voice-interview-system.ts` — Voice-optimized prompts (<60 words per response)
+- Agent: `lib/ai/agents/voice-interview-agent.ts` — VoiceInterviewAgent + MockVoiceInterviewAgent + factory
+- API: `app/api/interview/voice/route.ts` — POST processes transcribed text + voice metadata
+- Voice-specific signals: hesitation detection, speaking rate, emotional tone, STT confidence
+- Server-side logic only; client handles Eleven Labs WebSocket + TTS
+
+**Matchmaking Agent** (4 new files):
+- Types: `lib/ai/types/matchmaking.ts` — MatchCandidate, MatchRequest, MatchScore, MatchResult
+- Prompt: `lib/ai/prompts/matchmaking-system.ts` — Deep matching beyond keywords
+- Agent: `lib/ai/agents/matchmaking-agent.ts` — MatchmakingAgent + MockMatchmakingAgent + factory
+- API: `app/api/partner/matches/suggest/route.ts` — POST runs matching, GET returns suggestions
+- 6 scoring dimensions: Expertise (30%), Stage (25%), Industry (15%), Track Record (15%), Availability (10%), Personality (5%)
+- Pre-filters by hard constraints, anti-pattern detection, gap analysis
+
+**Decision API** — `app/api/applications/[id]/decision/route.ts`
+- POST: partner approve/reject with auto startup creation
+- On approval: creates startup record, links founder, allocates $50k cash + $50k credits
+- Single API call for the entire decision flow
+
+**Feedback API** — `app/api/applications/[id]/feedback/route.ts`
+- POST: partner assessment feedback (agreement checkboxes + score overrides + qualitative)
+- GET: retrieve existing feedback
+- Feeds into DD accuracy metrics and calibration engine
+
+**Documentation**:
+- Created `docs/SANCTUARY-OS-LATEST.md` — comprehensive platform document (v4.0)
+- Updated this session log
+
+### Files Created (21 total)
+
+```
+supabase/migrations/009_fix_application_status_constraint.sql
+supabase/migrations/012_decision_flow.sql
+apps/dashboard/src/lib/ai/types/god-mode-dd.ts
+apps/dashboard/src/lib/ai/types/voice-interview.ts
+apps/dashboard/src/lib/ai/types/matchmaking.ts
+apps/dashboard/src/lib/ai/types/dd-accuracy.ts
+apps/dashboard/src/lib/ai/prompts/god-mode-dd-system.ts
+apps/dashboard/src/lib/ai/prompts/voice-interview-system.ts
+apps/dashboard/src/lib/ai/prompts/matchmaking-system.ts
+apps/dashboard/src/lib/ai/agents/god-mode-dd-agent.ts
+apps/dashboard/src/lib/ai/agents/voice-interview-agent.ts
+apps/dashboard/src/lib/ai/agents/matchmaking-agent.ts
+apps/dashboard/src/lib/ai/agents/dd-accuracy-agent.ts
+apps/dashboard/src/app/api/applications/[id]/dd/god-mode/route.ts
+apps/dashboard/src/app/api/applications/[id]/decision/route.ts
+apps/dashboard/src/app/api/applications/[id]/feedback/route.ts
+apps/dashboard/src/app/api/applications/dd/accuracy/route.ts
+apps/dashboard/src/app/api/interview/voice/route.ts
+apps/dashboard/src/app/api/partner/matches/suggest/route.ts
+docs/SANCTUARY-OS-LATEST.md
+```
+
+### Agent Count: 15
+
+| # | Agent | Status |
+|---|-------|--------|
+| 1 | Interview Agent (Text) | Existing |
+| 2 | Claude Interview Agent | Existing |
+| 3 | Assessment Agent | Existing |
+| 4 | Research Agent | Existing |
+| 5 | Memo Generator | Existing |
+| 6 | Claim Extraction Agent | Existing |
+| 7 | Claim Verification Agent | Existing |
+| 8 | Document Verification Agent | Existing |
+| 9 | Team Assessment Agent | Existing |
+| 10 | Market Assessment Agent | Existing |
+| 11 | DD Report Generator | Existing |
+| 12 | **God Mode DD Agent** | NEW |
+| 13 | **DD Accuracy Agent** | NEW |
+| 14 | **Voice Interview Agent** | NEW |
+| 15 | **Matchmaking Agent** | NEW |
+
+### Current State
+
+- **Branch:** `design-merge`
+- **New files:** 21 uncommitted files
+- **Migrations pending:** 009 (status constraint), 012 (decision flow)
+- **Build:** Not yet verified with new files
+
+### What's Next
+
+1. **Run build** to verify all new files compile
+2. **Deploy migrations** 009 + 012 to Supabase
+3. **Wire God Mode DD** into the partner DD dashboard UI (new tab/section)
+4. **Client-side voice** — Eleven Labs WebSocket integration in interview page
+5. **Calibration Engine** — use accuracy metrics + feedback to auto-adjust weights
+6. **Programme Agent** — milestone generation for accepted startups
+7. **Auth `gh` CLI** + create PR for all this work
