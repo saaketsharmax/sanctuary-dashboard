@@ -42,6 +42,114 @@
 
 ---
 
+## Session: 2026-02-27 — Overnight Autonomous Build (God Mode)
+
+### What Was Done
+
+**Previous session (2026-02-25/26) — 21 files, 3383 lines:**
+- Migration 009 + 012 (status constraints, decision flow schema)
+- 4 new agents: God Mode DD, Voice Interview, Matchmaking, DD Accuracy
+- 3 new prompt files, 4 type files
+- 6 API routes: god-mode, decision, feedback, accuracy, voice, matches/suggest
+- God Mode DD wired into partner DD page (691-line component with 9 metric cards)
+- Eleven Labs voice interview client hook + InterviewChat voice/text toggle
+
+**This session (2026-02-27 overnight) — autonomous 5-hour build:**
+
+1. **Calibration Engine** (new agent + types + API route):
+   - Self-improving learning loop that tracks DD prediction accuracy
+   - Detects drift, adjusts dimension weights, generates calibration reports
+   - Partner feedback → weight adjustment → improved predictions
+   - API: `/api/applications/dd/calibration` (GET/POST)
+
+2. **Programme Agent** (new agent + types + prompts + API route):
+   - Generates tailored 90-day accelerator programmes with 3 phases
+   - Phase 1 (Foundation wk 1-4), Phase 2 (Acceleration wk 5-8), Phase 3 (Launch Pad wk 9-12)
+   - 8-12 milestones with KPI targets, mentor matching triggers, weekly check-ins
+   - API: `/api/applications/[id]/programme` (GET/POST)
+
+3. **Partner Application Page Upgrade:**
+   - Decision flow wired to `/api/applications/[id]/decision` (auto startup creation on approve)
+   - Programme tab: full milestone viewer with phases, KPIs, mentor triggers
+   - Feedback tab: score adjustment sliders, agreement rating, notes → calibration engine
+
+4. **DD Accuracy Dashboard:**
+   - Full system health visualization on partner metrics page
+   - Accuracy tab: prediction accuracy, partner overrides, confidence calibration
+   - Calibration tab: health score, weight adjustment recommendations, partner alignment
+   - Drift tab: drift detection, performance over time
+   - Insights tab: AI-generated insights, calibration recommendations, claim accuracy
+
+5. **Matchmaking UI:**
+   - Full match card component with score breakdown (6 dimensions)
+   - Marketplace insights, AI suggestion generation
+   - Expandable details: reasoning, expected outcomes, challenges, engagement format
+
+6. **Test Suite (59 tests, all passing):**
+   - Installed vitest with path alias configuration
+   - DD Accuracy Agent: 18 tests (prediction accuracy, calibration, overrides, drift, claims)
+   - Calibration Engine: 20 tests (reports, accuracy, drift, alignment, weights, outcomes)
+   - Mock Agents: 21 tests (God Mode DD, Matchmaking, Programme — output validation)
+
+7. **Edge Case Fixes:**
+   - Programme Agent: JSON parse guards, null safety on phases/milestones
+   - Calibration Engine: safe JSON parse fallback, null-safe content access
+   - DD Accuracy Dashboard: optional chaining on nullable arrays
+
+### Agent Inventory (18 agents total)
+
+| # | Agent | Type | Status |
+|---|-------|------|--------|
+| 1 | Interview Agent | claude-interview-agent | Live |
+| 2 | Assessment Agent | assessment-agent | Live |
+| 3 | Research Agent | research-agent | Live |
+| 4 | Memo Generator | memo-generator | Live |
+| 5 | Claim Extraction | claim-extraction-agent | Live |
+| 6 | Claim Verification | claim-verification-agent | Live |
+| 7 | Document Verification | document-verification-agent | Live |
+| 8 | DD Report Generator | dd-report-generator | Live |
+| 9 | Team Assessment | (in DD pipeline) | Live |
+| 10 | Market Assessment | (in DD pipeline) | Live |
+| 11 | God Mode DD | god-mode-dd-agent | Live |
+| 12 | Voice Interview | voice-interview-agent | Live |
+| 13 | Matchmaking | matchmaking-agent | Live |
+| 14 | DD Accuracy | dd-accuracy-agent | Live |
+| 15 | Calibration Engine | calibration-engine | **New** |
+| 16 | Programme Agent | programme-agent | **New** |
+| 17 | (Future) Community Agent | — | Planned |
+| 18 | (Future) Investor Relations | — | Planned |
+
+### Commits This Session (8 total)
+
+1. `41c9864` — Eleven Labs voice interview client with voice/text toggle
+2. `00c0d84` — Calibration Engine and Programme Agent
+3. `2778a53` — DD accuracy dashboard, partner feedback, programme tab, decision flow
+4. `fb9a569` — Matchmaking UI with AI-powered match suggestions
+5. `c7bb693` — Test suite (59 tests for DD accuracy, calibration, mock agents)
+6. `8073903` — Edge case fixes (null safety, JSON parse guards, optional chaining)
+7. (this commit) — Session log and docs update
+8. (push)
+
+### Current State
+
+- **Branch:** `design-merge` (pushed to GitHub)
+- **Build:** clean (verified after every commit)
+- **Tests:** 59/59 passing
+- **Total new files this session:** 14 (types, agents, prompts, API routes, components, tests, vitest config)
+- **Total lines added this session:** ~5,000+
+
+### What's Next
+
+1. **Deploy migrations** 009 + 012 to Supabase (needs credentials)
+2. **Auth `gh` CLI** + create PR for `design-merge` → `main`
+3. **Re-apply design migration** when ready
+4. **Community Agent** — events, networking, community features
+5. **Investor Relations Agent** — reporting, updates, LP communications
+6. **Real-time pipeline integration** — connect all agents into live pipeline
+7. **Performance optimization** — caching, parallel agent execution
+
+---
+
 ## Session: 2026-02-25 — Backend Planning: Migration 009 + Decision Flow
 
 ### What Was Done

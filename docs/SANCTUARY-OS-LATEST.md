@@ -1,8 +1,8 @@
 # Sanctuary OS — Platform Architecture & Agent Ecosystem
 
-**Version:** 4.0
+**Version:** 5.0
 **Date:** February 27, 2026
-**Status:** Active Development — God Mode Enabled
+**Status:** Active Development — Full Agent Mesh Operational
 
 ---
 
@@ -18,7 +18,7 @@ Sanctuary OS is an **AI-native startup accelerator platform** that replaces huma
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                    SANCTUARY OS — AGENT MESH (v4.0)                     │
+│                    SANCTUARY OS — AGENT MESH (v5.0)                     │
 └─────────────────────────────────────────────────────────────────────────┘
 
   INTAKE LAYER                    ANALYSIS LAYER                 ACTION LAYER
@@ -73,23 +73,26 @@ Sanctuary OS is an **AI-native startup accelerator platform** that replaces huma
         │   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
         └──►│  Matchmaking │  │  Programme   │  │  Calibration │
             │  Agent       │  │  Agent       │  │  Engine      │
+            │  6-dimension │  │  90-day plan │  │  Auto-adjust │
+            │  scoring     │  │  milestones  │  │  weights     │
             └──────────────┘  └──────────────┘  └──────┬───────┘
                                                        │
                                                 ┌──────▼───────┐
                                                 │  DD Accuracy │
-                                                │  Metrics     │
+                                                │  Dashboard   │
+                                                │  (59 tests)  │
                                                 └──────────────┘
 ```
 
 ---
 
-## Agent Inventory (15 Total)
+## Agent Inventory (18 Total)
 
 ### Intake Agents
 | Agent | Status | Purpose |
 |-------|--------|---------|
 | **Interview Agent (Text)** | Live | 5-section structured interview via chat |
-| **Voice Interview Agent** | New | Eleven Labs voice-first interview with behavioral signals |
+| **Voice Interview Agent** | Live | Eleven Labs voice-first interview with behavioral signals |
 
 ### Analysis Agents
 | Agent | Status | Purpose |
@@ -111,14 +114,20 @@ Sanctuary OS is an **AI-native startup accelerator platform** that replaces huma
 ### Due Diligence Agents (God Mode)
 | Agent | Status | Purpose |
 |-------|--------|---------|
-| **God Mode DD Agent** | New | 9 unique metrics traditional DD can't derive |
-| **DD Accuracy Agent** | New | Prediction tracking, confidence calibration, drift detection |
+| **God Mode DD Agent** | Live | 9 unique metrics traditional DD can't derive |
+| **DD Accuracy Agent** | Live | Prediction tracking, confidence calibration, drift detection |
 
 ### Post-Acceptance Agents
 | Agent | Status | Purpose |
 |-------|--------|---------|
-| **Matchmaking Agent** | New | Deep mentor-startup and GP-startup matching |
-| **Programme Agent** | Planned | Personalized milestone generation |
+| **Matchmaking Agent** | Live | Deep mentor-startup and GP-startup matching |
+| **Programme Agent** | Live | 90-day accelerator programme with milestones, KPIs, mentor triggers |
+| **Calibration Engine** | Live | Self-improving learning loop — adjusts weights from feedback + outcomes |
+
+### Meta Agents
+| Agent | Status | Purpose |
+|-------|--------|---------|
+| **DD Accuracy Dashboard** | Live | System health visualization, drift detection, confidence calibration |
 
 ---
 
@@ -195,6 +204,44 @@ Goes beyond keyword matching for mentor-startup pairing:
 
 ---
 
+## Programme Agent
+
+Generates tailored 90-day accelerator programmes on approval:
+
+- **3 Phases**: Foundation (weeks 1-4), Acceleration (weeks 5-8), Launch Pad (weeks 9-12)
+- **9 Milestones**: Each with KPI targets, mentor support needs, dependencies, success criteria
+- **KPI targets derived from application data**: e.g., MRR target = 3x baseline at Demo Day
+- **Mentor matching triggers**: Maps milestones to expertise needs with urgency levels
+- **12-week check-in schedule**: Auto-generated with phase-appropriate focus areas
+
+### API
+```
+POST /api/applications/[id]/programme   Generate programme
+GET  /api/applications/[id]/programme   Retrieve existing programme
+```
+
+---
+
+## Calibration Engine
+
+Self-improving learning loop that makes the DD system smarter over time:
+
+- **Prediction accuracy tracking**: Invest/pass verdicts vs actual outcomes
+- **Confidence calibration**: Buckets at 50-60%, 60-70%, etc. — measures if 80% confidence = 80% correct
+- **Partner alignment scoring**: Agreement rate + dimension-level override patterns
+- **Drift detection**: Compares score distributions across time windows, alerts on shifts
+- **Signal effectiveness ranking**: Which signals actually predict success (R² calculation)
+- **Weight adjustment generation**: Proposes new scoring weights based on outcome data
+- **Health score**: Composite 0-100 metric for overall system reliability
+
+### API
+```
+GET  /api/applications/dd/calibration   Get latest calibration report
+POST /api/applications/dd/calibration   Run calibration cycle
+```
+
+---
+
 ## Backend: Decision Flow
 
 When a partner approves an application:
@@ -233,12 +280,20 @@ GET    /api/applications/[id]/dd/god-mode      Get God Mode report
 GET    /api/applications/dd/accuracy           DD accuracy metrics
 ```
 
+### Calibration & Learning
+```
+GET    /api/applications/dd/calibration         Latest calibration report
+POST   /api/applications/dd/calibration         Run calibration cycle
+```
+
 ### Post-Acceptance
 ```
-POST   /api/partner/matches/suggest            Run matchmaking
-GET    /api/partner/matches/suggest             Get match suggestions
-GET    /api/partner/investments                 Portfolio investments
-GET    /api/partner/investments/[id]            Investment detail
+POST   /api/applications/[id]/programme         Generate 90-day programme
+GET    /api/applications/[id]/programme          Get programme
+POST   /api/partner/matches/suggest             Run matchmaking
+GET    /api/partner/matches/suggest              Get match suggestions
+GET    /api/partner/investments                  Portfolio investments
+GET    /api/partner/investments/[id]             Investment detail
 ```
 
 ---
@@ -276,14 +331,24 @@ GET    /api/partner/investments/[id]            Investment detail
 
 ---
 
+## Test Coverage
+
+- **59 tests** across 3 test suites (Vitest)
+  - `dd-accuracy-agent.test.ts` — 18 tests: prediction accuracy, calibration, partner overrides, drift, claims
+  - `calibration-engine.test.ts` — 20 tests: report generation, weight adjustments, health scoring, edge cases
+  - `mock-agents.test.ts` — 21 tests: God Mode DD, Matchmaking, Programme agents (mock variants)
+
+---
+
 ## What's Next
 
 1. **Deploy migration 009** to unblock the full decision flow
-2. **Wire God Mode DD** into the partner DD dashboard UI
-3. **Client-side voice** integration with Eleven Labs WebSocket
-4. **Calibration Engine** (auto-adjust weights from feedback + outcomes)
-5. **Programme Agent** (milestone generation for accepted startups)
-6. **Community + Marketing** apps in the monorepo
+2. **Deploy migration 012** for God Mode DD columns + calibration tables
+3. **Design system migration** — cherry-pick `b7a5248` + `d709418` to re-apply
+4. **Auth `gh` CLI** + create PR for `design-merge` → `main`
+5. **Community + Marketing** apps in the monorepo
+6. **Real-time programme tracking** — progress updates as milestones complete
+7. **Mentor matching execution** — auto-trigger matching when milestones need support
 
 ---
 
