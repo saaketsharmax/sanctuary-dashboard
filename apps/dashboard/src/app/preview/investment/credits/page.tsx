@@ -1,16 +1,8 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Button,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useMemo } from 'react'
 import {
   BalanceCard,
@@ -59,7 +51,7 @@ export default function PreviewCreditsPage() {
         totalCents={investment.creditsAmountCents}
         usedCents={investment.creditsUsed}
         pendingCents={investment.pendingCredits}
-        colorClass="text-info"
+        colorClass="text-blue-600"
       />
 
       {/* Category Breakdown */}

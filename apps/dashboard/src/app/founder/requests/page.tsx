@@ -1,31 +1,15 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Button,
-  Badge,
-  Skeleton,
-  Input,
-  Label,
-  Textarea,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  Toaster,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Toaster } from '@/components/ui/sonner'
 import { Plus, MessageSquare, Users, Lightbulb, HelpCircle, Loader2, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
@@ -44,20 +28,20 @@ interface Request {
 }
 
 const requestTypes: Record<string, { label: string; icon: any; color: string; description: string }> = {
-  mentor: { label: 'Mentor Request', icon: Users, color: 'bg-info/15 text-info', description: 'Request a mentor match' },
+  mentor: { label: 'Mentor Request', icon: Users, color: 'bg-blue-100 text-blue-600', description: 'Request a mentor match' },
   intro: { label: 'Introduction', icon: Users, color: 'bg-indigo-100 text-indigo-700', description: 'Request an introduction' },
   feature: { label: 'Feature Request', icon: Lightbulb, color: 'bg-purple-100 text-purple-700', description: 'Suggest a new feature' },
-  feedback: { label: 'Feedback', icon: MessageSquare, color: 'bg-success/15 text-success', description: 'Request feedback' },
+  feedback: { label: 'Feedback', icon: MessageSquare, color: 'bg-green-100 text-green-600', description: 'Request feedback' },
   other: { label: 'Other', icon: HelpCircle, color: 'bg-muted text-foreground', description: 'Other requests' },
 }
 
 const statusColors: Record<string, string> = {
-  pending: 'bg-warning/15 text-warning',
-  in_progress: 'bg-info/15 text-info',
-  in_review: 'bg-info/15 text-info',
-  approved: 'bg-success/15 text-success',
-  completed: 'bg-success/15 text-success',
-  declined: 'bg-destructive/15 text-destructive',
+  pending: 'bg-yellow-100 text-yellow-600',
+  in_progress: 'bg-blue-100 text-blue-600',
+  in_review: 'bg-blue-100 text-blue-600',
+  approved: 'bg-green-100 text-green-600',
+  completed: 'bg-green-100 text-green-600',
+  declined: 'bg-red-100 text-red-600',
   cancelled: 'bg-muted text-foreground',
 }
 
@@ -346,7 +330,7 @@ export default function RequestsPage() {
                           <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{request.description}</p>
                         )}
                         {request.resolutionNotes && (
-                          <p className="text-sm text-success mt-2">Resolution: {request.resolutionNotes}</p>
+                          <p className="text-sm text-green-600 mt-2">Resolution: {request.resolutionNotes}</p>
                         )}
                       </div>
                     </div>
@@ -361,7 +345,7 @@ export default function RequestsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-muted-foreground hover:text-destructive"
+                          className="text-muted-foreground hover:text-red-600"
                           onClick={() => handleCancel(request.id)}
                         >
                           <X className="h-4 w-4" />

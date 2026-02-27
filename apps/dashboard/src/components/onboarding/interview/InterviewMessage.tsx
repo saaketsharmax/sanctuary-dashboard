@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@sanctuary/ui'
+import { cn } from '@/lib/utils'
 import { Bot, User } from 'lucide-react'
 
 interface InterviewMessageProps {

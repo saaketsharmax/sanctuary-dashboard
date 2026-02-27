@@ -1,6 +1,7 @@
 'use client'
 
-import { Badge, Button } from '@sanctuary/ui'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { FileText, Clock, CheckCircle2, XCircle, Eye, MoreVertical, User } from 'lucide-react'
 const applications = [
   {
@@ -42,11 +43,11 @@ const applications = [
 ]
 
 const statusConfig = {
-  needs_review: { label: 'Needs Review', icon: Clock, color: 'text-warning' },
-  interview_complete: { label: 'Interview Complete', icon: FileText, color: 'text-info' },
+  needs_review: { label: 'Needs Review', icon: Clock, color: 'text-yellow-600' },
+  interview_complete: { label: 'Interview Complete', icon: FileText, color: 'text-blue-600' },
   under_review: { label: 'Under Review', icon: Eye, color: 'text-purple-600' },
-  accepted: { label: 'Accepted', icon: CheckCircle2, color: 'text-success' },
-  declined: { label: 'Declined', icon: XCircle, color: 'text-destructive' },
+  accepted: { label: 'Accepted', icon: CheckCircle2, color: 'text-green-600' },
+  declined: { label: 'Declined', icon: XCircle, color: 'text-red-600' },
 }
 
 export function PartnerApplicationsContent() {

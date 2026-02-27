@@ -1,26 +1,12 @@
 'use client'
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Button,
-  Input,
-  Label,
-  Textarea,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@sanctuary/ui'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -153,7 +139,7 @@ export function EditStartupModal({
                   <Label htmlFor="name">Company Name *</Label>
                   <Input id="name" {...register('name')} />
                   {errors.name && (
-                    <p className="text-xs text-destructive">{errors.name.message}</p>
+                    <p className="text-xs text-red-600">{errors.name.message}</p>
                   )}
                 </div>
 
@@ -181,7 +167,7 @@ export function EditStartupModal({
                 <Label htmlFor="oneLiner">One-liner *</Label>
                 <Input id="oneLiner" {...register('oneLiner')} />
                 {errors.oneLiner && (
-                  <p className="text-xs text-destructive">{errors.oneLiner.message}</p>
+                  <p className="text-xs text-red-600">{errors.oneLiner.message}</p>
                 )}
               </div>
 
@@ -195,7 +181,7 @@ export function EditStartupModal({
                   <Label htmlFor="city">City *</Label>
                   <Input id="city" {...register('city')} />
                   {errors.city && (
-                    <p className="text-xs text-destructive">{errors.city.message}</p>
+                    <p className="text-xs text-red-600">{errors.city.message}</p>
                   )}
                 </div>
 
@@ -203,7 +189,7 @@ export function EditStartupModal({
                   <Label htmlFor="country">Country *</Label>
                   <Input id="country" {...register('country')} />
                   {errors.country && (
-                    <p className="text-xs text-destructive">{errors.country.message}</p>
+                    <p className="text-xs text-red-600">{errors.country.message}</p>
                   )}
                 </div>
 
@@ -358,7 +344,7 @@ export function EditStartupModal({
                   {...register('website')}
                 />
                 {errors.website && (
-                  <p className="text-xs text-destructive">{errors.website.message}</p>
+                  <p className="text-xs text-red-600">{errors.website.message}</p>
                 )}
               </div>
 
@@ -371,7 +357,7 @@ export function EditStartupModal({
                   {...register('demoUrl')}
                 />
                 {errors.demoUrl && (
-                  <p className="text-xs text-destructive">{errors.demoUrl.message}</p>
+                  <p className="text-xs text-red-600">{errors.demoUrl.message}</p>
                 )}
               </div>
 
@@ -384,7 +370,7 @@ export function EditStartupModal({
                   {...register('pitchDeckUrl')}
                 />
                 {errors.pitchDeckUrl && (
-                  <p className="text-xs text-destructive">{errors.pitchDeckUrl.message}</p>
+                  <p className="text-xs text-red-600">{errors.pitchDeckUrl.message}</p>
                 )}
               </div>
             </TabsContent>

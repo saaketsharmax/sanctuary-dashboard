@@ -41,11 +41,11 @@ export function ChartWidget({
             {trend && change !== undefined && (
               <div className="flex items-center gap-1">
                 {trend === 'up' ? (
-                  <TrendingUp className="w-4 h-4 text-success" />
+                  <TrendingUp className="w-4 h-4 text-green-600" />
                 ) : (
-                  <TrendingDown className="w-4 h-4 text-destructive" />
+                  <TrendingDown className="w-4 h-4 text-red-600" />
                 )}
-                <span className={`text-[12px] font-medium ${trend === 'up' ? 'text-success' : 'text-destructive'}`}>
+                <span className={`text-[12px] font-medium ${trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
                   {change > 0 ? '+' : ''}{change}%
                 </span>
               </div>

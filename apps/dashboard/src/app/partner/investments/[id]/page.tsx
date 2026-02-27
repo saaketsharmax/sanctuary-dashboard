@@ -1,14 +1,9 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-  Button,
-  Toaster,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Toaster } from '@/components/ui/sonner'
 import { useEffect, useState, useCallback, use } from 'react'
 import { BalanceCard, TransactionTable, CreditCategoryBadge } from '@/components/investment'
 import {
@@ -124,7 +119,7 @@ export default function PartnerInvestmentDetailPage({
         <Badge
           className={
             investment.status === 'active'
-              ? 'bg-success/15 text-success'
+              ? 'bg-green-100 text-green-600'
               : 'bg-muted text-foreground'
           }
         >
@@ -139,14 +134,14 @@ export default function PartnerInvestmentDetailPage({
           totalCents={investment.cashAmountCents}
           usedCents={investment.cashUsed}
           pendingCents={investment.pendingCash}
-          colorClass="text-success"
+          colorClass="text-green-600"
         />
         <BalanceCard
           label="Credits Remaining"
           totalCents={investment.creditsAmountCents}
           usedCents={investment.creditsUsed}
           pendingCents={investment.pendingCredits}
-          colorClass="text-info"
+          colorClass="text-blue-600"
         />
       </div>
 

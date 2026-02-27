@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
 import { TrendingUp, TrendingDown, CheckCircle2, Circle, Target, FileText, ExternalLink } from 'lucide-react'
 interface MetricCardProps {
   label: string
@@ -17,11 +17,11 @@ export function MetricCard({ label, value, change }: MetricCardProps) {
       <p className="text-2xl font-bold text-foreground">{value}</p>
       <div className="flex items-center gap-1 mt-1">
         {isPositive ? (
-          <TrendingUp className="w-3 h-3 text-success" />
+          <TrendingUp className="w-3 h-3 text-green-600" />
         ) : (
-          <TrendingDown className="w-3 h-3 text-destructive" />
+          <TrendingDown className="w-3 h-3 text-red-600" />
         )}
-        <p className={`text-xs ${isPositive ? 'text-success' : 'text-destructive'}`}>
+        <p className={`text-xs ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
           {change}
         </p>
       </div>
@@ -43,7 +43,7 @@ export function TaskItem({ id, title, status }: TaskItemProps) {
       <div
         className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
           completed
-            ? 'bg-success border-success'
+            ? 'bg-green-500 border-green-500'
             : 'border-muted-foreground/30'
         }`}
       >

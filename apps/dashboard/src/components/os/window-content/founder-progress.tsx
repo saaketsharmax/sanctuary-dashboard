@@ -1,6 +1,7 @@
 'use client'
 
-import { Badge, Button } from '@sanctuary/ui'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Sparkles, TrendingUp, Target, Calendar, Plus, MessageSquare, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown, Copy, Share2, Paperclip, Smile, Send, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { DynamicComponent } from '@/components/chat/DynamicComponents'

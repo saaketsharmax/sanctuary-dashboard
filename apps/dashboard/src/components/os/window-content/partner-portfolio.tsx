@@ -13,7 +13,7 @@ const startups = [
     mrrChange: 12,
     users: 234,
     insight: 'Strong user acquisition this month',
-    bgColor: 'from-info to-purple-600'
+    bgColor: 'from-blue-500 to-purple-600'
   },
   {
     id: '2',
@@ -25,7 +25,7 @@ const startups = [
     mrrChange: 18,
     users: 542,
     insight: 'Revenue accelerating, on track for next milestone',
-    bgColor: 'from-success to-emerald-600'
+    bgColor: 'from-green-500 to-emerald-600'
   },
   {
     id: '3',
@@ -37,7 +37,7 @@ const startups = [
     mrrChange: 5,
     users: 398,
     insight: 'Steady progress, consider expansion strategies',
-    bgColor: 'from-destructive to-pink-600'
+    bgColor: 'from-red-500 to-pink-600'
   },
   {
     id: '4',
@@ -76,14 +76,14 @@ export function PartnerPortfolioContent() {
                 <p className="text-sm text-muted-foreground">total MRR</p>
               </div>
               <div className="flex items-baseline gap-2">
-                <p className="text-2xl font-semibold text-success">+15%</p>
+                <p className="text-2xl font-semibold text-green-600">+15%</p>
                 <p className="text-sm text-muted-foreground">avg growth</p>
               </div>
             </div>
           </div>
 
           {/* Key Insights */}
-          <div className="border-l-2 border-info pl-4 py-2">
+          <div className="border-l-2 border-blue-200 pl-4 py-2">
             <p className="text-sm text-muted-foreground mb-1">This month's highlight</p>
             <p className="text-base text-foreground">
               GreenCommute is accelerating with 18% growth. BuildRight Co needs attention with -15% revenue decline.
@@ -121,7 +121,7 @@ export function PartnerPortfolioContent() {
                 <div className="flex items-center gap-6 mb-3 ml-16">
                   <div className="flex items-baseline gap-2">
                     <p className="text-lg font-semibold text-foreground">{startup.mrr}</p>
-                    <span className={`flex items-center gap-0.5 text-sm font-medium ${startup.mrrChange > 0 ? 'text-success' : 'text-destructive'}`}>
+                    <span className={`flex items-center gap-0.5 text-sm font-medium ${startup.mrrChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {startup.mrrChange > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
                       {Math.abs(startup.mrrChange)}%
                     </span>

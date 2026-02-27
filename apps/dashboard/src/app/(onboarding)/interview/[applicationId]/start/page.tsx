@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
 import { useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { InterviewChat } from '@/components/onboarding/interview'
@@ -69,7 +69,7 @@ export default function InterviewChatPage() {
   if (error || !application) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+        <AlertCircle className="h-12 w-12 text-red-600 mb-4" />
         <h1 className="text-2xl font-bold mb-2">Application Not Found</h1>
         <p className="text-muted-foreground mb-4">
           We couldn&apos;t find an application with this ID.

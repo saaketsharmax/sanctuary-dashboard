@@ -1,16 +1,10 @@
 'use client'
 
-import {
-  Button,
-  Input,
-  Label,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Separator,
-} from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -162,7 +156,7 @@ export default function LoginPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="flex items-center gap-2 p-3 text-sm text-destructive bg-destructive/10 rounded-lg">
+              <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 rounded-lg">
                 <AlertCircle className="h-4 w-4" />
                 {error}
               </div>
@@ -180,7 +174,7 @@ export default function LoginPage() {
                   disabled={isLoading}
                 />
                 {errors.email && (
-                  <p className="text-xs text-destructive">{errors.email.message}</p>
+                  <p className="text-xs text-red-600">{errors.email.message}</p>
                 )}
               </div>
 
@@ -194,7 +188,7 @@ export default function LoginPage() {
                   disabled={isLoading}
                 />
                 {errors.password && (
-                  <p className="text-xs text-destructive">{errors.password.message}</p>
+                  <p className="text-xs text-red-600">{errors.password.message}</p>
                 )}
               </div>
 

@@ -1,11 +1,6 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useMemo } from 'react'
 import {
   AreaChart,

@@ -1,23 +1,13 @@
 'use client'
 
-import {
-  Button,
-  Input,
-  Label,
-  Textarea,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Checkbox,
-  Badge,
-} from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, useFieldArray } from 'react-hook-form'
@@ -243,7 +233,7 @@ export default function FounderApplyPage() {
                     placeholder="Acme Inc"
                   />
                   {errors.companyName && (
-                    <p className="text-xs text-destructive">{errors.companyName.message}</p>
+                    <p className="text-xs text-red-600">{errors.companyName.message}</p>
                   )}
                 </div>
 
@@ -255,7 +245,7 @@ export default function FounderApplyPage() {
                     placeholder="We help X do Y by doing Z"
                   />
                   {errors.companyOneLiner && (
-                    <p className="text-xs text-destructive">{errors.companyOneLiner.message}</p>
+                    <p className="text-xs text-red-600">{errors.companyOneLiner.message}</p>
                   )}
                 </div>
 
@@ -267,7 +257,7 @@ export default function FounderApplyPage() {
                     placeholder="https://example.com"
                   />
                   {errors.companyWebsite && (
-                    <p className="text-xs text-destructive">{errors.companyWebsite.message}</p>
+                    <p className="text-xs text-red-600">{errors.companyWebsite.message}</p>
                   )}
                 </div>
 
@@ -315,7 +305,7 @@ export default function FounderApplyPage() {
                           placeholder="Full name"
                         />
                         {errors.founders?.[index]?.name && (
-                          <p className="text-xs text-destructive">
+                          <p className="text-xs text-red-600">
                             {errors.founders[index]?.name?.message}
                           </p>
                         )}
@@ -329,7 +319,7 @@ export default function FounderApplyPage() {
                           placeholder="email@example.com"
                         />
                         {errors.founders?.[index]?.email && (
-                          <p className="text-xs text-destructive">
+                          <p className="text-xs text-red-600">
                             {errors.founders[index]?.email?.message}
                           </p>
                         )}
@@ -412,7 +402,7 @@ export default function FounderApplyPage() {
                     rows={4}
                   />
                   {errors.problemDescription && (
-                    <p className="text-xs text-destructive">{errors.problemDescription.message}</p>
+                    <p className="text-xs text-red-600">{errors.problemDescription.message}</p>
                   )}
                 </div>
 
@@ -425,7 +415,7 @@ export default function FounderApplyPage() {
                     rows={3}
                   />
                   {errors.targetCustomer && (
-                    <p className="text-xs text-destructive">{errors.targetCustomer.message}</p>
+                    <p className="text-xs text-red-600">{errors.targetCustomer.message}</p>
                   )}
                 </div>
 
@@ -438,7 +428,7 @@ export default function FounderApplyPage() {
                     rows={4}
                   />
                   {errors.solutionDescription && (
-                    <p className="text-xs text-destructive">{errors.solutionDescription.message}</p>
+                    <p className="text-xs text-red-600">{errors.solutionDescription.message}</p>
                   )}
                 </div>
               </div>
@@ -465,7 +455,7 @@ export default function FounderApplyPage() {
                     </SelectContent>
                   </Select>
                   {errors.stage && (
-                    <p className="text-xs text-destructive">{errors.stage.message}</p>
+                    <p className="text-xs text-red-600">{errors.stage.message}</p>
                   )}
                 </div>
 
@@ -500,7 +490,7 @@ export default function FounderApplyPage() {
                     rows={3}
                   />
                   {errors.biggestChallenge && (
-                    <p className="text-xs text-destructive">{errors.biggestChallenge.message}</p>
+                    <p className="text-xs text-red-600">{errors.biggestChallenge.message}</p>
                   )}
                 </div>
               </div>
@@ -518,7 +508,7 @@ export default function FounderApplyPage() {
                     rows={4}
                   />
                   {errors.whySanctuary && (
-                    <p className="text-xs text-destructive">{errors.whySanctuary.message}</p>
+                    <p className="text-xs text-red-600">{errors.whySanctuary.message}</p>
                   )}
                 </div>
 
@@ -531,7 +521,7 @@ export default function FounderApplyPage() {
                     rows={4}
                   />
                   {errors.whatTheyWant && (
-                    <p className="text-xs text-destructive">{errors.whatTheyWant.message}</p>
+                    <p className="text-xs text-red-600">{errors.whatTheyWant.message}</p>
                   )}
                 </div>
               </div>
@@ -583,11 +573,11 @@ export default function FounderApplyPage() {
                 </div>
 
                 {submitError && (
-                  <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-medium text-destructive">Submission Failed</h4>
-                      <p className="text-sm text-destructive/80">{submitError}</p>
+                      <h4 className="font-medium text-red-600">Submission Failed</h4>
+                      <p className="text-sm text-red-600/80">{submitError}</p>
                     </div>
                   </div>
                 )}

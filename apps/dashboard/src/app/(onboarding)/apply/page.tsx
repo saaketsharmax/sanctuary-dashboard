@@ -1,23 +1,13 @@
 'use client'
 
-import {
-  Button,
-  Input,
-  Label,
-  Textarea,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Checkbox,
-  Badge,
-} from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, useFieldArray } from 'react-hook-form'
@@ -227,7 +217,7 @@ export default function ApplyPage() {
                     placeholder="Acme Inc"
                   />
                   {errors.companyName && (
-                    <p className="text-xs text-destructive">{errors.companyName.message}</p>
+                    <p className="text-xs text-red-600">{errors.companyName.message}</p>
                   )}
                 </div>
 
@@ -239,7 +229,7 @@ export default function ApplyPage() {
                     placeholder="We help X do Y by doing Z"
                   />
                   {errors.companyOneLiner && (
-                    <p className="text-xs text-destructive">{errors.companyOneLiner.message}</p>
+                    <p className="text-xs text-red-600">{errors.companyOneLiner.message}</p>
                   )}
                 </div>
 
@@ -251,7 +241,7 @@ export default function ApplyPage() {
                     placeholder="https://example.com"
                   />
                   {errors.companyWebsite && (
-                    <p className="text-xs text-destructive">{errors.companyWebsite.message}</p>
+                    <p className="text-xs text-red-600">{errors.companyWebsite.message}</p>
                   )}
                 </div>
 
@@ -299,7 +289,7 @@ export default function ApplyPage() {
                           placeholder="Full name"
                         />
                         {errors.founders?.[index]?.name && (
-                          <p className="text-xs text-destructive">
+                          <p className="text-xs text-red-600">
                             {errors.founders[index]?.name?.message}
                           </p>
                         )}
@@ -313,7 +303,7 @@ export default function ApplyPage() {
                           placeholder="email@example.com"
                         />
                         {errors.founders?.[index]?.email && (
-                          <p className="text-xs text-destructive">
+                          <p className="text-xs text-red-600">
                             {errors.founders[index]?.email?.message}
                           </p>
                         )}
@@ -396,7 +386,7 @@ export default function ApplyPage() {
                     rows={4}
                   />
                   {errors.problemDescription && (
-                    <p className="text-xs text-destructive">{errors.problemDescription.message}</p>
+                    <p className="text-xs text-red-600">{errors.problemDescription.message}</p>
                   )}
                 </div>
 
@@ -409,7 +399,7 @@ export default function ApplyPage() {
                     rows={3}
                   />
                   {errors.targetCustomer && (
-                    <p className="text-xs text-destructive">{errors.targetCustomer.message}</p>
+                    <p className="text-xs text-red-600">{errors.targetCustomer.message}</p>
                   )}
                 </div>
 
@@ -422,7 +412,7 @@ export default function ApplyPage() {
                     rows={4}
                   />
                   {errors.solutionDescription && (
-                    <p className="text-xs text-destructive">{errors.solutionDescription.message}</p>
+                    <p className="text-xs text-red-600">{errors.solutionDescription.message}</p>
                   )}
                 </div>
               </div>
@@ -449,7 +439,7 @@ export default function ApplyPage() {
                     </SelectContent>
                   </Select>
                   {errors.stage && (
-                    <p className="text-xs text-destructive">{errors.stage.message}</p>
+                    <p className="text-xs text-red-600">{errors.stage.message}</p>
                   )}
                 </div>
 
@@ -484,7 +474,7 @@ export default function ApplyPage() {
                     rows={3}
                   />
                   {errors.biggestChallenge && (
-                    <p className="text-xs text-destructive">{errors.biggestChallenge.message}</p>
+                    <p className="text-xs text-red-600">{errors.biggestChallenge.message}</p>
                   )}
                 </div>
               </div>
@@ -502,7 +492,7 @@ export default function ApplyPage() {
                     rows={4}
                   />
                   {errors.whySanctuary && (
-                    <p className="text-xs text-destructive">{errors.whySanctuary.message}</p>
+                    <p className="text-xs text-red-600">{errors.whySanctuary.message}</p>
                   )}
                 </div>
 
@@ -515,7 +505,7 @@ export default function ApplyPage() {
                     rows={4}
                   />
                   {errors.whatTheyWant && (
-                    <p className="text-xs text-destructive">{errors.whatTheyWant.message}</p>
+                    <p className="text-xs text-red-600">{errors.whatTheyWant.message}</p>
                   )}
                 </div>
               </div>

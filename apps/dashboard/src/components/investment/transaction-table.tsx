@@ -1,15 +1,8 @@
 'use client'
 
-import {
-  Badge,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  Button,
-} from '@sanctuary/ui'
+import { Badge } from '@/components/ui/badge'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
 import { CreditCategoryBadge } from './credit-category-badge'
 import {
   formatInvestmentCurrency,
@@ -18,9 +11,9 @@ import {
 } from '@/types'
 
 const statusColors: Record<string, string> = {
-  pending: 'bg-warning/15 text-warning',
-  approved: 'bg-success/15 text-success',
-  denied: 'bg-destructive/15 text-destructive',
+  pending: 'bg-yellow-100 text-yellow-600',
+  approved: 'bg-green-100 text-green-600',
+  denied: 'bg-red-100 text-red-600',
   cancelled: 'bg-muted text-foreground',
 }
 

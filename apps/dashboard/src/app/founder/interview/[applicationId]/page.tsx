@@ -1,14 +1,8 @@
 'use client'
 
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Badge,
-} from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import {

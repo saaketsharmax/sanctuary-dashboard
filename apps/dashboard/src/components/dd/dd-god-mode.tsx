@@ -18,7 +18,10 @@ import {
   ChevronRight,
   ExternalLink,
 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle, Badge, Progress, Collapsible, CollapsibleContent, CollapsibleTrigger } from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import type { GodModeDDReport } from '@/lib/ai/types/god-mode-dd'
 
 interface DDGodModeProps {
@@ -28,26 +31,26 @@ interface DDGodModeProps {
 // ─── Score Color Helpers ─────────────────────────────────────────────────
 
 function scoreColor(score: number): string {
-  if (score >= 80) return 'text-success'
-  if (score >= 60) return 'text-info'
-  if (score >= 40) return 'text-warning'
-  return 'text-destructive'
+  if (score >= 80) return 'text-green-600'
+  if (score >= 60) return 'text-blue-600'
+  if (score >= 40) return 'text-yellow-600'
+  return 'text-red-600'
 }
 
 function scoreBg(score: number): string {
-  if (score >= 80) return 'bg-success'
-  if (score >= 60) return 'bg-info'
-  if (score >= 40) return 'bg-warning'
-  return 'bg-destructive'
+  if (score >= 80) return 'bg-green-500'
+  if (score >= 60) return 'bg-blue-500'
+  if (score >= 40) return 'bg-yellow-500'
+  return 'bg-red-500'
 }
 
 function convictionConfig(level: GodModeDDReport['convictionLevel']) {
   const configs = {
-    strong_conviction_invest: { label: 'Strong Conviction Invest', color: 'bg-success/15 text-success border-success', icon: CheckCircle2 },
-    conviction_invest: { label: 'Conviction Invest', color: 'bg-success/10 text-success border-success', icon: CheckCircle2 },
+    strong_conviction_invest: { label: 'Strong Conviction Invest', color: 'bg-green-100 text-green-600 border-green-200', icon: CheckCircle2 },
+    conviction_invest: { label: 'Conviction Invest', color: 'bg-green-50 text-green-600 border-green-200', icon: CheckCircle2 },
     neutral: { label: 'Neutral', color: 'bg-muted text-muted-foreground border-border', icon: HelpCircle },
-    conviction_pass: { label: 'Conviction Pass', color: 'bg-destructive/10 text-destructive border-destructive', icon: XCircle },
-    strong_conviction_pass: { label: 'Strong Conviction Pass', color: 'bg-destructive/15 text-destructive border-destructive', icon: XCircle },
+    conviction_pass: { label: 'Conviction Pass', color: 'bg-red-50 text-red-600 border-red-200', icon: XCircle },
+    strong_conviction_pass: { label: 'Strong Conviction Pass', color: 'bg-red-100 text-red-600 border-red-200', icon: XCircle },
   }
   return configs[level] || configs.neutral
 }
@@ -180,7 +183,7 @@ export function DDGodMode({ report }: DDGodModeProps) {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Eye className="h-4 w-4 text-warning" />
+              <Eye className="h-4 w-4 text-yellow-600" />
               Blind Spots
             </CardTitle>
             <p className="text-xs text-muted-foreground">What we still can&apos;t determine</p>
@@ -188,7 +191,7 @@ export function DDGodMode({ report }: DDGodModeProps) {
           <CardContent className="space-y-2">
             {report.blindSpots?.map((spot, i) => (
               <div key={i} className="flex gap-2 text-sm">
-                <AlertTriangle className="h-3.5 w-3.5 text-warning mt-0.5 shrink-0" />
+                <AlertTriangle className="h-3.5 w-3.5 text-yellow-600 mt-0.5 shrink-0" />
                 <span>{spot}</span>
               </div>
             ))}
@@ -274,7 +277,7 @@ export function DDGodMode({ report }: DDGodModeProps) {
                 <p className="text-xs font-medium text-muted-foreground mb-2">Authenticity Markers</p>
                 {report.behavioralFingerprint.authenticityMarkers.map((marker, i) => (
                   <div key={i} className="text-xs flex gap-2 py-1">
-                    <CheckCircle2 className="h-3 w-3 text-success mt-0.5 shrink-0" />
+                    <CheckCircle2 className="h-3 w-3 text-green-600 mt-0.5 shrink-0" />
                     <span>{marker}</span>
                   </div>
                 ))}
@@ -295,7 +298,7 @@ export function DDGodMode({ report }: DDGodModeProps) {
                   <span className="text-muted-foreground">{comp.consistentClaims} consistent / {comp.inconsistentClaims} inconsistent</span>
                 </div>
                 {comp.contradictions?.map((c, j) => (
-                  <div key={j} className="mt-2 pl-2 border-l-2 border-destructive">
+                  <div key={j} className="mt-2 pl-2 border-l-2 border-red-200">
                     <div className="font-medium">{c.claim}</div>
                     <div className="text-muted-foreground">Source 1: {c.source1Says}</div>
                     <div className="text-muted-foreground">Source 2: {c.source2Says}</div>
@@ -394,13 +397,13 @@ export function DDGodMode({ report }: DDGodModeProps) {
               </div>
             )}
             {report.networkEffectPotential.dataFlywheel?.exists && (
-              <div className="text-xs bg-success/10 text-success rounded p-2">
+              <div className="text-xs bg-green-50 text-green-600 rounded p-2">
                 Data Flywheel: {report.networkEffectPotential.dataFlywheel.description} (strength: {report.networkEffectPotential.dataFlywheel.strength}/100)
               </div>
             )}
             {report.networkEffectPotential.lockInMechanisms?.map((m, i) => (
               <div key={i} className="text-xs flex gap-2">
-                <Shield className="h-3 w-3 text-info mt-0.5 shrink-0" />
+                <Shield className="h-3 w-3 text-blue-600 mt-0.5 shrink-0" />
                 <span>{m}</span>
               </div>
             ))}
@@ -438,14 +441,14 @@ export function DDGodMode({ report }: DDGodModeProps) {
                   <Badge variant="outline" className="text-[10px] capitalize">{moat.type.replace(/_/g, ' ')}</Badge>
                   <span className={scoreColor(moat.strength)}>{moat.strength}/100</span>
                 </div>
-                <Badge variant="outline" className={`text-[10px] ${moat.durability === 'increasing' ? 'text-success' : moat.durability === 'eroding' ? 'text-destructive' : ''}`}>
+                <Badge variant="outline" className={`text-[10px] ${moat.durability === 'increasing' ? 'text-green-600' : moat.durability === 'eroding' ? 'text-red-600' : ''}`}>
                   {moat.durability}
                 </Badge>
               </div>
             ))}
 
             {report.moatDurability.biggestMoatThreat && (
-              <div className="text-xs text-destructive bg-destructive/10 rounded p-2">
+              <div className="text-xs text-red-600 bg-red-50 rounded p-2">
                 Biggest threat: {report.moatDurability.biggestMoatThreat}
               </div>
             )}
@@ -480,7 +483,7 @@ export function DDGodMode({ report }: DDGodModeProps) {
             )}
 
             {report.marketTiming.windowOfOpportunity && (
-              <div className="text-xs bg-info/10 text-info rounded p-2">
+              <div className="text-xs bg-blue-50 text-blue-600 rounded p-2">
                 Window of opportunity: ~{report.marketTiming.windowOfOpportunity.months} months — {report.marketTiming.windowOfOpportunity.reasoning}
               </div>
             )}
@@ -496,13 +499,13 @@ export function DDGodMode({ report }: DDGodModeProps) {
           <MetricCard icon={Sparkles} title="Contrarian Signals">
             {report.contrarianSignals.unconventionalStrengths?.length > 0 && (
               <div>
-                <p className="text-xs font-medium text-success mb-2">Unconventional Strengths</p>
+                <p className="text-xs font-medium text-green-600 mb-2">Unconventional Strengths</p>
                 {report.contrarianSignals.unconventionalStrengths.map((s, i) => (
-                  <div key={i} className="text-xs bg-success/10 rounded p-2 mb-2">
+                  <div key={i} className="text-xs bg-green-50 rounded p-2 mb-2">
                     <div className="font-medium">{s.signal}</div>
                     <div className="text-muted-foreground mt-1">Why counter-intuitive: {s.whyCounterIntuitive}</div>
                     <div className="text-muted-foreground">Precedent: {s.historicalPrecedent}</div>
-                    <div className="text-success mt-1">Upside: {s.potentialUpside}</div>
+                    <div className="text-green-600 mt-1">Upside: {s.potentialUpside}</div>
                   </div>
                 ))}
               </div>
@@ -510,12 +513,12 @@ export function DDGodMode({ report }: DDGodModeProps) {
 
             {report.contrarianSignals.hiddenRisks?.length > 0 && (
               <div>
-                <p className="text-xs font-medium text-destructive mb-2">Hidden Risks</p>
+                <p className="text-xs font-medium text-red-600 mb-2">Hidden Risks</p>
                 {report.contrarianSignals.hiddenRisks.map((r, i) => (
-                  <div key={i} className="text-xs bg-destructive/10 rounded p-2 mb-2">
+                  <div key={i} className="text-xs bg-red-50 rounded p-2 mb-2">
                     <div className="font-medium">{r.signal}</div>
                     <div className="text-muted-foreground mt-1">Why overlooked: {r.whyOverlooked}</div>
-                    <div className="text-destructive mt-1">Downside: {r.potentialDownside}</div>
+                    <div className="text-red-600 mt-1">Downside: {r.potentialDownside}</div>
                   </div>
                 ))}
               </div>
@@ -535,12 +538,12 @@ export function DDGodMode({ report }: DDGodModeProps) {
 
             {report.contrarianSignals.founderEdgeCases?.length > 0 && (
               <div>
-                <p className="text-xs font-medium text-info mb-2">Founder Edge Cases</p>
+                <p className="text-xs font-medium text-blue-600 mb-2">Founder Edge Cases</p>
                 {report.contrarianSignals.founderEdgeCases.map((f, i) => (
-                  <div key={i} className="text-xs bg-info/10 rounded p-2 mb-2">
+                  <div key={i} className="text-xs bg-blue-50 rounded p-2 mb-2">
                     <div className="font-medium">{f.trait}</div>
                     <div className="text-muted-foreground">Conventional: {f.conventionalView}</div>
-                    <div className="text-info">Actual: {f.actualCorrelation}</div>
+                    <div className="text-blue-600">Actual: {f.actualCorrelation}</div>
                   </div>
                 ))}
               </div>
@@ -570,11 +573,11 @@ export function DDGodMode({ report }: DDGodModeProps) {
                 </div>
                 <div className="text-muted-foreground mt-1">Outcome: {m.outcome}</div>
                 <div className="mt-1">
-                  <span className="text-success">Parallels: </span>
+                  <span className="text-green-600">Parallels: </span>
                   {m.keyParallels.join(', ')}
                 </div>
                 <div className="mt-1">
-                  <span className="text-warning">Differences: </span>
+                  <span className="text-yellow-600">Differences: </span>
                   {m.keyDifferences.join(', ')}
                 </div>
               </div>

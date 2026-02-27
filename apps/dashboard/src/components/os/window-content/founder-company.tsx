@@ -1,6 +1,7 @@
 'use client'
 
-import { Badge, Button } from '@sanctuary/ui'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { TrendingUp, DollarSign, Users, Target, MoreVertical, Calendar, MapPin, Globe, Building2, MessageSquare, FileText, CheckCircle } from 'lucide-react'
 const companyInfo = {
   name: 'TechFlow AI',
@@ -9,7 +10,7 @@ const companyInfo = {
   industry: 'B2B SaaS',
   stage: 'Solution Shaping',
   cohort: '2026-A',
-  bgColor: 'from-info to-purple-600',
+  bgColor: 'from-blue-500 to-purple-600',
   website: 'techflow.ai',
   location: 'San Francisco, CA',
   founded: 'January 2025',

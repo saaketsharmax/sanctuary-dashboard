@@ -1,6 +1,7 @@
 'use client'
 
-import { Badge, cn } from '@sanctuary/ui'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import type { ProblemArchetype } from '@/types'
 import { getProblemArchetypeInfo } from '@/types'
 
@@ -11,17 +12,17 @@ interface ExpertiseBadgeProps {
 
 const colorMap: Record<string, string> = {
   purple: 'bg-purple-100 text-purple-700 hover:bg-purple-100',
-  blue: 'bg-info/15 text-info hover:bg-info/20',
-  green: 'bg-success/15 text-success hover:bg-success/20',
-  orange: 'bg-warning/15 text-warning hover:bg-warning/20',
+  blue: 'bg-blue-100 text-blue-600 hover:bg-blue-100',
+  green: 'bg-green-100 text-green-600 hover:bg-green-100',
+  orange: 'bg-yellow-100 text-yellow-600 hover:bg-yellow-100',
   pink: 'bg-pink-100 text-pink-700 hover:bg-pink-100',
   cyan: 'bg-cyan-100 text-cyan-700 hover:bg-cyan-100',
-  yellow: 'bg-warning/15 text-warning hover:bg-warning/20',
-  red: 'bg-destructive/15 text-destructive hover:bg-destructive/20',
+  yellow: 'bg-yellow-100 text-yellow-600 hover:bg-yellow-100',
+  red: 'bg-red-100 text-red-600 hover:bg-red-100',
   indigo: 'bg-indigo-100 text-indigo-700 hover:bg-indigo-100',
   teal: 'bg-teal-100 text-teal-700 hover:bg-teal-100',
   violet: 'bg-violet-100 text-violet-700 hover:bg-violet-100',
-  amber: 'bg-warning/15 text-warning hover:bg-warning/20',
+  amber: 'bg-yellow-100 text-yellow-600 hover:bg-yellow-100',
   rose: 'bg-rose-100 text-rose-700 hover:bg-rose-100',
   gray: 'bg-muted text-foreground hover:bg-muted',
 }

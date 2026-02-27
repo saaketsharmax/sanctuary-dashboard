@@ -1,16 +1,10 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Button,
-  Badge,
-  Skeleton,
-  Toaster,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Toaster } from '@/components/ui/sonner'
 import { FileText, Upload, Download, Eye, Trash2, Share2, Loader2 } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
@@ -28,10 +22,10 @@ interface Document {
 }
 
 const documentTypes: Record<string, { label: string; color: string }> = {
-  pitch_deck: { label: 'Pitch Deck', color: 'bg-info/15 text-info' },
-  financials: { label: 'Financials', color: 'bg-success/15 text-success' },
+  pitch_deck: { label: 'Pitch Deck', color: 'bg-blue-100 text-blue-600' },
+  financials: { label: 'Financials', color: 'bg-green-100 text-green-600' },
   legal: { label: 'Legal', color: 'bg-purple-100 text-purple-700' },
-  product: { label: 'Product', color: 'bg-warning/15 text-warning' },
+  product: { label: 'Product', color: 'bg-yellow-100 text-yellow-600' },
   other: { label: 'Other', color: 'bg-muted text-foreground' },
 }
 
@@ -269,7 +263,7 @@ export default function DocumentsPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-destructive"
+                        className="text-red-600"
                         onClick={() => handleDelete(doc.id)}
                         disabled={isMock}
                       >

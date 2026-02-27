@@ -1,14 +1,8 @@
 'use client'
 
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Badge,
-} from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useInterviewStore } from '@/lib/stores/interview-store'
@@ -87,7 +81,7 @@ export default function InterviewCompletePage() {
   if (error || !application) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+        <AlertCircle className="h-12 w-12 text-red-600 mb-4" />
         <h1 className="text-2xl font-bold mb-2">Application Not Found</h1>
         <p className="text-muted-foreground mb-4">
           We couldn&apos;t find an application with this ID.
@@ -101,8 +95,8 @@ export default function InterviewCompletePage() {
     <div className="max-w-2xl mx-auto space-y-8">
       {/* Success Header */}
       <div className="text-center">
-        <div className="w-20 h-20 rounded-full bg-success/15 flex items-center justify-center mx-auto mb-6">
-          <CheckCircle2 className="h-10 w-10 text-success" />
+        <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+          <CheckCircle2 className="h-10 w-10 text-green-600" />
         </div>
         <Badge variant="secondary" className="mb-4">
           Interview Complete

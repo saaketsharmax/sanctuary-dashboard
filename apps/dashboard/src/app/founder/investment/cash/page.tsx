@@ -1,17 +1,9 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Button,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  Toaster,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Toaster } from '@/components/ui/sonner'
 import { useEffect, useState, useCallback } from 'react'
 import {
   BalanceCard,
@@ -146,7 +138,7 @@ export default function CashInvestmentPage() {
     <div className="space-y-6">
       {/* Mock data banner */}
       {isMock && (
-        <div className="flex items-center gap-2 rounded-lg border border-info/30 bg-info/10 px-4 py-3 text-sm text-info">
+        <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-600">
           <Info className="h-4 w-4 shrink-0" />
           <p>Showing sample data. Real transactions will appear once your investment is active.</p>
         </div>
@@ -165,7 +157,7 @@ export default function CashInvestmentPage() {
         totalCents={investment.cashAmountCents}
         usedCents={investment.cashUsed}
         pendingCents={investment.pendingCash}
-        colorClass="text-success"
+        colorClass="text-green-600"
       />
 
       {/* Runway */}

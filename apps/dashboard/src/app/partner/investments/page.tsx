@@ -1,20 +1,10 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  Toaster,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Toaster } from '@/components/ui/sonner'
 import { useEffect, useState, useCallback } from 'react'
 import { BalanceCard } from '@/components/investment'
 import {
@@ -28,8 +18,8 @@ import { useInvestmentRealtime } from '@/hooks/use-investment-realtime'
 import Link from 'next/link'
 
 const statusColors: Record<string, string> = {
-  active: 'bg-success/15 text-success',
-  frozen: 'bg-warning/15 text-warning',
+  active: 'bg-green-100 text-green-600',
+  frozen: 'bg-yellow-100 text-yellow-600',
   closed: 'bg-muted text-foreground',
 }
 
@@ -145,14 +135,14 @@ export default function PartnerInvestmentsPage() {
           totalCents={summary.totalInvestments * 5000000}
           usedCents={summary.totalCashDeployed}
           pendingCents={0}
-          colorClass="text-success"
+          colorClass="text-green-600"
         />
         <BalanceCard
           label="Credits Used"
           totalCents={summary.totalInvestments * 5000000}
           usedCents={summary.totalCreditsUsed}
           pendingCents={0}
-          colorClass="text-info"
+          colorClass="text-blue-600"
         />
         <Card>
           <CardContent className="pt-6">
@@ -231,7 +221,7 @@ export default function PartnerInvestmentsPage() {
                   <TableCell className="font-medium">{inv.companyName}</TableCell>
                   <TableCell className="text-right font-mono">
                     <div>
-                      <span className="text-success">
+                      <span className="text-green-600">
                         {formatInvestmentCurrency(inv.cashRemaining)}
                       </span>
                       <span className="text-xs text-muted-foreground ml-1">
@@ -241,7 +231,7 @@ export default function PartnerInvestmentsPage() {
                   </TableCell>
                   <TableCell className="text-right font-mono">
                     <div>
-                      <span className="text-info">
+                      <span className="text-blue-600">
                         {formatInvestmentCurrency(inv.creditsRemaining)}
                       </span>
                       <span className="text-xs text-muted-foreground ml-1">

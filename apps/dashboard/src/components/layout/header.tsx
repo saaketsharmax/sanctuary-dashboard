@@ -1,18 +1,9 @@
 'use client'
 
-import {
-  Button,
-  Input,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Bell, Search, Plus } from 'lucide-react'
 import { useAuthStore, useUser } from '@/lib/stores/auth-store'
 import { useRouter } from 'next/navigation'
@@ -80,7 +71,7 @@ export function Header({
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
-          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] font-medium text-white flex items-center justify-center">
             3
           </span>
         </Button>
@@ -108,7 +99,7 @@ export function Header({
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+            <DropdownMenuItem onClick={handleLogout} className="text-red-600">
               Exit to Home
             </DropdownMenuItem>
           </DropdownMenuContent>

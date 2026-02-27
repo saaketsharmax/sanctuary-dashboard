@@ -1,14 +1,9 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-  Progress,
-  cn,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { cn } from '@/lib/utils'
 import { TrendingUp, Users, Lightbulb, Target, Zap, CheckCircle2, AlertCircle } from 'lucide-react'
 import type { Assessment } from '@/types'
 import { getRecommendationInfo } from '@/types'
@@ -29,17 +24,17 @@ function ScoreRow({ label, score, reasoning, icon }: ScoreRowProps) {
   const hasScore = score !== null
 
   const getScoreColor = (value: number) => {
-    if (value >= 75) return 'text-success'
-    if (value >= 50) return 'text-info'
-    if (value >= 25) return 'text-warning'
-    return 'text-destructive'
+    if (value >= 75) return 'text-green-600'
+    if (value >= 50) return 'text-blue-600'
+    if (value >= 25) return 'text-yellow-600'
+    return 'text-red-600'
   }
 
   const getProgressColor = (value: number) => {
-    if (value >= 75) return '[&>div]:bg-success'
-    if (value >= 50) return '[&>div]:bg-info'
-    if (value >= 25) return '[&>div]:bg-warning'
-    return '[&>div]:bg-destructive'
+    if (value >= 75) return '[&>div]:bg-green-500'
+    if (value >= 50) return '[&>div]:bg-blue-500'
+    if (value >= 25) return '[&>div]:bg-yellow-500'
+    return '[&>div]:bg-red-500'
   }
 
   return (
@@ -75,24 +70,24 @@ export function AssessmentScoresDisplay({ assessment }: AssessmentScoresDisplayP
   const hasOverallScore = assessment.overallScore !== null
 
   const getOverallColor = (value: number) => {
-    if (value >= 75) return 'text-success border-success/30 bg-success/10'
-    if (value >= 50) return 'text-info border-info/30 bg-info/10'
-    if (value >= 25) return 'text-warning border-warning/30 bg-warning/10'
-    return 'text-destructive border-destructive/30 bg-destructive/10'
+    if (value >= 75) return 'text-green-600 border-green-200 bg-green-50'
+    if (value >= 50) return 'text-blue-600 border-blue-200 bg-blue-50'
+    if (value >= 25) return 'text-yellow-600 border-yellow-200 bg-yellow-50'
+    return 'text-red-600 border-red-200 bg-red-50'
   }
 
   const getRecommendationColor = (rec: string) => {
     switch (rec) {
       case 'strong_accept':
-        return 'bg-success/15 text-success border-success/30'
+        return 'bg-green-100 text-green-600 border-green-200'
       case 'accept':
-        return 'bg-info/15 text-info border-info/30'
+        return 'bg-blue-100 text-blue-600 border-blue-200'
       case 'conditional':
-        return 'bg-warning/15 text-warning border-warning/30'
+        return 'bg-yellow-100 text-yellow-600 border-yellow-200'
       case 'waitlist':
-        return 'bg-warning/15 text-warning border-warning/30'
+        return 'bg-yellow-100 text-yellow-600 border-yellow-200'
       case 'decline':
-        return 'bg-destructive/15 text-destructive border-destructive/30'
+        return 'bg-red-100 text-red-600 border-red-200'
       default:
         return 'bg-muted text-foreground border-border'
     }

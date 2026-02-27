@@ -1,11 +1,6 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useMemo } from 'react'
 import {
   PieChart,
@@ -26,10 +21,10 @@ interface ExpenseBreakdownProps {
 }
 
 const CATEGORY_COLORS: Record<string, { bar: string; bg: string; text: string }> = {
-  blue: { bar: 'bg-info', bg: 'bg-info/15', text: 'text-info' },
+  blue: { bar: 'bg-blue-500', bg: 'bg-blue-100', text: 'text-blue-600' },
   purple: { bar: 'bg-purple-500', bg: 'bg-purple-100 dark:bg-purple-950', text: 'text-purple-700 dark:text-purple-300' },
-  green: { bar: 'bg-success', bg: 'bg-success/15', text: 'text-success' },
-  orange: { bar: 'bg-warning', bg: 'bg-warning/15', text: 'text-warning' },
+  green: { bar: 'bg-green-500', bg: 'bg-green-100', text: 'text-green-600' },
+  orange: { bar: 'bg-yellow-500', bg: 'bg-yellow-100', text: 'text-yellow-600' },
   gray: { bar: 'bg-muted-foreground', bg: 'bg-muted', text: 'text-foreground' },
 }
 

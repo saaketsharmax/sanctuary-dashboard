@@ -1,11 +1,7 @@
 'use client'
 
-import {
-  Badge,
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@sanctuary/ui'
+import { Badge } from '@/components/ui/badge'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { useState } from 'react'
 import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react'
 import { ClaimStatusBadge, ClaimPriorityBadge, VerificationVerdictBadge } from './verification-badge'
@@ -120,7 +116,7 @@ export function ClaimRow({ claim }: ClaimRowProps) {
           {/* Contradictions */}
           {claim.contradicts.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-destructive">
+              <p className="text-xs font-medium text-red-600">
                 Contradicts {claim.contradicts.length} other claim(s)
               </p>
             </div>
@@ -134,9 +130,9 @@ export function ClaimRow({ claim }: ClaimRowProps) {
 // ─── Benchmark Badge ───
 
 const benchmarkConfig: Record<string, { label: string; className: string }> = {
-  above_benchmark: { label: 'Above Benchmark', className: 'bg-success/15 text-success' },
-  below_benchmark: { label: 'Below Benchmark', className: 'bg-warning/15 text-warning' },
-  unrealistic: { label: 'Unrealistic', className: 'bg-destructive/15 text-destructive' },
+  above_benchmark: { label: 'Above Benchmark', className: 'bg-green-100 text-green-600' },
+  below_benchmark: { label: 'Below Benchmark', className: 'bg-yellow-100 text-yellow-600' },
+  unrealistic: { label: 'Unrealistic', className: 'bg-red-100 text-red-600' },
 }
 
 function BenchmarkBadge({ flag }: { flag: NonNullable<DDBenchmarkFlag> }) {

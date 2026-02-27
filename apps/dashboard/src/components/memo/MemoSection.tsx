@@ -1,17 +1,9 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  Badge,
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-  cn,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { cn } from '@/lib/utils'
 import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 interface MemoSectionProps {
@@ -92,17 +84,17 @@ interface ScoreDisplayProps {
 
 export function ScoreDisplay({ label, score, reasoning, showBar = true }: ScoreDisplayProps) {
   const getScoreColor = (s: number) => {
-    if (s >= 85) return 'text-success'
-    if (s >= 70) return 'text-info'
-    if (s >= 50) return 'text-warning'
-    return 'text-destructive'
+    if (s >= 85) return 'text-green-600'
+    if (s >= 70) return 'text-blue-600'
+    if (s >= 50) return 'text-yellow-600'
+    return 'text-red-600'
   }
 
   const getBarColor = (s: number) => {
-    if (s >= 85) return 'bg-success'
-    if (s >= 70) return 'bg-info'
-    if (s >= 50) return 'bg-warning'
-    return 'bg-destructive'
+    if (s >= 85) return 'bg-green-500'
+    if (s >= 70) return 'bg-blue-500'
+    if (s >= 50) return 'bg-yellow-500'
+    return 'bg-red-500'
   }
 
   return (
@@ -135,10 +127,10 @@ interface RiskItemProps {
 
 export function RiskItem({ title, description, severity, source, mitigation }: RiskItemProps) {
   const severityColors = {
-    low: 'bg-success/15 text-success',
-    medium: 'bg-warning/15 text-warning',
-    high: 'bg-warning/15 text-warning',
-    critical: 'bg-destructive/15 text-destructive',
+    low: 'bg-green-100 text-green-600',
+    medium: 'bg-yellow-100 text-yellow-600',
+    high: 'bg-yellow-100 text-yellow-600',
+    critical: 'bg-red-100 text-red-600',
   }
 
   return (
@@ -149,7 +141,7 @@ export function RiskItem({ title, description, severity, source, mitigation }: R
       </div>
       <p className="text-xs text-muted-foreground">{description}</p>
       {mitigation && (
-        <p className="text-xs text-info">
+        <p className="text-xs text-blue-600">
           <span className="font-medium">Mitigation:</span> {mitigation}
         </p>
       )}
@@ -175,9 +167,9 @@ export function CompetitorCard({
   threatLevel,
 }: CompetitorCardProps) {
   const threatColors = {
-    low: 'border-success/30 bg-success/10',
-    medium: 'border-warning/30 bg-warning/10',
-    high: 'border-destructive/30 bg-destructive/10',
+    low: 'border-green-200 bg-green-50',
+    medium: 'border-yellow-200 bg-yellow-50',
+    high: 'border-red-200 bg-red-50',
   }
 
   return (
@@ -217,7 +209,7 @@ export function FounderCard({ name, role, background, expertise, validated }: Fo
           <span className="text-sm text-muted-foreground ml-2">{role}</span>
         </div>
         {validated && (
-          <Badge variant="outline" className="text-xs text-success border-success/40">
+          <Badge variant="outline" className="text-xs text-green-600 border-green-300">
             LinkedIn ✓
           </Badge>
         )}

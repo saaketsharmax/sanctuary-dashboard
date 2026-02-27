@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@sanctuary/ui'
+import { cn } from '@/lib/utils'
 import { ReactNode } from 'react'
 interface WidgetCardProps {
   children: ReactNode

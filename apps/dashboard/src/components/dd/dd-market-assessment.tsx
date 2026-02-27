@@ -1,13 +1,8 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-  Progress,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
 import {
   TrendingUp,
   Target,
@@ -26,23 +21,23 @@ interface DDMarketAssessmentProps {
 }
 
 const gradeColors: Record<string, string> = {
-  A: 'bg-success text-white',
-  B: 'bg-info text-white',
-  C: 'bg-warning text-white',
-  D: 'bg-warning text-white',
-  F: 'bg-destructive text-white',
+  A: 'bg-green-500 text-white',
+  B: 'bg-blue-500 text-white',
+  C: 'bg-yellow-500 text-white',
+  D: 'bg-yellow-500 text-white',
+  F: 'bg-red-500 text-white',
 }
 
 const threatColors: Record<string, string> = {
-  high: 'bg-destructive/15 text-destructive',
-  medium: 'bg-warning/15 text-warning',
-  low: 'bg-success/15 text-success',
+  high: 'bg-red-100 text-red-600',
+  medium: 'bg-yellow-100 text-yellow-600',
+  low: 'bg-green-100 text-green-600',
 }
 
 const timingColor = (score: number) => {
-  if (score >= 70) return 'text-success'
-  if (score >= 40) return 'text-warning'
-  return 'text-destructive'
+  if (score >= 70) return 'text-green-600'
+  if (score >= 40) return 'text-yellow-600'
+  return 'text-red-600'
 }
 
 const timingLabel = (score: number) => {
@@ -89,7 +84,7 @@ function CompetitorRow({ competitor }: { competitor: DDCompetitor }) {
           href={competitor.sourceUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-[10px] text-info hover:underline mt-2"
+          className="inline-flex items-center gap-1 text-[10px] text-blue-600 hover:underline mt-2"
         >
           <ExternalLink className="h-3 w-3" />
           Source
@@ -203,7 +198,7 @@ export function DDMarketAssessment({ assessment }: DDMarketAssessmentProps) {
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] text-info hover:underline"
+                      className="inline-flex items-center gap-1 text-[10px] text-blue-600 hover:underline"
                     >
                       <ExternalLink className="h-3 w-3" />
                       {label}
@@ -247,7 +242,7 @@ export function DDMarketAssessment({ assessment }: DDMarketAssessmentProps) {
                 <ul className="space-y-1">
                   {assessment.marketStrengths.map((s, i) => (
                     <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                      <CheckCircle2 className="h-3 w-3 text-success shrink-0 mt-0.5" />
+                      <CheckCircle2 className="h-3 w-3 text-green-600 shrink-0 mt-0.5" />
                       {s}
                     </li>
                   ))}
@@ -300,14 +295,14 @@ export function DDMarketAssessment({ assessment }: DDMarketAssessmentProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-destructive" />
+              <AlertTriangle className="h-4 w-4 text-red-600" />
               Market Red Flags
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {assessment.marketRedFlags.map((rf, i) => (
-                <div key={i} className="border-l-2 border-destructive/70 pl-3 py-1">
+                <div key={i} className="border-l-2 border-red-400 pl-3 py-1">
                   <div className="flex items-center gap-2">
                     <Badge
                       variant={rf.severity === 'critical' ? 'destructive' : 'outline'}

@@ -1,20 +1,11 @@
 'use client'
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  Badge,
-  Progress,
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-  Button,
-  cn,
-} from '@sanctuary/ui'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { Building2, ExternalLink } from 'lucide-react'
 import type { StartupWithFounders } from '@/types'
@@ -27,18 +18,18 @@ interface StartupTableProps {
 
 export function StartupTable({ startups, linkPrefix = '/startup' }: StartupTableProps) {
   const riskColorClass = {
-    low: 'bg-success/10 text-success border-success/20',
-    normal: 'bg-info/10 text-info border-info/20',
-    elevated: 'bg-warning/10 text-warning border-warning/20',
-    high: 'bg-destructive/10 text-destructive border-destructive/20',
+    low: 'bg-green-50 text-green-600 border-green-200',
+    normal: 'bg-blue-50 text-blue-600 border-blue-200',
+    elevated: 'bg-yellow-50 text-yellow-600 border-yellow-200',
+    high: 'bg-red-50 text-red-600 border-red-200',
   }
 
   const stageColorClass = {
     problem_discovery: 'bg-purple-500/10 text-purple-700 border-purple-500/20',
-    solution_shaping: 'bg-info/10 text-info border-info/20',
+    solution_shaping: 'bg-blue-50 text-blue-600 border-blue-200',
     user_value: 'bg-cyan-500/10 text-cyan-700 border-cyan-500/20',
-    growth: 'bg-success/10 text-success border-success/20',
-    capital_ready: 'bg-warning/10 text-warning border-warning/20',
+    growth: 'bg-green-50 text-green-600 border-green-200',
+    capital_ready: 'bg-yellow-50 text-yellow-600 border-yellow-200',
   }
 
   return (

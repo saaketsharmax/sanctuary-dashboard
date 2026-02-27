@@ -1,13 +1,8 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Progress,
-  Badge,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
 import type { DDCategoryScore } from '@/lib/ai/types/due-diligence'
 import { DD_CATEGORY_LABELS } from '@/lib/ai/types/due-diligence'
 
@@ -33,17 +28,17 @@ export function DDCategoryCard({ score }: DDCategoryCardProps) {
 
         <div className="flex flex-wrap gap-1.5">
           {score.confirmedClaims > 0 && (
-            <Badge variant="outline" className="bg-success/10 text-success text-xs">
+            <Badge variant="outline" className="bg-green-50 text-green-600 text-xs">
               {score.confirmedClaims} confirmed
             </Badge>
           )}
           {score.disputedClaims > 0 && (
-            <Badge variant="outline" className="bg-warning/10 text-warning text-xs">
+            <Badge variant="outline" className="bg-yellow-50 text-yellow-600 text-xs">
               {score.disputedClaims} disputed
             </Badge>
           )}
           {score.refutedClaims > 0 && (
-            <Badge variant="outline" className="bg-destructive/10 text-destructive text-xs">
+            <Badge variant="outline" className="bg-red-50 text-red-600 text-xs">
               {score.refutedClaims} refuted
             </Badge>
           )}
@@ -57,7 +52,7 @@ export function DDCategoryCard({ score }: DDCategoryCardProps) {
         {score.flaggedIssues.length > 0 && (
           <div className="pt-1 border-t">
             {score.flaggedIssues.map((issue, idx) => (
-              <p key={idx} className="text-xs text-destructive">{issue}</p>
+              <p key={idx} className="text-xs text-red-600">{issue}</p>
             ))}
           </div>
         )}

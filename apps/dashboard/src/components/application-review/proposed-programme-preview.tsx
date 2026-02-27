@@ -1,18 +1,11 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-  Button,
-  Checkbox,
-  cn,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import {
   ChevronDown,
@@ -64,7 +57,7 @@ function WeekCard({ week, defaultOpen = false }: WeekCardProps) {
                 </Badge>
               )}
               {week.isCustomWeek && (
-                <Badge className="bg-info/15 text-info text-xs">
+                <Badge className="bg-blue-100 text-blue-600 text-xs">
                   <Sparkles className="h-3 w-3 mr-1" />
                   Custom
                 </Badge>
@@ -204,7 +197,7 @@ export function ProposedProgrammePreview({ programme, weeks }: ProposedProgramme
           {programme.conditions.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <AlertCircle className="h-4 w-4 text-warning" />
+                <AlertCircle className="h-4 w-4 text-yellow-600" />
                 <span className="text-sm font-medium">Conditions</span>
               </div>
               <ul className="space-y-2">
@@ -237,9 +230,9 @@ export function ProposedProgrammePreview({ programme, weeks }: ProposedProgramme
                       className={cn(
                         'text-xs',
                         rec.priority === 1
-                          ? 'bg-destructive/15 text-destructive'
+                          ? 'bg-red-100 text-red-600'
                           : rec.priority === 2
-                            ? 'bg-warning/15 text-warning'
+                            ? 'bg-yellow-100 text-yellow-600'
                             : 'bg-muted text-foreground'
                       )}
                     >

@@ -1,6 +1,7 @@
 'use client'
 
-import { Button, Textarea } from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { InterviewMessage, TypingIndicator } from './InterviewMessage'
 import { InterviewProgressCompact } from './InterviewProgress'
@@ -371,8 +372,8 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
           {aiMode && (
             <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
               aiMode === 'live'
-                ? 'bg-success/15 text-success'
-                : 'bg-warning/15 text-warning'
+                ? 'bg-green-100 text-green-600'
+                : 'bg-yellow-100 text-yellow-600'
             }`}>
               {aiMode === 'live' ? <Sparkles className="h-3 w-3" /> : <Cpu className="h-3 w-3" />}
               {aiMode === 'live' ? 'AI' : 'Demo'}
@@ -447,7 +448,7 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
             variant="ghost"
             size="sm"
             onClick={handleEndInterview}
-            className="text-destructive hover:text-destructive"
+            className="text-red-600 hover:text-red-600"
           >
             <Square className="h-4 w-4 mr-1" />
             End
@@ -544,19 +545,19 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
                 </span>
               )}
               {voice.voiceState === 'processing' && (
-                <span className="text-info flex items-center gap-1">
+                <span className="text-blue-600 flex items-center gap-1">
                   <Loader2 className="h-3 w-3 animate-spin" />
                   Processing...
                 </span>
               )}
               {voice.voiceState === 'speaking' && (
-                <span className="text-success flex items-center gap-1">
+                <span className="text-green-600 flex items-center gap-1">
                   <Volume2 className="h-3 w-3" />
                   AI is speaking...
                 </span>
               )}
               {voice.voiceState === 'error' && (
-                <span className="text-destructive">Mic error — try again</span>
+                <span className="text-red-600">Mic error — try again</span>
               )}
             </div>
 

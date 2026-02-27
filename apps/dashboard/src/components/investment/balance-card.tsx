@@ -1,6 +1,7 @@
 'use client'
 
-import { Card, CardContent, Progress } from '@sanctuary/ui'
+import { Card, CardContent } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
 import { formatInvestmentCurrency } from '@/types'
 
 interface BalanceCardProps {
@@ -35,7 +36,7 @@ export function BalanceCard({
             <span>of {formatInvestmentCurrency(totalCents)}</span>
           </div>
           {pendingCents > 0 && (
-            <p className="text-xs text-warning">
+            <p className="text-xs text-yellow-600">
               {formatInvestmentCurrency(pendingCents)} pending approval
             </p>
           )}

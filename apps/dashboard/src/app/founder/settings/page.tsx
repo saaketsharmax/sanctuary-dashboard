@@ -1,17 +1,11 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Button,
-  Input,
-  Label,
-  Switch,
-  Toaster,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { Toaster } from '@/components/ui/sonner'
 import { User, Bell, Shield, Save } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'

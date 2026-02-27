@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
 import { Check, X, Send, MessageSquare } from 'lucide-react'
 import type { MatchStatus } from '@/types'
 

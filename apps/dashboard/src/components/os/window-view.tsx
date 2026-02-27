@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@sanctuary/ui'
+import { cn } from '@/lib/utils'
 import { X, Maximize2, Minimize2 } from 'lucide-react'
 import { useState } from 'react'
 import type { NavSection } from './os-layout'

@@ -1,20 +1,15 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { EyeOff } from 'lucide-react'
 import type { DDOmission } from '@/lib/ai/types/due-diligence'
 import { DD_CATEGORY_LABELS } from '@/lib/ai/types/due-diligence'
 
 const severityColors: Record<string, string> = {
-  critical: 'bg-destructive/15 text-destructive',
-  high: 'bg-warning/15 text-warning',
-  medium: 'bg-info/15 text-info',
+  critical: 'bg-red-100 text-red-600',
+  high: 'bg-yellow-100 text-yellow-600',
+  medium: 'bg-blue-100 text-blue-600',
   low: 'bg-muted text-muted-foreground',
 }
 

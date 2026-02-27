@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
 import { useEffect } from 'react'
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
 import Link from 'next/link'
@@ -22,8 +22,8 @@ export default function Error({
       <div className="max-w-md w-full mx-4">
         <div className="text-center space-y-6">
           <div className="flex justify-center">
-            <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-              <AlertTriangle className="h-8 w-8 text-destructive" />
+            <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
+              <AlertTriangle className="h-8 w-8 text-red-600" />
             </div>
           </div>
 

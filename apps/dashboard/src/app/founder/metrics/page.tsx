@@ -1,15 +1,9 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Badge,
-  Skeleton,
-  Toaster,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Toaster } from '@/components/ui/sonner'
 import { TrendingUp, TrendingDown, DollarSign, Users, Percent, BarChart3, Lock } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
@@ -155,7 +149,7 @@ export default function FounderMetricsPage() {
                     <span className="text-sm text-muted-foreground">MRR</span>
                   </div>
                   <p className="text-2xl font-bold mt-1">${metrics.mrr.value.toLocaleString()}</p>
-                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.mrr.trend === 'up' ? 'text-success' : 'text-destructive'}`}>
+                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.mrr.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
                     {metrics.mrr.trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {metrics.mrr.change > 0 ? '+' : ''}{metrics.mrr.change}% this month
                   </div>
@@ -171,7 +165,7 @@ export default function FounderMetricsPage() {
                     <span className="text-sm text-muted-foreground">Active Users</span>
                   </div>
                   <p className="text-2xl font-bold mt-1">{metrics.activeUsers.value.toLocaleString()}</p>
-                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.activeUsers.trend === 'up' ? 'text-success' : 'text-destructive'}`}>
+                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.activeUsers.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
                     {metrics.activeUsers.trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {metrics.activeUsers.change > 0 ? '+' : ''}{metrics.activeUsers.change}% this week
                   </div>
@@ -187,7 +181,7 @@ export default function FounderMetricsPage() {
                     <span className="text-sm text-muted-foreground">Retention</span>
                   </div>
                   <p className="text-2xl font-bold mt-1">{metrics.retention.value}%</p>
-                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.retention.trend === 'up' ? 'text-success' : 'text-destructive'}`}>
+                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.retention.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
                     {metrics.retention.trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {metrics.retention.change > 0 ? '+' : ''}{metrics.retention.change}% this month
                   </div>
@@ -203,7 +197,7 @@ export default function FounderMetricsPage() {
                     <span className="text-sm text-muted-foreground">NPS</span>
                   </div>
                   <p className="text-2xl font-bold mt-1">{metrics.nps.value}</p>
-                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.nps.trend === 'up' ? 'text-success' : 'text-destructive'}`}>
+                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.nps.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
                     {metrics.nps.trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {metrics.nps.change > 0 ? '+' : ''}{metrics.nps.change} points
                   </div>

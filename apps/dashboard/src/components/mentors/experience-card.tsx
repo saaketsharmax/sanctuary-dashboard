@@ -1,11 +1,6 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, Building2, CheckCircle2 } from 'lucide-react'
 import { ExpertiseBadge } from './expertise-badge'
 import { getStageInfo } from '@/types'
@@ -48,7 +43,7 @@ export function ExperienceCard({ experience }: ExperienceCardProps) {
         {/* Solution */}
         <div>
           <p className="text-sm font-medium mb-1 flex items-center gap-1">
-            <CheckCircle2 className="h-4 w-4 text-success" />
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
             Solution
           </p>
           <p className="text-sm text-muted-foreground">{experience.solution}</p>

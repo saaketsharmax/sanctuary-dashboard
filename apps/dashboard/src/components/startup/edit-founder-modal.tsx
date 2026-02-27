@@ -1,23 +1,13 @@
 'use client'
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Button,
-  Input,
-  Label,
-  Textarea,
-  Slider,
-  Checkbox,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@sanctuary/ui'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Slider } from '@/components/ui/slider'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -208,7 +198,7 @@ export function EditFounderModal({
                   <Label htmlFor="name">Full Name *</Label>
                   <Input id="name" {...register('name')} />
                   {errors.name && (
-                    <p className="text-xs text-destructive">{errors.name.message}</p>
+                    <p className="text-xs text-red-600">{errors.name.message}</p>
                   )}
                 </div>
 
@@ -216,7 +206,7 @@ export function EditFounderModal({
                   <Label htmlFor="email">Email *</Label>
                   <Input id="email" type="email" {...register('email')} />
                   {errors.email && (
-                    <p className="text-xs text-destructive">{errors.email.message}</p>
+                    <p className="text-xs text-red-600">{errors.email.message}</p>
                   )}
                 </div>
               </div>
@@ -226,7 +216,7 @@ export function EditFounderModal({
                   <Label htmlFor="role">Role *</Label>
                   <Input id="role" placeholder="e.g., CEO, CTO" {...register('role')} />
                   {errors.role && (
-                    <p className="text-xs text-destructive">{errors.role.message}</p>
+                    <p className="text-xs text-red-600">{errors.role.message}</p>
                   )}
                 </div>
 

@@ -1,6 +1,8 @@
 'use client'
 
-import { Button, Badge, cn } from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import { Building2, Globe, Presentation, Play, Edit, MapPin, Calendar } from 'lucide-react'
 import type { Startup, Cohort } from '@/types'
 import { getStageInfo, getRiskInfo } from '@/types'
@@ -18,23 +20,23 @@ export function StartupHeader({ startup, cohort, onEdit }: StartupHeaderProps) {
 
   const stageColorClass = {
     problem_discovery: 'bg-purple-500/10 text-purple-700 border-purple-500/20',
-    solution_shaping: 'bg-info/10 text-info border-info/20',
+    solution_shaping: 'bg-blue-50 text-blue-600 border-blue-200',
     user_value: 'bg-cyan-500/10 text-cyan-700 border-cyan-500/20',
-    growth: 'bg-success/10 text-success border-success/20',
-    capital_ready: 'bg-warning/10 text-warning border-warning/20',
+    growth: 'bg-green-50 text-green-600 border-green-200',
+    capital_ready: 'bg-yellow-50 text-yellow-600 border-yellow-200',
   }
 
   const riskColorClass = {
-    low: 'bg-success/10 text-success border-success/20',
-    normal: 'bg-info/10 text-info border-info/20',
-    elevated: 'bg-warning/10 text-warning border-warning/20',
-    high: 'bg-destructive/10 text-destructive border-destructive/20',
+    low: 'bg-green-50 text-green-600 border-green-200',
+    normal: 'bg-blue-50 text-blue-600 border-blue-200',
+    elevated: 'bg-yellow-50 text-yellow-600 border-yellow-200',
+    high: 'bg-red-50 text-red-600 border-red-200',
   }
 
   const statusColorClass = {
-    active: 'bg-success/10 text-success',
-    paused: 'bg-warning/10 text-warning',
-    graduated: 'bg-info/10 text-info',
+    active: 'bg-green-50 text-green-600',
+    paused: 'bg-yellow-50 text-yellow-600',
+    graduated: 'bg-blue-50 text-blue-600',
     exited: 'bg-muted-foreground/10 text-foreground',
   }
 

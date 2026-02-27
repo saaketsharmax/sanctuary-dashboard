@@ -1,12 +1,7 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@sanctuary/ui'
+import { Card, CardContent } from '@/components/ui/card'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Link from 'next/link'
 import { Linkedin, Mail } from 'lucide-react'
 import { ExpertiseBadge } from './expertise-badge'

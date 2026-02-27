@@ -1,22 +1,11 @@
 'use client'
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Button,
-  Input,
-  Label,
-  Textarea,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@sanctuary/ui'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -120,7 +109,7 @@ export function AddStartupModal({ open, onOpenChange, onSuccess }: AddStartupMod
                   {...register('name')}
                 />
                 {errors.name && (
-                  <p className="text-xs text-destructive">{errors.name.message}</p>
+                  <p className="text-xs text-red-600">{errors.name.message}</p>
                 )}
               </div>
 
@@ -142,7 +131,7 @@ export function AddStartupModal({ open, onOpenChange, onSuccess }: AddStartupMod
                   </SelectContent>
                 </Select>
                 {errors.cohortId && (
-                  <p className="text-xs text-destructive">{errors.cohortId.message}</p>
+                  <p className="text-xs text-red-600">{errors.cohortId.message}</p>
                 )}
               </div>
             </div>
@@ -155,7 +144,7 @@ export function AddStartupModal({ open, onOpenChange, onSuccess }: AddStartupMod
                 {...register('oneLiner')}
               />
               {errors.oneLiner && (
-                <p className="text-xs text-destructive">{errors.oneLiner.message}</p>
+                <p className="text-xs text-red-600">{errors.oneLiner.message}</p>
               )}
             </div>
 
@@ -193,7 +182,7 @@ export function AddStartupModal({ open, onOpenChange, onSuccess }: AddStartupMod
                   </SelectContent>
                 </Select>
                 {errors.industry && (
-                  <p className="text-xs text-destructive">{errors.industry.message}</p>
+                  <p className="text-xs text-red-600">{errors.industry.message}</p>
                 )}
               </div>
 
@@ -215,7 +204,7 @@ export function AddStartupModal({ open, onOpenChange, onSuccess }: AddStartupMod
                   </SelectContent>
                 </Select>
                 {errors.businessModel && (
-                  <p className="text-xs text-destructive">{errors.businessModel.message}</p>
+                  <p className="text-xs text-red-600">{errors.businessModel.message}</p>
                 )}
               </div>
 
@@ -237,7 +226,7 @@ export function AddStartupModal({ open, onOpenChange, onSuccess }: AddStartupMod
                   </SelectContent>
                 </Select>
                 {errors.stage && (
-                  <p className="text-xs text-destructive">{errors.stage.message}</p>
+                  <p className="text-xs text-red-600">{errors.stage.message}</p>
                 )}
               </div>
             </div>
@@ -256,7 +245,7 @@ export function AddStartupModal({ open, onOpenChange, onSuccess }: AddStartupMod
                   {...register('city')}
                 />
                 {errors.city && (
-                  <p className="text-xs text-destructive">{errors.city.message}</p>
+                  <p className="text-xs text-red-600">{errors.city.message}</p>
                 )}
               </div>
 
@@ -268,7 +257,7 @@ export function AddStartupModal({ open, onOpenChange, onSuccess }: AddStartupMod
                   {...register('country')}
                 />
                 {errors.country && (
-                  <p className="text-xs text-destructive">{errors.country.message}</p>
+                  <p className="text-xs text-red-600">{errors.country.message}</p>
                 )}
               </div>
             </div>
@@ -287,7 +276,7 @@ export function AddStartupModal({ open, onOpenChange, onSuccess }: AddStartupMod
                 {...register('website')}
               />
               {errors.website && (
-                <p className="text-xs text-destructive">{errors.website.message}</p>
+                <p className="text-xs text-red-600">{errors.website.message}</p>
               )}
             </div>
 

@@ -1,11 +1,8 @@
 'use client'
 
-import {
-  Button,
-  Avatar,
-  AvatarFallback,
-  cn,
-} from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/auth-store'

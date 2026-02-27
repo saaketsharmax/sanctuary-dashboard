@@ -1,16 +1,9 @@
 'use client'
 
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  RadioGroup,
-  RadioGroupItem,
-  Label,
-} from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Label } from '@/components/ui/label'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -177,8 +170,8 @@ export default function RoleSelectPage() {
             }}
           >
             <CardHeader className="pb-2">
-              <div className="w-12 h-12 rounded-lg bg-info/15 flex items-center justify-center mb-2">
-                <Rocket className="h-6 w-6 text-info" />
+              <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-2">
+                <Rocket className="h-6 w-6 text-blue-600" />
               </div>
               <CardTitle className="flex items-center justify-between">
                 Founder / Startup
@@ -212,8 +205,8 @@ export default function RoleSelectPage() {
             }}
           >
             <CardHeader className="pb-2">
-              <div className="w-12 h-12 rounded-lg bg-success/15 flex items-center justify-center mb-2">
-                <Briefcase className="h-6 w-6 text-success" />
+              <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center mb-2">
+                <Briefcase className="h-6 w-6 text-green-600" />
               </div>
               <CardTitle className="flex items-center justify-between">
                 Partner
@@ -283,7 +276,7 @@ export default function RoleSelectPage() {
 
         {/* Error Message */}
         {error && (
-          <div className="flex items-center gap-2 p-3 mb-4 text-sm text-destructive bg-destructive/10 rounded-lg">
+          <div className="flex items-center gap-2 p-3 mb-4 text-sm text-red-600 bg-red-50 rounded-lg">
             <AlertCircle className="h-4 w-4" />
             {error}
           </div>

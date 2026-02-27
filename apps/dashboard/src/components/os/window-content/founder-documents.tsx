@@ -1,6 +1,7 @@
 'use client'
 
-import { Button, Badge } from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { FileText, Upload, Eye, Share2, Download, MoreVertical, MoreHorizontal, Plus, File, Image, FileSpreadsheet } from 'lucide-react'
 import { useState } from 'react'
 
@@ -120,7 +121,7 @@ export function FounderDocumentsContent() {
                         {doc.shared && (
                           <>
                             <span>·</span>
-                            <span className="flex items-center gap-1 text-success">
+                            <span className="flex items-center gap-1 text-green-600">
                               <Share2 className="w-3 h-3" />
                               Shared
                             </span>

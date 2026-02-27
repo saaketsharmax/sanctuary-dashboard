@@ -1,15 +1,9 @@
 'use client'
 
-import {
-  Card,
-  CardContent,
-  Button,
-  Badge,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@sanctuary/ui'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useEffect, useState } from 'react'
 import { Eye, Loader2, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
@@ -37,13 +31,13 @@ interface Application {
 
 const statusColors: Record<string, string> = {
   draft: 'bg-muted text-foreground',
-  submitted: 'bg-info/15 text-info',
+  submitted: 'bg-blue-100 text-blue-600',
   interview_scheduled: 'bg-purple-100 text-purple-700',
   interview_completed: 'bg-indigo-100 text-indigo-700',
-  assessment_generated: 'bg-warning/15 text-warning',
-  under_review: 'bg-warning/15 text-warning',
-  approved: 'bg-success/15 text-success',
-  rejected: 'bg-destructive/15 text-destructive',
+  assessment_generated: 'bg-yellow-100 text-yellow-600',
+  under_review: 'bg-yellow-100 text-yellow-600',
+  approved: 'bg-green-100 text-green-600',
+  rejected: 'bg-red-100 text-red-600',
 }
 
 export default function ApplicationsPage() {
@@ -181,7 +175,7 @@ function ApplicationList({ applications }: { applications: Application[] }) {
                       : 'Draft'}
                   </span>
                   {app.interviewCompletedAt && (
-                    <span className="text-success">Interview Done</span>
+                    <span className="text-green-600">Interview Done</span>
                   )}
                 </div>
               </div>

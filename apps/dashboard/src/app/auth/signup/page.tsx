@@ -1,16 +1,10 @@
 'use client'
 
-import {
-  Button,
-  Input,
-  Label,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Separator,
-} from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -94,8 +88,8 @@ export default function SignupPage() {
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-background to-muted/30">
         <div className="w-full max-w-md text-center">
           <div className="mb-6">
-            <div className="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="h-8 w-8 text-success" />
+            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="h-8 w-8 text-green-600" />
             </div>
           </div>
           <h1 className="text-2xl font-bold mb-2">Check your email</h1>
@@ -195,7 +189,7 @@ export default function SignupPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="flex items-center gap-2 p-3 text-sm text-destructive bg-destructive/10 rounded-lg">
+              <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 rounded-lg">
                 <AlertCircle className="h-4 w-4" />
                 {error}
               </div>
@@ -213,7 +207,7 @@ export default function SignupPage() {
                   disabled={isLoading}
                 />
                 {errors.name && (
-                  <p className="text-xs text-destructive">{errors.name.message}</p>
+                  <p className="text-xs text-red-600">{errors.name.message}</p>
                 )}
               </div>
 
@@ -227,7 +221,7 @@ export default function SignupPage() {
                   disabled={isLoading}
                 />
                 {errors.email && (
-                  <p className="text-xs text-destructive">{errors.email.message}</p>
+                  <p className="text-xs text-red-600">{errors.email.message}</p>
                 )}
               </div>
 
@@ -241,7 +235,7 @@ export default function SignupPage() {
                   disabled={isLoading}
                 />
                 {errors.password && (
-                  <p className="text-xs text-destructive">{errors.password.message}</p>
+                  <p className="text-xs text-red-600">{errors.password.message}</p>
                 )}
               </div>
 
@@ -255,7 +249,7 @@ export default function SignupPage() {
                   disabled={isLoading}
                 />
                 {errors.confirmPassword && (
-                  <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
+                  <p className="text-xs text-red-600">{errors.confirmPassword.message}</p>
                 )}
               </div>
 

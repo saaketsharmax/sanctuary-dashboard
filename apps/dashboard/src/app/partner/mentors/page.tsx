@@ -1,6 +1,7 @@
 'use client'
 
-import { Card, CardContent, Input } from '@sanctuary/ui'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { useState } from 'react'
 import { Search, Users } from 'lucide-react'
 

@@ -1,18 +1,10 @@
 'use client'
 
-import {
-  Button,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-  Toaster,
-} from '@sanctuary/ui'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Toaster } from '@/components/ui/sonner'
 import { use, useState, useEffect } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -26,7 +18,9 @@ import {
   ReviewDecisionModal,
 } from '@/components/application-review'
 import { MemoViewer } from '@/components/memo'
-import { Textarea, Label, Progress } from '@sanctuary/ui'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Progress } from '@/components/ui/progress'
 import type { StartupMemo, InterviewMessage } from '@/types'
 import type { Programme } from '@/lib/ai/types/programme'
 
@@ -78,13 +72,13 @@ interface Application {
 
 const statusColors: Record<string, string> = {
   draft: 'bg-muted text-foreground',
-  submitted: 'bg-info/15 text-info',
+  submitted: 'bg-blue-100 text-blue-600',
   interview_scheduled: 'bg-purple-100 text-purple-700',
   interview_completed: 'bg-indigo-100 text-indigo-700',
-  assessment_generated: 'bg-warning/15 text-warning',
-  under_review: 'bg-warning/15 text-warning',
-  approved: 'bg-success/15 text-success',
-  rejected: 'bg-destructive/15 text-destructive',
+  assessment_generated: 'bg-yellow-100 text-yellow-600',
+  under_review: 'bg-yellow-100 text-yellow-600',
+  approved: 'bg-green-100 text-green-600',
+  rejected: 'bg-red-100 text-red-600',
 }
 
 export default function ApplicationDetailPage({ params }: ApplicationDetailPageProps) {
@@ -583,10 +577,10 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                       <Badge
                         className={
                           application.aiAssessment.recommendation === 'accept'
-                            ? 'bg-success/15 text-success'
+                            ? 'bg-green-100 text-green-600'
                             : application.aiAssessment.recommendation === 'decline'
-                            ? 'bg-destructive/15 text-destructive'
-                            : 'bg-warning/15 text-warning'
+                            ? 'bg-red-100 text-red-600'
+                            : 'bg-yellow-100 text-yellow-600'
                         }
                       >
                         {application.aiAssessment.recommendation}
@@ -614,11 +608,11 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                   )}
                   {application.aiAssessment?.keyStrengths?.length > 0 && (
                     <div>
-                      <h4 className="font-medium text-sm text-success">Key Strengths</h4>
+                      <h4 className="font-medium text-sm text-green-600">Key Strengths</h4>
                       <ul className="text-sm mt-1 space-y-1">
                         {application.aiAssessment.keyStrengths.map((s: any, i: number) => (
                           <li key={i} className="flex items-start gap-2">
-                            <span className="text-success">•</span>
+                            <span className="text-green-600">•</span>
                             <span>{s.title || s}</span>
                           </li>
                         ))}
@@ -627,11 +621,11 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                   )}
                   {application.aiAssessment?.keyRisks?.length > 0 && (
                     <div>
-                      <h4 className="font-medium text-sm text-destructive">Key Risks</h4>
+                      <h4 className="font-medium text-sm text-red-600">Key Risks</h4>
                       <ul className="text-sm mt-1 space-y-1">
                         {application.aiAssessment.keyRisks.map((r: any, i: number) => (
                           <li key={i} className="flex items-start gap-2">
-                            <span className="text-destructive">•</span>
+                            <span className="text-red-600">•</span>
                             <span>{r.title || r}</span>
                           </li>
                         ))}
@@ -751,9 +745,9 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                       </p>
                     </div>
                     <Badge className={
-                      programme.riskLevel === 'on_track' ? 'bg-success/15 text-success' :
-                      programme.riskLevel === 'at_risk' ? 'bg-warning/15 text-warning' :
-                      'bg-destructive/15 text-destructive'
+                      programme.riskLevel === 'on_track' ? 'bg-green-100 text-green-600' :
+                      programme.riskLevel === 'at_risk' ? 'bg-yellow-100 text-yellow-600' :
+                      'bg-red-100 text-red-600'
                     }>
                       {programme.riskLevel.replace('_', ' ')}
                     </Badge>
@@ -781,18 +775,18 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                       <div
                         key={milestone.id}
                         className={`p-4 rounded-lg border ${
-                          milestone.status === 'completed' ? 'border-success bg-success/10' :
-                          milestone.status === 'active' ? 'border-info bg-info/10' :
-                          milestone.status === 'overdue' ? 'border-destructive bg-destructive/10' :
+                          milestone.status === 'completed' ? 'border-green-200 bg-green-50' :
+                          milestone.status === 'active' ? 'border-blue-200 bg-blue-50' :
+                          milestone.status === 'overdue' ? 'border-red-200 bg-red-50' :
                           'border-muted'
                         }`}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3">
                             {milestone.status === 'completed' ? (
-                              <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
+                              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
                             ) : milestone.status === 'overdue' ? (
-                              <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
+                              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
                             ) : (
                               <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
                             )}
@@ -843,9 +837,9 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                             </div>
                           </div>
                           <Badge className={
-                            trigger.urgency === 'immediate' ? 'bg-destructive/15 text-destructive' :
-                            trigger.urgency === 'this_week' ? 'bg-warning/15 text-warning' :
-                            'bg-info/15 text-info'
+                            trigger.urgency === 'immediate' ? 'bg-red-100 text-red-600' :
+                            trigger.urgency === 'this_week' ? 'bg-yellow-100 text-yellow-600' :
+                            'bg-blue-100 text-blue-600'
                           }>
                             {trigger.urgency.replace('_', ' ')}
                           </Badge>

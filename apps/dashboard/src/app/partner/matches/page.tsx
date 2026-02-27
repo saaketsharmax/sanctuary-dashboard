@@ -1,19 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  Button,
-  Badge,
-  Progress,
-} from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
 import {
   GitCompare, Loader2, Sparkles, Users, Star, TrendingUp,
   Clock, CheckCircle2, XCircle, ArrowRight, Briefcase, MapPin,
@@ -104,13 +96,13 @@ export default function MatchesPage() {
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">Pending Review</p>
-            <p className="text-2xl font-bold text-warning">{stats.pending}</p>
+            <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">Approved</p>
-            <p className="text-2xl font-bold text-success">{stats.approved}</p>
+            <p className="text-2xl font-bold text-green-600">{stats.approved}</p>
           </CardContent>
         </Card>
         <Card>
@@ -222,19 +214,19 @@ function MatchCard({ match }: { match: MatchResult }) {
   const { candidate, score } = match
 
   const confidenceColors = {
-    high: 'bg-success/15 text-success',
-    medium: 'bg-warning/15 text-warning',
-    low: 'bg-destructive/15 text-destructive',
+    high: 'bg-green-100 text-green-600',
+    medium: 'bg-yellow-100 text-yellow-600',
+    low: 'bg-red-100 text-red-600',
   }
 
   const statusColors: Record<string, string> = {
-    suggested: 'bg-info/15 text-info',
-    pending_review: 'bg-warning/15 text-warning',
-    approved: 'bg-success/15 text-success',
-    active: 'bg-success/15 text-success',
+    suggested: 'bg-blue-100 text-blue-600',
+    pending_review: 'bg-yellow-100 text-yellow-600',
+    approved: 'bg-green-100 text-green-600',
+    active: 'bg-green-100 text-green-600',
     intro_sent: 'bg-purple-100 text-purple-700',
     completed: 'bg-muted text-muted-foreground',
-    declined: 'bg-destructive/15 text-destructive',
+    declined: 'bg-red-100 text-red-600',
   }
 
   return (
@@ -338,7 +330,7 @@ function MatchCard({ match }: { match: MatchResult }) {
                 <ul className="space-y-1">
                   {score.expectedOutcomes.map((outcome, i) => (
                     <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-success mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-green-600 mt-0.5 flex-shrink-0" />
                       {outcome}
                     </li>
                   ))}
@@ -353,7 +345,7 @@ function MatchCard({ match }: { match: MatchResult }) {
                 <ul className="space-y-1">
                   {score.potentialChallenges.map((challenge, i) => (
                     <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                      <XCircle className="h-3.5 w-3.5 text-warning mt-0.5 flex-shrink-0" />
+                      <XCircle className="h-3.5 w-3.5 text-yellow-600 mt-0.5 flex-shrink-0" />
                       {challenge}
                     </li>
                   ))}

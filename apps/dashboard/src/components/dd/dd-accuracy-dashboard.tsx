@@ -1,7 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, Badge, Button, Tabs, TabsContent, TabsList, TabsTrigger, Progress } from '@sanctuary/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Progress } from '@/components/ui/progress'
 import {
   Activity, AlertTriangle, ArrowDown, ArrowUp, BarChart3,
   CheckCircle2, Loader2, Minus, RefreshCw, Target, TrendingUp,
@@ -179,9 +183,9 @@ export function DDAccuracyDashboard({ period = 'monthly' }: DDAccuracyDashboardP
                         <Badge
                           variant="outline"
                           className={`text-xs ${
-                            dim.direction === 'ai_too_high' ? 'text-destructive' :
-                            dim.direction === 'ai_too_low' ? 'text-info' :
-                            'text-success'
+                            dim.direction === 'ai_too_high' ? 'text-red-600' :
+                            dim.direction === 'ai_too_low' ? 'text-blue-600' :
+                            'text-green-600'
                           }`}
                         >
                           {dim.direction === 'ai_too_high' ? 'AI too high' :
@@ -210,9 +214,9 @@ export function DDAccuracyDashboard({ period = 'monthly' }: DDAccuracyDashboardP
                     <p className="text-lg font-bold">{bucket.actualAccuracy}%</p>
                     <p className="text-xs text-muted-foreground">predicted: {bucket.predictedAccuracy}%</p>
                     <p className={`text-xs font-medium ${
-                      bucket.calibrationError > 15 ? 'text-destructive' :
-                      bucket.calibrationError > 8 ? 'text-warning' :
-                      'text-success'
+                      bucket.calibrationError > 15 ? 'text-red-600' :
+                      bucket.calibrationError > 8 ? 'text-yellow-600' :
+                      'text-green-600'
                     }`}>
                       {bucket.calibrationError}% error
                     </p>
@@ -233,10 +237,10 @@ export function DDAccuracyDashboard({ period = 'monthly' }: DDAccuracyDashboardP
                   <CardTitle className="text-sm flex items-center justify-between">
                     <span>Calibration Status</span>
                     <Badge className={
-                      calibration.overallHealth === 'excellent' ? 'bg-success/15 text-success' :
-                      calibration.overallHealth === 'good' ? 'bg-info/15 text-info' :
-                      calibration.overallHealth === 'needs_attention' ? 'bg-warning/15 text-warning' :
-                      'bg-destructive/15 text-destructive'
+                      calibration.overallHealth === 'excellent' ? 'bg-green-100 text-green-600' :
+                      calibration.overallHealth === 'good' ? 'bg-blue-100 text-blue-600' :
+                      calibration.overallHealth === 'needs_attention' ? 'bg-yellow-100 text-yellow-600' :
+                      'bg-red-100 text-red-600'
                     }>
                       {calibration.overallHealth.replace('_', ' ')}
                     </Badge>
@@ -339,9 +343,9 @@ export function DDAccuracyDashboard({ period = 'monthly' }: DDAccuracyDashboardP
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Alert Level</span>
                     <Badge className={
-                      metrics.driftMetrics.alertLevel === 'normal' ? 'bg-success/15 text-success' :
-                      metrics.driftMetrics.alertLevel === 'warning' ? 'bg-warning/15 text-warning' :
-                      'bg-destructive/15 text-destructive'
+                      metrics.driftMetrics.alertLevel === 'normal' ? 'bg-green-100 text-green-600' :
+                      metrics.driftMetrics.alertLevel === 'warning' ? 'bg-yellow-100 text-yellow-600' :
+                      'bg-red-100 text-red-600'
                     }>
                       {metrics.driftMetrics.alertLevel}
                     </Badge>
@@ -362,7 +366,7 @@ export function DDAccuracyDashboard({ period = 'monthly' }: DDAccuracyDashboardP
                       {metrics.driftMetrics.signalWeightDrift.map((s, i) => (
                         <div key={i} className="flex justify-between text-sm p-2 bg-muted/50 rounded">
                           <span>{s.signal}</span>
-                          <span className={s.drift > 0.1 ? 'text-destructive' : 'text-muted-foreground'}>
+                          <span className={s.drift > 0.1 ? 'text-red-600' : 'text-muted-foreground'}>
                             {s.originalWeight.toFixed(2)} → {s.effectiveWeight.toFixed(2)}
                           </span>
                         </div>
@@ -435,7 +439,7 @@ export function DDAccuracyDashboard({ period = 'monthly' }: DDAccuracyDashboardP
               <CardContent className="space-y-3">
                 {calibration.recommendations.map((rec, i) => (
                   <div key={i} className="flex items-start gap-3 p-3 border rounded-lg">
-                    <Zap className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
+                    <Zap className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
                     <p className="text-sm">{rec}</p>
                   </div>
                 ))}
@@ -490,9 +494,9 @@ function KPICard({ label, value, icon, trend }: {
         </div>
         <div className="flex items-center gap-2">
           <p className="text-2xl font-bold capitalize">{value}</p>
-          {trend === 'up' && <ArrowUp className="h-4 w-4 text-success" />}
-          {trend === 'down' && <ArrowDown className="h-4 w-4 text-destructive" />}
-          {trend === 'neutral' && <Minus className="h-4 w-4 text-warning" />}
+          {trend === 'up' && <ArrowUp className="h-4 w-4 text-green-600" />}
+          {trend === 'down' && <ArrowDown className="h-4 w-4 text-red-600" />}
+          {trend === 'neutral' && <Minus className="h-4 w-4 text-yellow-600" />}
         </div>
       </CardContent>
     </Card>
