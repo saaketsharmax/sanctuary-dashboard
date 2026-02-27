@@ -544,13 +544,13 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
                 </span>
               )}
               {voice.voiceState === 'processing' && (
-                <span className="text-blue-600 flex items-center gap-1">
+                <span className="text-info flex items-center gap-1">
                   <Loader2 className="h-3 w-3 animate-spin" />
                   Processing...
                 </span>
               )}
               {voice.voiceState === 'speaking' && (
-                <span className="text-emerald-600 flex items-center gap-1">
+                <span className="text-success flex items-center gap-1">
                   <Volume2 className="h-3 w-3" />
                   AI is speaking...
                 </span>

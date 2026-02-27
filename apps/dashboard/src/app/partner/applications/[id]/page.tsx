@@ -26,9 +26,7 @@ import {
   ReviewDecisionModal,
 } from '@/components/application-review'
 import { MemoViewer } from '@/components/memo'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
+import { Textarea, Label, Progress } from '@sanctuary/ui'
 import type { StartupMemo, InterviewMessage } from '@/types'
 import type { Programme } from '@/lib/ai/types/programme'
 
@@ -753,9 +751,9 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                       </p>
                     </div>
                     <Badge className={
-                      programme.riskLevel === 'on_track' ? 'bg-green-100 text-green-700' :
-                      programme.riskLevel === 'at_risk' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-red-100 text-red-700'
+                      programme.riskLevel === 'on_track' ? 'bg-success/15 text-success' :
+                      programme.riskLevel === 'at_risk' ? 'bg-warning/15 text-warning' :
+                      'bg-destructive/15 text-destructive'
                     }>
                       {programme.riskLevel.replace('_', ' ')}
                     </Badge>
@@ -783,18 +781,18 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                       <div
                         key={milestone.id}
                         className={`p-4 rounded-lg border ${
-                          milestone.status === 'completed' ? 'border-green-200 bg-green-50' :
-                          milestone.status === 'active' ? 'border-blue-200 bg-blue-50' :
-                          milestone.status === 'overdue' ? 'border-red-200 bg-red-50' :
+                          milestone.status === 'completed' ? 'border-success bg-success/10' :
+                          milestone.status === 'active' ? 'border-info bg-info/10' :
+                          milestone.status === 'overdue' ? 'border-destructive bg-destructive/10' :
                           'border-muted'
                         }`}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3">
                             {milestone.status === 'completed' ? (
-                              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                              <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
                             ) : milestone.status === 'overdue' ? (
-                              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                              <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
                             ) : (
                               <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
                             )}
@@ -845,9 +843,9 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                             </div>
                           </div>
                           <Badge className={
-                            trigger.urgency === 'immediate' ? 'bg-red-100 text-red-700' :
-                            trigger.urgency === 'this_week' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-blue-100 text-blue-700'
+                            trigger.urgency === 'immediate' ? 'bg-destructive/15 text-destructive' :
+                            trigger.urgency === 'this_week' ? 'bg-warning/15 text-warning' :
+                            'bg-info/15 text-info'
                           }>
                             {trigger.urgency.replace('_', ' ')}
                           </Badge>

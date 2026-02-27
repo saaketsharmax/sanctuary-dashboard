@@ -222,19 +222,19 @@ function MatchCard({ match }: { match: MatchResult }) {
   const { candidate, score } = match
 
   const confidenceColors = {
-    high: 'bg-green-100 text-green-700',
-    medium: 'bg-yellow-100 text-yellow-700',
-    low: 'bg-red-100 text-red-700',
+    high: 'bg-success/15 text-success',
+    medium: 'bg-warning/15 text-warning',
+    low: 'bg-destructive/15 text-destructive',
   }
 
   const statusColors: Record<string, string> = {
-    suggested: 'bg-blue-100 text-blue-700',
-    pending_review: 'bg-yellow-100 text-yellow-700',
-    approved: 'bg-green-100 text-green-700',
-    active: 'bg-green-100 text-green-700',
+    suggested: 'bg-info/15 text-info',
+    pending_review: 'bg-warning/15 text-warning',
+    approved: 'bg-success/15 text-success',
+    active: 'bg-success/15 text-success',
     intro_sent: 'bg-purple-100 text-purple-700',
-    completed: 'bg-gray-100 text-gray-700',
-    declined: 'bg-red-100 text-red-700',
+    completed: 'bg-muted text-muted-foreground',
+    declined: 'bg-destructive/15 text-destructive',
   }
 
   return (
@@ -249,7 +249,7 @@ function MatchCard({ match }: { match: MatchResult }) {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-lg">{candidate.name}</h3>
-                <Badge className={statusColors[match.status] || 'bg-gray-100 text-gray-700'}>
+                <Badge className={statusColors[match.status] || 'bg-muted text-muted-foreground'}>
                   {match.status.replace('_', ' ')}
                 </Badge>
                 <Badge variant="outline" className="text-xs capitalize">
@@ -338,7 +338,7 @@ function MatchCard({ match }: { match: MatchResult }) {
                 <ul className="space-y-1">
                   {score.expectedOutcomes.map((outcome, i) => (
                     <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-success mt-0.5 flex-shrink-0" />
                       {outcome}
                     </li>
                   ))}
@@ -353,7 +353,7 @@ function MatchCard({ match }: { match: MatchResult }) {
                 <ul className="space-y-1">
                   {score.potentialChallenges.map((challenge, i) => (
                     <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                      <XCircle className="h-3.5 w-3.5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                      <XCircle className="h-3.5 w-3.5 text-warning mt-0.5 flex-shrink-0" />
                       {challenge}
                     </li>
                   ))}

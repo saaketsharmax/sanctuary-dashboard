@@ -16,7 +16,7 @@ export default function PreviewLayout({ children }: { children: React.ReactNode 
   return (
     <div className="min-h-screen bg-background">
       {/* Preview banner */}
-      <div className="sticky top-0 z-50 border-b bg-warning/10 dark:bg-yellow-950/50 px-4 py-2">
+      <div className="sticky top-0 z-50 border-b bg-warning/10 px-4 py-2">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm font-medium text-warning">
             <Eye className="h-4 w-4" />
