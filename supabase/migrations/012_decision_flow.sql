@@ -27,7 +27,10 @@ ALTER TABLE public.agent_runs ADD CONSTRAINT agent_runs_agent_type_check
     'dd_report', 'dd_team_assessment', 'dd_market_assessment',
     'dd_finance_assessment', 'dd_pattern_assessment',
     'god_mode_dd', 'voice_interview', 'matchmaking', 'dd_accuracy',
-    'calibration'
+    'calibration',
+    -- Legacy names (pre-012 data compatibility)
+    'memo_generation', 'dd_claim_extraction', 'dd_claim_verification',
+    'dd_document_verification', 'dd_report_generation'
   ));
 
 -- 3. Add outcome tracking to applications (for accuracy metrics)
