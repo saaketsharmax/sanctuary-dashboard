@@ -1307,3 +1307,63 @@ docs/SANCTUARY-OS-LATEST.md
 4. **Vercel deployment** — `vercel login` + deploy all 3 apps
 5. **Community + Marketing** — connect to Supabase for real data
 6. **E2E tests** — Playwright for critical flows
+
+---
+
+## Session: 2026-02-27 (c) — Full Design System Revert + Deployment Fixes
+
+### What Was Done
+
+Complete revert of Shubhy's design system migration while preserving all features (18 agents, DD, investments, matching, community, marketing, responsive). Four commits pushed to `main`:
+
+**Commit `064cf33` — Import + Color Token Revert (151 files)**
+- Reverted all `@sanctuary/ui` imports → individual `@/components/ui/*` imports (118 files)
+- Reverted all semantic color tokens (`text-success`, `bg-info/15`, etc.) → hardcoded Tailwind classes (`text-green-600`, `bg-blue-100`, etc.)
+- Restored 24 shadcn UI component files + `lib/utils.ts` from pre-merge commit `3a6b547`
+- Removed `@sanctuary/ui` dependency from dashboard `package.json`
+
+**Commit `dbb44f7` — CSS Theme Revert**
+- Restored `globals.css` to pre-designer-merge state (`292e8af^1`): pure neutral OKLCH values, no warm hue 85 tints
+- Deleted `theme.css` (spacing/shadow/radius tokens added by designer merge — did not exist originally)
+- Removed `--success/--warning/--info` CSS custom properties
+- Removed `.text-warm/.bg-warm/.border-warm` utility classes
+- Restored `--radius: 0.625rem` (was changed to `0.5rem`)
+- Removed `@sanctuary/ui` from community app `transpilePackages`
+
+**Commit `f5f2ff0` — OS Desktop Layout Removal (28 files, 20.6MB)**
+- Removed entire `components/os/` directory (20 files): OS layout, home screen, bottom nav, wallpaper selector, widgets, window content
+- Removed `components/chat/` (ChatWidget, DynamicComponents — designer additions)
+- Removed 4 wallpaper images (20.6MB total)
+- Restored both dashboard pages to original card-based layouts from `292e8af^1`
+
+**Commit `24dd53d` — Sidebar Fix**
+- Removed `isDashboard` bypass in both `partner/layout.tsx` and `founder/layout.tsx`
+- Dashboard pages now correctly render with sidebar navigation like all other pages
+
+### Current State
+- **Branch:** `main` at `24dd53d`
+- **Build:** Clean (all 40+ pages compile)
+- **Deployed:** Live on Vercel (`sanctuary-dashboard.vercel.app`)
+- **Design:** Original Claude-built shadcn/Tailwind design (no Shubhy artifacts)
+- **Features:** All 18 agents, DD pipeline, investments, matching, responsive breakpoints, community app, marketing app — fully intact
+- **`packages/ui/`:** Still exists on disk (orphaned, not imported anywhere) — can be deleted if desired
+
+### Key Files Changed
+- `apps/dashboard/src/app/globals.css` — restored to original neutral OKLCH
+- `apps/dashboard/src/app/theme.css` — DELETED
+- `apps/dashboard/src/app/partner/layout.tsx` — removed OS bypass
+- `apps/dashboard/src/app/founder/layout.tsx` — removed OS bypass
+- `apps/dashboard/src/app/partner/dashboard/page.tsx` — restored card-based
+- `apps/dashboard/src/app/founder/dashboard/page.tsx` — restored card-based
+- `apps/dashboard/src/components/os/` — DELETED (20 files)
+- `apps/dashboard/src/components/chat/` — DELETED (2 files)
+- `apps/dashboard/public/assets/wallpapers/` — DELETED (4 images)
+- 118+ source files — import paths reverted
+- 80+ source files — color tokens reverted
+
+### Next Tasks
+1. Clean up orphaned `packages/ui/` directory if desired
+2. Vercel environment variables warning (NEXTAUTH_URL, ANTHROPIC_API_KEY, etc.) — add to `turbo.json` env
+3. Wire Eleven Labs voice — WebSocket integration
+4. Community + Marketing — connect to Supabase for real data
+5. E2E tests — Playwright for critical flows
