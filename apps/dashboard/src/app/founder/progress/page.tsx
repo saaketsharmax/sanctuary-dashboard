@@ -1,16 +1,21 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Progress } from '@/components/ui/progress'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Badge,
+  Skeleton,
+  Progress,
+  Button,
+  Textarea,
+  Toaster,
+} from '@sanctuary/ui'
 import { CheckCircle2, Circle, Clock, MessageSquare, Save, Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { Toaster } from '@/components/ui/sonner'
-
 interface Checkpoint {
   id: string
   name: string
@@ -201,14 +206,14 @@ export default function ProgressPage() {
                 <div key={checkpoint.id} className="flex gap-4">
                   <div className="flex flex-col items-center">
                     {checkpoint.status === 'completed' ? (
-                      <CheckCircle2 className="h-6 w-6 text-green-600" />
+                      <CheckCircle2 className="h-6 w-6 text-success" />
                     ) : checkpoint.status === 'in_progress' ? (
-                      <Clock className="h-6 w-6 text-blue-600" />
+                      <Clock className="h-6 w-6 text-info" />
                     ) : (
                       <Circle className="h-6 w-6 text-muted-foreground" />
                     )}
                     {index < checkpoints.length - 1 && (
-                      <div className={`w-0.5 flex-1 mt-2 ${checkpoint.status === 'completed' ? 'bg-green-600' : 'bg-muted'}`} />
+                      <div className={`w-0.5 flex-1 mt-2 ${checkpoint.status === 'completed' ? 'bg-success' : 'bg-muted'}`} />
                     )}
                   </div>
                   <div className="flex-1 pb-4">

@@ -240,3 +240,100 @@ export interface Visitor {
   badgeNumber?: string
   photoUrl?: string
 }
+
+// Mentor Types
+export type MentorExpertise =
+  | 'fundraising'
+  | 'product'
+  | 'engineering'
+  | 'design'
+  | 'marketing'
+  | 'sales'
+  | 'operations'
+  | 'legal'
+  | 'finance'
+  | 'hr'
+
+export type MentorAvailability = 'available' | 'limited' | 'unavailable'
+
+export interface Mentor {
+  id: string
+  name: string
+  title: string
+  company: string
+  bio: string
+  expertise: MentorExpertise[]
+  tags: string[]
+  availability: MentorAvailability
+  nextAvailable?: string
+  officeHours?: string
+  linkedIn?: string
+  twitter?: string
+  personalSite?: string
+  menteeCount: number
+  rating: number
+  sessionCount: number
+  avatarUrl?: string
+  createdAt: string
+}
+
+// Discussion Types
+export interface DiscussionReply {
+  id: string
+  threadId: string
+  authorId: string
+  authorName: string
+  authorRole?: string
+  authorAvatarUrl?: string
+  content: string
+  upvotes: number
+  isAcceptedAnswer: boolean
+  createdAt: string
+}
+
+export type DiscussionTag =
+  | 'general'
+  | 'technical'
+  | 'fundraising'
+  | 'hiring'
+  | 'product'
+  | 'marketing'
+  | 'legal'
+  | 'advice'
+
+export interface DiscussionThread {
+  id: string
+  authorId: string
+  authorName: string
+  authorRole?: string
+  authorAvatarUrl?: string
+  title: string
+  content: string
+  tags: DiscussionTag[]
+  replies: DiscussionReply[]
+  replyCount: number
+  viewCount: number
+  upvotes: number
+  isPinned: boolean
+  isResolved: boolean
+  createdAt: string
+  lastActivityAt: string
+}
+
+// Announcement Types
+export type AnnouncementPriority = 'normal' | 'important' | 'urgent'
+
+export interface Announcement {
+  id: string
+  authorId: string
+  authorName: string
+  authorRole: string
+  authorAvatarUrl?: string
+  title: string
+  content: string
+  priority: AnnouncementPriority
+  tags: string[]
+  isPinned: boolean
+  readBy: string[]
+  createdAt: string
+}

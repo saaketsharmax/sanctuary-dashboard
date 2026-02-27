@@ -1,9 +1,15 @@
 'use client'
 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+  Button,
+  Toaster,
+} from '@sanctuary/ui'
 import { useEffect, useState, useCallback, use } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { BalanceCard, TransactionTable, CreditCategoryBadge } from '@/components/investment'
 import {
   formatInvestmentCurrency,
@@ -14,7 +20,6 @@ import {
 } from '@/types'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Toaster } from '@/components/ui/sonner'
 import { useInvestmentRealtime } from '@/hooks/use-investment-realtime'
 import Link from 'next/link'
 
@@ -119,8 +124,8 @@ export default function PartnerInvestmentDetailPage({
         <Badge
           className={
             investment.status === 'active'
-              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-              : 'bg-gray-100 text-gray-800'
+              ? 'bg-success/15 text-success'
+              : 'bg-muted text-foreground'
           }
         >
           {investment.status.charAt(0).toUpperCase() + investment.status.slice(1)}
@@ -134,14 +139,14 @@ export default function PartnerInvestmentDetailPage({
           totalCents={investment.cashAmountCents}
           usedCents={investment.cashUsed}
           pendingCents={investment.pendingCash}
-          colorClass="text-green-600 dark:text-green-400"
+          colorClass="text-success"
         />
         <BalanceCard
           label="Credits Remaining"
           totalCents={investment.creditsAmountCents}
           usedCents={investment.creditsUsed}
           pendingCents={investment.pendingCredits}
-          colorClass="text-blue-600 dark:text-blue-400"
+          colorClass="text-info"
         />
       </div>
 

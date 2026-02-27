@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -8,10 +7,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
+  Button,
+  Textarea,
+  Label,
+} from '@sanctuary/ui'
+import { useState } from 'react'
 import { AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 interface ReviewDecisionModalProps {
@@ -64,12 +64,12 @@ export function ReviewDecisionModal({
           <DialogTitle className="flex items-center gap-2">
             {isApprove ? (
               <>
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                <CheckCircle2 className="h-5 w-5 text-success" />
                 Approve Application
               </>
             ) : (
               <>
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <AlertTriangle className="h-5 w-5 text-destructive" />
                 Decline Application
               </>
             )}
@@ -107,9 +107,9 @@ export function ReviewDecisionModal({
           </div>
 
           {!isApprove && (
-            <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-red-700">
+            <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
+              <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-destructive">
                 This action will decline the application. The founders will be notified of the
                 decision.
               </p>

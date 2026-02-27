@@ -1,14 +1,21 @@
 'use client'
 
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  RadioGroup,
+  RadioGroupItem,
+  Label,
+} from '@sanctuary/ui'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { updateUserType, getUserProfile } from '@/lib/supabase/auth'
 import { useAuthStore, type UserRole, type PartnerSubType } from '@/lib/stores/auth-store'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Label } from '@/components/ui/label'
 import {
   Rocket,
   Briefcase,
@@ -170,8 +177,8 @@ export default function RoleSelectPage() {
             }}
           >
             <CardHeader className="pb-2">
-              <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-2">
-                <Rocket className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="w-12 h-12 rounded-lg bg-info/15 flex items-center justify-center mb-2">
+                <Rocket className="h-6 w-6 text-info" />
               </div>
               <CardTitle className="flex items-center justify-between">
                 Founder / Startup
@@ -205,8 +212,8 @@ export default function RoleSelectPage() {
             }}
           >
             <CardHeader className="pb-2">
-              <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-2">
-                <Briefcase className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="w-12 h-12 rounded-lg bg-success/15 flex items-center justify-center mb-2">
+                <Briefcase className="h-6 w-6 text-success" />
               </div>
               <CardTitle className="flex items-center justify-between">
                 Partner

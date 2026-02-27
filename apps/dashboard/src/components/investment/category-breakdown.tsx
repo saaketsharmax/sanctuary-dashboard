@@ -1,6 +1,11 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@sanctuary/ui'
 import {
   CREDIT_CATEGORIES,
   type CreditCategory,
@@ -14,10 +19,10 @@ interface CategoryBreakdownProps {
 }
 
 const CATEGORY_COLORS: Record<string, { bar: string; bg: string; text: string }> = {
-  blue: { bar: 'bg-blue-500', bg: 'bg-blue-100 dark:bg-blue-950', text: 'text-blue-700 dark:text-blue-300' },
+  blue: { bar: 'bg-info', bg: 'bg-info/15', text: 'text-info' },
   purple: { bar: 'bg-purple-500', bg: 'bg-purple-100 dark:bg-purple-950', text: 'text-purple-700 dark:text-purple-300' },
-  green: { bar: 'bg-green-500', bg: 'bg-green-100 dark:bg-green-950', text: 'text-green-700 dark:text-green-300' },
-  orange: { bar: 'bg-orange-500', bg: 'bg-orange-100 dark:bg-orange-950', text: 'text-orange-700 dark:text-orange-300' },
+  green: { bar: 'bg-success', bg: 'bg-success/15', text: 'text-success' },
+  orange: { bar: 'bg-warning', bg: 'bg-warning/15', text: 'text-warning' },
 }
 
 export function CategoryBreakdown({

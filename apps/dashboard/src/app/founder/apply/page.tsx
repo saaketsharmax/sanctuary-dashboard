@@ -1,5 +1,23 @@
 'use client'
 
+import {
+  Button,
+  Input,
+  Label,
+  Textarea,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Checkbox,
+  Badge,
+} from '@sanctuary/ui'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, useFieldArray } from 'react-hook-form'
@@ -18,20 +36,6 @@ import {
   ArrowLeft,
   AlertCircle,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
 import { APPLICATION_STAGES } from '@/types'
 
 // Form schema
@@ -181,7 +185,7 @@ export default function FounderApplyPage() {
     <div className="max-w-3xl mx-auto space-y-8">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">Apply to Sanctuary</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Apply to Sanctuary</h1>
         <p className="text-muted-foreground max-w-xl mx-auto">
           Tell us about your startup. After submitting, you&apos;ll complete a brief AI-powered interview.
         </p>

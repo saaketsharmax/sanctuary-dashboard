@@ -1,16 +1,21 @@
 'use client'
 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+} from '@sanctuary/ui'
 import { MessageSquareWarning } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import type { DDFollowUpQuestion } from '@/lib/ai/types/due-diligence'
 import { DD_CATEGORY_LABELS } from '@/lib/ai/types/due-diligence'
 
 const priorityColors: Record<string, string> = {
-  critical: 'bg-red-100 text-red-700',
-  high: 'bg-orange-100 text-orange-700',
-  medium: 'bg-blue-100 text-blue-700',
-  low: 'bg-gray-100 text-gray-600',
+  critical: 'bg-destructive/15 text-destructive',
+  high: 'bg-warning/15 text-warning',
+  medium: 'bg-info/15 text-info',
+  low: 'bg-muted text-muted-foreground',
 }
 
 const sourceLabels: Record<string, string> = {

@@ -13,9 +13,8 @@ import {
   Gamepad2,
   BookOpen,
   Gift,
-  Bell,
-  Search,
-  User
+  GraduationCap,
+  Megaphone,
 } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -70,37 +69,10 @@ export default function CommunityHomePage() {
 
   return (
     <div className="min-h-screen">
-      {/* Navigation */}
-      <nav className="bg-white border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="font-semibold text-lg">Sanctuary</Link>
-            <div className="hidden md:flex items-center gap-4 text-sm">
-              <Link href="/events" className="text-muted-foreground hover:text-foreground">Events</Link>
-              <Link href="/residents" className="text-muted-foreground hover:text-foreground">Residents</Link>
-              <Link href="/sports" className="text-muted-foreground hover:text-foreground">Sports</Link>
-              <Link href="/perks" className="text-muted-foreground hover:text-foreground">Perks</Link>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="p-2 hover:bg-gray-100 rounded-lg">
-              <Search className="h-5 w-5 text-muted-foreground" />
-            </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg relative">
-              <Bell className="h-5 w-5 text-muted-foreground" />
-              <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full" />
-            </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg">
-              <User className="h-5 w-5 text-muted-foreground" />
-            </button>
-          </div>
-        </div>
-      </nav>
-
       {/* Masthead */}
-      <header className="bg-white border-b">
+      <header className="bg-card border-b">
         <div className="max-w-7xl mx-auto px-4 py-8 text-center">
-          <div className="border-y-4 border-double border-gray-900 py-4">
+          <div className="border-y-4 border-double border-foreground py-4">
             <h1 className="newspaper-masthead text-4xl md:text-5xl font-bold tracking-wider uppercase">
               The Sanctuary Times
             </h1>
@@ -123,7 +95,7 @@ export default function CommunityHomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
               {/* Live Occupancy */}
-              <div className="bg-white rounded-lg border p-6">
+              <div className="bg-card rounded-lg border p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="h-3 w-3 bg-green-500 rounded-full animate-pulse" />
                   <h2 className="font-semibold">Live at Sanctuary</h2>
@@ -132,7 +104,7 @@ export default function CommunityHomePage() {
                   <span className="text-5xl font-bold">{liveOccupancy.current}</span>
                   <span className="text-muted-foreground mb-1">/ {liveOccupancy.capacity} residents</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+                <div className="w-full bg-muted rounded-full h-3 mb-4">
                   <div
                     className="bg-green-500 h-3 rounded-full transition-all"
                     style={{ width: `${liveOccupancy.percentage}%` }}
@@ -144,27 +116,27 @@ export default function CommunityHomePage() {
               </div>
 
               {/* Headlines */}
-              <div className="bg-white rounded-lg border p-6">
+              <div className="bg-card rounded-lg border p-6">
                 <h2 className="font-semibold mb-4 flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-yellow-500" />
+                  <Trophy className="h-5 w-5 text-amber-500" />
                   Headlines
                 </h2>
                 <div className="space-y-3">
                   {headlines.map((headline) => (
-                    <div key={headline.id} className="border-b last:border-0 pb-3 last:pb-0">
+                    <div key={headline.id} className="border-b border-border last:border-0 pb-3 last:pb-0">
                       <p className="font-medium text-sm newspaper-headline">{headline.title}</p>
                       <p className="text-xs text-muted-foreground mt-1">{headline.date}</p>
                     </div>
                   ))}
                 </div>
-                <Link href="/news" className="text-sm text-primary hover:underline flex items-center gap-1 mt-4">
+                <Link href="/announcements" className="text-sm text-primary hover:underline flex items-center gap-1 mt-4">
                   Read all news <ChevronRight className="h-4 w-4" />
                 </Link>
               </div>
             </div>
 
             {/* Today's Events */}
-            <div className="bg-white rounded-lg border p-6">
+            <div className="bg-card rounded-lg border p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-semibold flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-blue-500" />
@@ -176,7 +148,7 @@ export default function CommunityHomePage() {
               </div>
               <div className="space-y-3">
                 {todaysEvents.map((event) => (
-                  <div key={event.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div key={event.id} className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-accent transition-colors">
                     <div className="flex items-center gap-4">
                       <div className="text-sm font-medium text-muted-foreground w-20">
                         {event.time}
@@ -197,11 +169,11 @@ export default function CommunityHomePage() {
                         </span>
                       )}
                       {event.spotsLeft !== null && event.spotsLeft > 0 && (
-                        <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">
+                        <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded">
                           {event.spotsLeft} spots left
                         </span>
                       )}
-                      <button className="text-sm bg-primary text-white px-3 py-1 rounded hover:bg-primary/90">
+                      <button className="text-sm bg-primary text-primary-foreground px-3 py-1 rounded hover:bg-primary/90">
                         {event.type === 'office-hours' ? 'Book' : 'Join'}
                       </button>
                     </div>
@@ -211,21 +183,21 @@ export default function CommunityHomePage() {
             </div>
 
             {/* Community Board */}
-            <div className="bg-white rounded-lg border p-6">
+            <div className="bg-card rounded-lg border p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-semibold flex items-center gap-2">
                   <MessageSquare className="h-5 w-5 text-indigo-500" />
                   Community Board
                 </h2>
-                <Link href="/board" className="text-sm bg-gray-100 px-3 py-1 rounded hover:bg-gray-200">
+                <Link href="/board" className="text-sm bg-muted px-3 py-1 rounded hover:bg-accent">
                   View All
                 </Link>
               </div>
               <div className="space-y-3">
                 {communityPosts.map((post) => (
-                  <div key={post.id} className="p-3 bg-gray-50 rounded-lg">
+                  <div key={post.id} className="p-3 bg-muted rounded-lg">
                     <p className="text-sm">&ldquo;{post.content}&rdquo;</p>
-                    <p className="text-xs text-muted-foreground mt-2">— @{post.author}</p>
+                    <p className="text-xs text-muted-foreground mt-2">-- @{post.author}</p>
                   </div>
                 ))}
               </div>
@@ -236,7 +208,7 @@ export default function CommunityHomePage() {
           <div className="space-y-6">
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-lg border p-6">
+            <div className="bg-card rounded-lg border p-6">
               <h2 className="font-semibold mb-4">Quick Actions</h2>
               <div className="grid grid-cols-2 gap-3">
                 <Link href="/checkin" className="flex flex-col items-center gap-2 p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
@@ -247,19 +219,19 @@ export default function CommunityHomePage() {
                   <Calendar className="h-5 w-5 text-blue-600" />
                   <span className="text-sm font-medium">Events</span>
                 </Link>
-                <Link href="/residents" className="flex flex-col items-center gap-2 p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
-                  <Users className="h-5 w-5 text-purple-600" />
-                  <span className="text-sm font-medium">Residents</span>
+                <Link href="/mentors" className="flex flex-col items-center gap-2 p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                  <GraduationCap className="h-5 w-5 text-purple-600" />
+                  <span className="text-sm font-medium">Mentors</span>
                 </Link>
-                <Link href="/board" className="flex flex-col items-center gap-2 p-4 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors">
+                <Link href="/discussions" className="flex flex-col items-center gap-2 p-4 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors">
                   <MessageSquare className="h-5 w-5 text-amber-600" />
-                  <span className="text-sm font-medium">Board</span>
+                  <span className="text-sm font-medium">Discuss</span>
                 </Link>
               </div>
             </div>
 
             {/* Who's Here */}
-            <div className="bg-white rounded-lg border p-6">
+            <div className="bg-card rounded-lg border p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-semibold flex items-center gap-2">
                   <Users className="h-5 w-5 text-green-500" />
@@ -272,7 +244,7 @@ export default function CommunityHomePage() {
               <div className="space-y-3">
                 {whosHere.slice(0, 5).map((person) => (
                   <div key={person.id} className="flex items-center gap-3">
-                    <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    <div className="h-8 w-8 bg-muted rounded-full flex items-center justify-center">
                       <span className="text-xs font-medium">
                         {person.name.split(' ').map(n => n[0]).join('')}
                       </span>
@@ -292,7 +264,7 @@ export default function CommunityHomePage() {
             </div>
 
             {/* Visiting Today */}
-            <div className="bg-white rounded-lg border p-6">
+            <div className="bg-card rounded-lg border p-6">
               <h2 className="font-semibold mb-4 flex items-center gap-2">
                 <Clock className="h-5 w-5 text-orange-500" />
                 Visiting Today
@@ -305,7 +277,7 @@ export default function CommunityHomePage() {
                       {visitor.company || visitor.role}
                     </p>
                     <p className="text-xs text-orange-600 mt-1">
-                      {visitor.meeting ? `Meeting: ${visitor.meeting}` : visitor.purpose} • {visitor.time}
+                      {visitor.meeting ? `Meeting: ${visitor.meeting}` : visitor.purpose} &middot; {visitor.time}
                     </p>
                   </div>
                 ))}
@@ -313,13 +285,13 @@ export default function CommunityHomePage() {
             </div>
 
             {/* Celebrations */}
-            <div className="bg-white rounded-lg border p-6">
+            <div className="bg-card rounded-lg border p-6">
               <h2 className="font-semibold mb-4">Celebrations</h2>
               <div className="space-y-3">
                 {celebrations.map((celebration) => (
                   <div key={celebration.id} className="p-3 bg-pink-50 rounded-lg flex items-center gap-3">
                     <span className="text-2xl">
-                      {celebration.type === 'birthday' ? '🎂' : '🎊'}
+                      {celebration.type === 'birthday' ? '\u{1F382}' : '\u{1F38A}'}
                     </span>
                     <div>
                       <p className="text-sm font-medium">{celebration.message}</p>
@@ -331,7 +303,7 @@ export default function CommunityHomePage() {
             </div>
 
             {/* This Week Preview */}
-            <div className="bg-white rounded-lg border p-6">
+            <div className="bg-card rounded-lg border p-6">
               <h2 className="font-semibold mb-4">Upcoming This Week</h2>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
@@ -360,11 +332,11 @@ export default function CommunityHomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t bg-white mt-12">
+      <footer className="border-t bg-card mt-12">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
-              The Sanctuary Times • Community Hub
+              The Sanctuary Times &middot; Community Hub
             </p>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <Link href="/feedback" className="hover:text-foreground">Give Feedback</Link>

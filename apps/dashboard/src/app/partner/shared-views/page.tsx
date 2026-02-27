@@ -1,7 +1,13 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Button,
+} from '@sanctuary/ui'
 import { Plus, Eye, Share2 } from 'lucide-react'
 
 export default function SharedViewsPage() {

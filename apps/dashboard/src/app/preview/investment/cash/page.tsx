@@ -1,9 +1,17 @@
 'use client'
 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@sanctuary/ui'
 import { useMemo } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   BalanceCard,
   TransactionTable,
@@ -52,7 +60,7 @@ export default function PreviewCashPage() {
         totalCents={investment.cashAmountCents}
         usedCents={investment.cashUsed}
         pendingCents={investment.pendingCash}
-        colorClass="text-green-600 dark:text-green-400"
+        colorClass="text-success"
       />
 
       {/* Runway */}

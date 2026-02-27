@@ -1,11 +1,16 @@
 'use client'
 
+import {
+  Card,
+  CardContent,
+  Badge,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  cn,
+} from '@sanctuary/ui'
 import Link from 'next/link'
 import { User, Building2, ArrowRight } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { cn } from '@/lib/utils'
 import { ExpertiseBadge } from '@/components/mentors'
 import type { MatchWithDetails, ConfidenceLevel } from '@/types'
 
@@ -14,16 +19,16 @@ interface MatchCardProps {
 }
 
 function getScoreColor(score: number) {
-  if (score >= 80) return 'text-green-600 bg-green-100 border-green-200'
-  if (score >= 60) return 'text-blue-600 bg-blue-100 border-blue-200'
-  if (score >= 40) return 'text-yellow-600 bg-yellow-100 border-yellow-200'
-  return 'text-red-600 bg-red-100 border-red-200'
+  if (score >= 80) return 'text-success bg-success/15 border-success/30'
+  if (score >= 60) return 'text-info bg-info/15 border-info/30'
+  if (score >= 40) return 'text-warning bg-warning/15 border-warning/30'
+  return 'text-destructive bg-destructive/15 border-destructive/30'
 }
 
 function getConfidenceBadge(confidence: ConfidenceLevel) {
   const config = {
-    high: { label: 'High', variant: 'default' as const, className: 'bg-green-600' },
-    medium: { label: 'Medium', variant: 'secondary' as const, className: 'bg-yellow-500 text-white' },
+    high: { label: 'High', variant: 'default' as const, className: 'bg-success' },
+    medium: { label: 'Medium', variant: 'secondary' as const, className: 'bg-warning text-white' },
     low: { label: 'Low', variant: 'outline' as const, className: '' },
   }
   return config[confidence]
@@ -31,11 +36,11 @@ function getConfidenceBadge(confidence: ConfidenceLevel) {
 
 function getStatusBadge(status: string) {
   const config: Record<string, { label: string; className: string }> = {
-    pending: { label: 'Pending', className: 'bg-gray-100 text-gray-700' },
-    approved: { label: 'Approved', className: 'bg-blue-100 text-blue-700' },
-    rejected: { label: 'Rejected', className: 'bg-red-100 text-red-700' },
+    pending: { label: 'Pending', className: 'bg-muted text-foreground' },
+    approved: { label: 'Approved', className: 'bg-info/15 text-info' },
+    rejected: { label: 'Rejected', className: 'bg-destructive/15 text-destructive' },
     intro_sent: { label: 'Intro Sent', className: 'bg-purple-100 text-purple-700' },
-    completed: { label: 'Completed', className: 'bg-green-100 text-green-700' },
+    completed: { label: 'Completed', className: 'bg-success/15 text-success' },
   }
   return config[status] || config.pending
 }

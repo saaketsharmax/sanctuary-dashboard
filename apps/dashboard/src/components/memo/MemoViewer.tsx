@@ -1,8 +1,11 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+import {
+  Badge,
+  Button,
+  Separator,
+  cn,
+} from '@sanctuary/ui'
 import {
   MemoSection,
   ScoreDisplay,
@@ -23,8 +26,6 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import type { StartupMemo } from '@/types'
-import { cn } from '@/lib/utils'
-
 interface MemoViewerProps {
   memo: StartupMemo
   onExportPDF?: () => void
@@ -32,11 +33,11 @@ interface MemoViewerProps {
 
 export function MemoViewer({ memo, onExportPDF }: MemoViewerProps) {
   const recommendationColors: Record<string, string> = {
-    strong_accept: 'bg-green-100 text-green-800 border-green-300',
-    accept: 'bg-blue-100 text-blue-800 border-blue-300',
-    conditional: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-    lean_decline: 'bg-orange-100 text-orange-800 border-orange-300',
-    decline: 'bg-red-100 text-red-800 border-red-300',
+    strong_accept: 'bg-success/15 text-success border-success/40',
+    accept: 'bg-info/15 text-info border-info/40',
+    conditional: 'bg-warning/15 text-warning border-warning/40',
+    lean_decline: 'bg-warning/15 text-warning border-warning/40',
+    decline: 'bg-destructive/15 text-destructive border-destructive/40',
   }
 
   return (
@@ -94,7 +95,7 @@ export function MemoViewer({ memo, onExportPDF }: MemoViewerProps) {
             <ul className="space-y-1">
               {memo.executiveSummary.criticalRisks.map((risk, i) => (
                 <li key={i} className="text-sm flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 text-orange-500 mt-0.5 shrink-0" />
+                  <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
                   <span>{risk}</span>
                 </li>
               ))}
@@ -135,7 +136,7 @@ export function MemoViewer({ memo, onExportPDF }: MemoViewerProps) {
               <h4 className="font-medium text-sm mb-2">Team Gaps</h4>
               <div className="flex flex-wrap gap-2">
                 {memo.founderProfile.gaps.map((gap, i) => (
-                  <Badge key={i} variant="outline" className="text-orange-600 border-orange-300">
+                  <Badge key={i} variant="outline" className="text-warning border-warning/40">
                     {gap}
                   </Badge>
                 ))}
@@ -220,7 +221,7 @@ export function MemoViewer({ memo, onExportPDF }: MemoViewerProps) {
             <ul className="space-y-1">
               {memo.problemAndMarket.validationEvidence.map((e, i) => (
                 <li key={i} className="text-sm flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
                   <span>{e}</span>
                 </li>
               ))}
@@ -390,7 +391,7 @@ export function MemoViewer({ memo, onExportPDF }: MemoViewerProps) {
               <h4 className="font-medium text-sm mb-2">Execution Gaps</h4>
               <div className="flex flex-wrap gap-2">
                 {memo.executionAssessment.teamGaps.map((gap, i) => (
-                  <Badge key={i} variant="outline" className="text-orange-600 border-orange-300">
+                  <Badge key={i} variant="outline" className="text-warning border-warning/40">
                     {gap}
                   </Badge>
                 ))}
@@ -411,7 +412,7 @@ export function MemoViewer({ memo, onExportPDF }: MemoViewerProps) {
         <div className="space-y-6">
           {memo.riskAnalysis.redFlags.length > 0 && (
             <div>
-              <h4 className="font-medium text-sm mb-2 text-red-600">Red Flags</h4>
+              <h4 className="font-medium text-sm mb-2 text-destructive">Red Flags</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {memo.riskAnalysis.redFlags.map((r, i) => (
                   <RiskItem
@@ -469,7 +470,7 @@ export function MemoViewer({ memo, onExportPDF }: MemoViewerProps) {
               <ul className="space-y-1">
                 {memo.riskAnalysis.mitigationStrategies.map((s, i) => (
                   <li key={i} className="text-sm flex items-start gap-2">
-                    <Zap className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                    <Zap className="h-4 w-4 text-info mt-0.5 shrink-0" />
                     <span>{s}</span>
                   </li>
                 ))}
@@ -511,7 +512,7 @@ export function MemoViewer({ memo, onExportPDF }: MemoViewerProps) {
             <ul className="space-y-1">
               {memo.recommendation.suggestedNextSteps.map((s, i) => (
                 <li key={i} className="text-sm flex items-start gap-2">
-                  <span className="font-medium text-blue-600">{i + 1}.</span>
+                  <span className="font-medium text-info">{i + 1}.</span>
                   <span>{s}</span>
                 </li>
               ))}
@@ -527,13 +528,13 @@ export function MemoViewer({ memo, onExportPDF }: MemoViewerProps) {
             <h4 className="font-medium text-sm mb-2">Signal Summary</h4>
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="border rounded-lg p-3">
-                <div className="text-lg font-bold text-green-600">
+                <div className="text-lg font-bold text-success">
                   {memo.appendix.signalsSummary.positiveSignals}
                 </div>
                 <div className="text-xs text-muted-foreground">Positive</div>
               </div>
               <div className="border rounded-lg p-3">
-                <div className="text-lg font-bold text-red-600">
+                <div className="text-lg font-bold text-destructive">
                   {memo.appendix.signalsSummary.negativeSignals}
                 </div>
                 <div className="text-xs text-muted-foreground">Negative</div>
@@ -552,7 +553,7 @@ export function MemoViewer({ memo, onExportPDF }: MemoViewerProps) {
             <ul className="space-y-1">
               {memo.appendix.signalsSummary.strongestSignals.map((s, i) => (
                 <li key={i} className="text-sm flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
                   <span>{s}</span>
                 </li>
               ))}

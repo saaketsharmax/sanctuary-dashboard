@@ -1,12 +1,18 @@
 'use client'
 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Badge,
+  Progress,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  cn,
+} from '@sanctuary/ui'
 import Link from 'next/link'
 import { Building2, Users, TrendingUp, AlertTriangle } from 'lucide-react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { cn } from '@/lib/utils'
 import type { StartupWithFounders } from '@/types'
 import { getStageInfo, getRiskInfo } from '@/types'
 
@@ -21,18 +27,18 @@ export function StartupCard({ startup, linkPrefix = '/startup' }: StartupCardPro
   const leadFounder = startup.founders.find((f) => f.isLead) || startup.founders[0]
 
   const riskColorClass = {
-    low: 'bg-green-500/10 text-green-700 border-green-500/20',
-    normal: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-    elevated: 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20',
-    high: 'bg-red-500/10 text-red-700 border-red-500/20',
+    low: 'bg-success/10 text-success border-success/20',
+    normal: 'bg-info/10 text-info border-info/20',
+    elevated: 'bg-warning/10 text-warning border-warning/20',
+    high: 'bg-destructive/10 text-destructive border-destructive/20',
   }
 
   const stageColorClass = {
     problem_discovery: 'bg-purple-500/10 text-purple-700 border-purple-500/20',
-    solution_shaping: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
+    solution_shaping: 'bg-info/10 text-info border-info/20',
     user_value: 'bg-cyan-500/10 text-cyan-700 border-cyan-500/20',
-    growth: 'bg-green-500/10 text-green-700 border-green-500/20',
-    capital_ready: 'bg-orange-500/10 text-orange-700 border-orange-500/20',
+    growth: 'bg-success/10 text-success border-success/20',
+    capital_ready: 'bg-warning/10 text-warning border-warning/20',
   }
 
   return (
@@ -63,8 +69,8 @@ export function StartupCard({ startup, linkPrefix = '/startup' }: StartupCardPro
               <AlertTriangle
                 className={cn(
                   'h-4 w-4',
-                  startup.riskLevel === 'elevated' && 'text-yellow-500',
-                  startup.riskLevel === 'high' && 'text-red-500'
+                  startup.riskLevel === 'elevated' && 'text-warning',
+                  startup.riskLevel === 'high' && 'text-destructive'
                 )}
               />
             )}

@@ -1,17 +1,22 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Button,
+  Input,
+  Label,
+  Textarea,
+  Badge,
+  Skeleton,
+  Toaster,
+} from '@sanctuary/ui'
 import { Building2, Globe, MapPin, Calendar, Save, Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { Toaster } from '@/components/ui/sonner'
-
 interface CompanyData {
   id: string
   name: string
@@ -122,9 +127,9 @@ export default function CompanyPage() {
 
   return (
     <div className="space-y-8 max-w-4xl">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Company Profile</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Company Profile</h1>
           <p className="text-muted-foreground mt-1">
             Manage your company information
             {isMock && <Badge variant="outline" className="ml-2 text-xs">Demo Mode</Badge>}
@@ -194,7 +199,7 @@ export default function CompanyPage() {
             />
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="industry">Industry</Label>
               <Input

@@ -1,8 +1,8 @@
 'use client'
 
+import { cn } from '@sanctuary/ui'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
 import { Eye } from 'lucide-react'
 
 const previewLinks = [
@@ -16,9 +16,9 @@ export default function PreviewLayout({ children }: { children: React.ReactNode 
   return (
     <div className="min-h-screen bg-background">
       {/* Preview banner */}
-      <div className="sticky top-0 z-50 border-b bg-yellow-50 dark:bg-yellow-950/50 px-4 py-2">
+      <div className="sticky top-0 z-50 border-b bg-warning/10 px-4 py-2">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm font-medium text-yellow-800 dark:text-yellow-300">
+          <div className="flex items-center gap-2 text-sm font-medium text-warning">
             <Eye className="h-4 w-4" />
             Preview Mode — Mock Data
           </div>
@@ -30,8 +30,8 @@ export default function PreviewLayout({ children }: { children: React.ReactNode 
                 className={cn(
                   'text-xs transition-colors',
                   pathname === link.href
-                    ? 'text-yellow-900 dark:text-yellow-200 font-semibold'
-                    : 'text-yellow-700 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-200'
+                    ? 'text-warning font-semibold'
+                    : 'text-warning hover:text-warning'
                 )}
               >
                 {link.label}

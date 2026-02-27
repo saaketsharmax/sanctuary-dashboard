@@ -1,12 +1,17 @@
 'use client'
 
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@sanctuary/ui'
 import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, Calendar, Mail, ArrowRight, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-
 function SuccessContent() {
   const searchParams = useSearchParams()
   const applicationId = searchParams.get('id') || 'app-demo'
@@ -15,8 +20,8 @@ function SuccessContent() {
     <div className="max-w-xl mx-auto space-y-8">
       {/* Success Icon */}
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-          <CheckCircle2 className="h-8 w-8 text-green-600" />
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/15 mb-4">
+          <CheckCircle2 className="h-8 w-8 text-success" />
         </div>
         <h1 className="text-3xl font-bold">Application Submitted!</h1>
         <p className="text-muted-foreground mt-2">

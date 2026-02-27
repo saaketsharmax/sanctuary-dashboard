@@ -1,9 +1,18 @@
 'use client'
 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Toaster,
+} from '@sanctuary/ui'
 import { useEffect, useState, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   BalanceCard,
   TransactionTable,
@@ -22,7 +31,6 @@ import {
 } from '@/types'
 import { DollarSign, Loader2, Info } from 'lucide-react'
 import { toast } from 'sonner'
-import { Toaster } from '@/components/ui/sonner'
 import { useInvestmentRealtime } from '@/hooks/use-investment-realtime'
 
 export default function CashInvestmentPage() {
@@ -114,7 +122,7 @@ export default function CashInvestmentPage() {
   if (!investment) {
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Cash Investment</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Cash Investment</h1>
         <InvestmentSubNav />
         <Card>
           <CardContent className="pt-6">
@@ -138,14 +146,14 @@ export default function CashInvestmentPage() {
     <div className="space-y-6">
       {/* Mock data banner */}
       {isMock && (
-        <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300">
+        <div className="flex items-center gap-2 rounded-lg border border-info/30 bg-info/10 px-4 py-3 text-sm text-info">
           <Info className="h-4 w-4 shrink-0" />
           <p>Showing sample data. Real transactions will appear once your investment is active.</p>
         </div>
       )}
 
       <div>
-        <h1 className="text-3xl font-bold">Cash Investment</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Cash Investment</h1>
         <p className="text-muted-foreground mt-1">{investment.companyName}</p>
       </div>
 
@@ -157,7 +165,7 @@ export default function CashInvestmentPage() {
         totalCents={investment.cashAmountCents}
         usedCents={investment.cashUsed}
         pendingCents={investment.pendingCash}
-        colorClass="text-green-600 dark:text-green-400"
+        colorClass="text-success"
       />
 
       {/* Runway */}

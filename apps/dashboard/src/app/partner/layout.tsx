@@ -1,5 +1,11 @@
 'use client'
 
+import {
+  Button,
+  Avatar,
+  AvatarFallback,
+  cn,
+} from '@sanctuary/ui'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/auth-store'
@@ -14,14 +20,12 @@ import {
   DollarSign,
   Share2,
   Settings,
-  LogOut
+  LogOut,
+  Menu,
+  X
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-
 const partnerNavItems = [
   { href: '/partner/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/partner/portfolio', label: 'Portfolio', icon: Briefcase },
@@ -45,6 +49,7 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
   const { setRole, clearRole } = useAuthStore()
   const [user, setUser] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Set role when entering partner section
   useEffect(() => {
@@ -157,69 +162,96 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
     }
   }
 
+  // Dashboard page uses its own full-screen OS layout — skip the sidebar
+  const isDashboard = pathname === '/partner/dashboard'
+  if (isDashboard) {
+    return <>{children}</>
+  }
+
   const displayName = user?.name || 'Partner'
   const displayEmail = user?.email || ''
 
   return (
     <div className="flex min-h-screen">
+      {/* Mobile header bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b bg-card px-4 md:hidden">
+        <Link href="/partner/dashboard" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-sm">S</span>
+          </div>
+          <span className="font-semibold">Sanctuary</span>
+        </Link>
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="p-2 rounded-lg hover:bg-accent"
+        >
+          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </div>
+
+      {/* Mobile overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 border-r bg-muted/30 flex flex-col">
+      <aside className={cn(
+        'fixed inset-y-0 left-0 z-50 w-64 border-r bg-card flex flex-col transition-transform duration-200',
+        'md:relative md:translate-x-0 md:w-16 lg:w-64',
+        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      )}>
         {/* Logo */}
-        <div className="p-6 border-b">
+        <div className="flex h-16 items-center justify-between border-b px-4">
           <Link href="/partner/dashboard" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">S</span>
             </div>
-            <span className="font-semibold text-lg">Sanctuary</span>
+            <span className="font-semibold hidden lg:inline">Sanctuary</span>
           </Link>
-          <p className="text-xs text-muted-foreground mt-1">Partner Portal</p>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-2 space-y-1">
           {partnerNavItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => setMobileMenuOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                   isActive
                     ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                 )}
               >
-                <item.icon className="h-4 w-4" />
-                {item.label}
+                <item.icon className="h-5 w-5 shrink-0" />
+                <span className="hidden lg:inline">{item.label}</span>
               </Link>
             )
           })}
         </nav>
 
         {/* User section */}
-        <div className="p-4 border-t">
-          <div className="flex items-center gap-3 mb-3">
-            <Avatar className="h-9 w-9">
-              <AvatarFallback>
-                {loading ? '...' : displayName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{displayName}</p>
-              <p className="text-xs text-muted-foreground truncate">{displayEmail}</p>
-            </div>
+        <div className="border-t p-2">
+          <div className="mb-2 rounded-lg bg-accent/50 px-3 py-2 hidden lg:block">
+            <p className="text-sm font-medium">{loading ? '...' : displayName}</p>
+            <p className="text-xs text-muted-foreground truncate">{displayEmail}</p>
           </div>
           <Button variant="ghost" size="sm" className="w-full justify-start" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
+            <LogOut className="h-5 w-5 shrink-0 lg:mr-3" />
+            <span className="hidden lg:inline">Logout</span>
           </Button>
         </div>
       </aside>
 
       {/* Main content */}
       <main className="flex-1 overflow-auto">
-        <div className="p-8">
+        <div className="p-4 md:p-6 lg:p-8 pt-18 md:pt-6 lg:pt-8">
           {children}
         </div>
       </main>

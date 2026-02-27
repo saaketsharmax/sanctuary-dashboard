@@ -1,20 +1,34 @@
 'use client'
 
+import {
+  Button,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+  Toaster,
+} from '@sanctuary/ui'
 import { use, useState, useEffect } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, FileText, Loader2, RefreshCw, Brain, Search, Shield } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Toaster } from '@/components/ui/sonner'
+import {
+  ArrowLeft, FileText, Loader2, RefreshCw, Brain, Search, Shield,
+  GraduationCap, MessageSquareText, CheckCircle2, XCircle, Clock,
+  Target, Users, TrendingUp, AlertCircle,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import {
   ReviewDecisionModal,
 } from '@/components/application-review'
 import { MemoViewer } from '@/components/memo'
+import { Textarea, Label, Progress } from '@sanctuary/ui'
 import type { StartupMemo, InterviewMessage } from '@/types'
+import type { Programme } from '@/lib/ai/types/programme'
 
 interface ApplicationDetailPageProps {
   params: Promise<{ id: string }>
@@ -63,14 +77,14 @@ interface Application {
 }
 
 const statusColors: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-700',
-  submitted: 'bg-blue-100 text-blue-700',
+  draft: 'bg-muted text-foreground',
+  submitted: 'bg-info/15 text-info',
   interview_scheduled: 'bg-purple-100 text-purple-700',
   interview_completed: 'bg-indigo-100 text-indigo-700',
-  assessment_generated: 'bg-yellow-100 text-yellow-700',
-  under_review: 'bg-orange-100 text-orange-700',
-  approved: 'bg-green-100 text-green-700',
-  rejected: 'bg-red-100 text-red-700',
+  assessment_generated: 'bg-warning/15 text-warning',
+  under_review: 'bg-warning/15 text-warning',
+  approved: 'bg-success/15 text-success',
+  rejected: 'bg-destructive/15 text-destructive',
 }
 
 export default function ApplicationDetailPage({ params }: ApplicationDetailPageProps) {
@@ -180,23 +194,96 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
     }
   }
 
-  // Handle decision
+  // Handle decision — uses the decision API with auto startup creation on approve
   const handleConfirmDecision = async (notes?: string) => {
     try {
-      const res = await fetch(`/api/partner/applications/${id}`, {
-        method: 'PATCH',
+      const decision = decisionType === 'approve' ? 'approved' : 'rejected'
+      const res = await fetch(`/api/applications/${id}/decision`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: decisionType, notes }),
+        body: JSON.stringify({ decision, notes }),
       })
       const data = await res.json()
       if (data.success) {
-        toast.success(`${application?.companyName} has been ${decisionType === 'approve' ? 'approved' : 'declined'}`)
+        const msg = decisionType === 'approve'
+          ? `${application?.companyName} approved! Startup created with $50k cash + $50k credits.`
+          : `${application?.companyName} has been declined.`
+        toast.success(msg)
         fetchApplication()
       } else {
         toast.error(data.error || 'Failed to update application')
       }
     } catch (error) {
       toast.error('Failed to update application')
+    }
+  }
+
+  // Programme state
+  const [programme, setProgramme] = useState<Programme | null>(null)
+  const [programmeLoading, setProgrammeLoading] = useState(false)
+
+  const handleGenerateProgramme = async () => {
+    setProgrammeLoading(true)
+    try {
+      const res = await fetch(`/api/applications/${id}/programme`, { method: 'POST' })
+      const data = await res.json()
+      if (data.success) {
+        setProgramme(data.programme)
+        toast.success('Programme generated successfully')
+      } else {
+        toast.error(data.error || 'Failed to generate programme')
+      }
+    } catch {
+      toast.error('Failed to generate programme')
+    } finally {
+      setProgrammeLoading(false)
+    }
+  }
+
+  // Fetch programme if application is approved
+  useEffect(() => {
+    if (application?.status === 'approved') {
+      fetch(`/api/applications/${id}/programme`)
+        .then((r) => r.json())
+        .then((data) => { if (data.programme) setProgramme(data.programme) })
+        .catch(() => {})
+    }
+  }, [application?.status, id])
+
+  // Feedback state
+  const [feedbackNotes, setFeedbackNotes] = useState('')
+  const [feedbackDimensions, setFeedbackDimensions] = useState<Record<string, number>>({})
+  const [feedbackAgreement, setFeedbackAgreement] = useState<'agree' | 'partially_agree' | 'disagree'>('agree')
+  const [submittingFeedback, setSubmittingFeedback] = useState(false)
+
+  const handleSubmitFeedback = async () => {
+    setSubmittingFeedback(true)
+    try {
+      const res = await fetch(`/api/applications/${id}/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          overall_agreement: feedbackAgreement,
+          notes: feedbackNotes,
+          dimension_feedback: Object.entries(feedbackDimensions).map(([dim, score]) => ({
+            dimension: dim,
+            aiScore: application?.aiAssessment?.[dim + 'Score'] || 0,
+            partnerScore: score,
+          })),
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast.success('Feedback submitted — this improves DD accuracy over time')
+        setFeedbackNotes('')
+        setFeedbackDimensions({})
+      } else {
+        toast.error(data.error || 'Failed to submit feedback')
+      }
+    } catch {
+      toast.error('Failed to submit feedback')
+    } finally {
+      setSubmittingFeedback(false)
     }
   }
 
@@ -231,17 +318,17 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
       {/* Application Header */}
       <Card>
         <CardContent className="py-6">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
             <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold">{application.companyName}</h1>
-                <Badge className={statusColors[application.status] || 'bg-gray-100 text-gray-700'}>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <h1 className="text-xl sm:text-2xl font-bold">{application.companyName}</h1>
+                <Badge className={statusColors[application.status] || 'bg-muted text-foreground'}>
                   {application.status.replace(/_/g, ' ')}
                 </Badge>
                 {isMock && <Badge variant="outline">Demo Mode</Badge>}
               </div>
               <p className="text-muted-foreground mt-1">{application.companyOneLiner}</p>
-              <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-3 text-sm text-muted-foreground">
                 <span>Stage: {application.stage?.replace('_', ' ')}</span>
                 <span>Users: {application.userCount}</span>
                 <span>MRR: ${application.mrr}</span>
@@ -281,7 +368,7 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="interview">
             Interview {hasInterview && <Badge variant="secondary" className="ml-1">✓</Badge>}
@@ -298,6 +385,16 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
               <Shield className="h-4 w-4 mr-1" />
               Due Diligence {hasDDCompleted && <Badge variant="secondary" className="ml-1">✓</Badge>}
             </Link>
+          </TabsTrigger>
+          {application.status === 'approved' && (
+            <TabsTrigger value="programme">
+              <GraduationCap className="h-4 w-4 mr-1" />
+              Programme {programme && <Badge variant="secondary" className="ml-1">✓</Badge>}
+            </TabsTrigger>
+          )}
+          <TabsTrigger value="feedback">
+            <MessageSquareText className="h-4 w-4 mr-1" />
+            Feedback
           </TabsTrigger>
         </TabsList>
 
@@ -448,7 +545,7 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
         {/* Assessment Tab */}
         <TabsContent value="assessment">
           {hasAssessment && application.aiAssessment ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>AI Scores</CardTitle>
@@ -486,10 +583,10 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                       <Badge
                         className={
                           application.aiAssessment.recommendation === 'accept'
-                            ? 'bg-green-100 text-green-700'
+                            ? 'bg-success/15 text-success'
                             : application.aiAssessment.recommendation === 'decline'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-yellow-100 text-yellow-700'
+                            ? 'bg-destructive/15 text-destructive'
+                            : 'bg-warning/15 text-warning'
                         }
                       >
                         {application.aiAssessment.recommendation}
@@ -517,11 +614,11 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                   )}
                   {application.aiAssessment?.keyStrengths?.length > 0 && (
                     <div>
-                      <h4 className="font-medium text-sm text-green-600">Key Strengths</h4>
+                      <h4 className="font-medium text-sm text-success">Key Strengths</h4>
                       <ul className="text-sm mt-1 space-y-1">
                         {application.aiAssessment.keyStrengths.map((s: any, i: number) => (
                           <li key={i} className="flex items-start gap-2">
-                            <span className="text-green-600">•</span>
+                            <span className="text-success">•</span>
                             <span>{s.title || s}</span>
                           </li>
                         ))}
@@ -530,11 +627,11 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                   )}
                   {application.aiAssessment?.keyRisks?.length > 0 && (
                     <div>
-                      <h4 className="font-medium text-sm text-red-600">Key Risks</h4>
+                      <h4 className="font-medium text-sm text-destructive">Key Risks</h4>
                       <ul className="text-sm mt-1 space-y-1">
                         {application.aiAssessment.keyRisks.map((r: any, i: number) => (
                           <li key={i} className="flex items-start gap-2">
-                            <span className="text-red-600">•</span>
+                            <span className="text-destructive">•</span>
                             <span>{r.title || r}</span>
                           </li>
                         ))}
@@ -638,6 +735,241 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+        {/* Programme Tab */}
+        <TabsContent value="programme">
+          {programme ? (
+            <div className="space-y-6">
+              {/* Programme Header */}
+              <Card>
+                <CardContent className="py-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold">90-Day Programme</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Week {programme.currentWeek} of 12 — {programme.riskLevel === 'on_track' ? 'On Track' : programme.riskLevel === 'at_risk' ? 'At Risk' : 'Behind'}
+                      </p>
+                    </div>
+                    <Badge className={
+                      programme.riskLevel === 'on_track' ? 'bg-success/15 text-success' :
+                      programme.riskLevel === 'at_risk' ? 'bg-warning/15 text-warning' :
+                      'bg-destructive/15 text-destructive'
+                    }>
+                      {programme.riskLevel.replace('_', ' ')}
+                    </Badge>
+                  </div>
+                  <Progress value={programme.overallProgress} className="h-2" />
+                  <p className="text-xs text-muted-foreground mt-1">{programme.overallProgress}% complete</p>
+                </CardContent>
+              </Card>
+
+              {/* Phases */}
+              {programme.phases.map((phase, phaseIdx) => (
+                <Card key={phaseIdx}>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                        {phaseIdx + 1}
+                      </div>
+                      {phase.name}
+                      <span className="text-sm font-normal text-muted-foreground">Weeks {phase.weeks}</span>
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">{phase.focus}</p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {phase.milestones.map((milestone) => (
+                      <div
+                        key={milestone.id}
+                        className={`p-4 rounded-lg border ${
+                          milestone.status === 'completed' ? 'border-success bg-success/10' :
+                          milestone.status === 'active' ? 'border-info bg-info/10' :
+                          milestone.status === 'overdue' ? 'border-destructive bg-destructive/10' :
+                          'border-muted'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-3">
+                            {milestone.status === 'completed' ? (
+                              <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
+                            ) : milestone.status === 'overdue' ? (
+                              <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
+                            ) : (
+                              <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
+                            )}
+                            <div>
+                              <p className="font-medium">{milestone.title}</p>
+                              <p className="text-sm text-muted-foreground mt-1">{milestone.description}</p>
+                              {milestone.kpiTargets.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {milestone.kpiTargets.map((kpi, i) => (
+                                    <Badge key={i} variant="outline" className="text-xs">
+                                      <Target className="h-3 w-3 mr-1" />
+                                      {kpi.metric}: {kpi.target} {kpi.unit}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="text-xs whitespace-nowrap">
+                            Week {milestone.weekNumber}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              ))}
+
+              {/* Mentor Matching Triggers */}
+              {programme.mentorMatchingTriggers.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Mentor Matching Triggers
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {programme.mentorMatchingTriggers.map((trigger, i) => (
+                        <div key={i} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                          <div>
+                            <p className="text-sm font-medium">Milestone: {trigger.milestone}</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {trigger.expertise.map((exp) => (
+                                <Badge key={exp} variant="secondary" className="text-xs">{exp}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <Badge className={
+                            trigger.urgency === 'immediate' ? 'bg-destructive/15 text-destructive' :
+                            trigger.urgency === 'this_week' ? 'bg-warning/15 text-warning' :
+                            'bg-info/15 text-info'
+                          }>
+                            {trigger.urgency.replace('_', ' ')}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="py-12 flex flex-col items-center justify-center gap-4">
+                <GraduationCap className="h-12 w-12 text-muted-foreground" />
+                <div className="text-center">
+                  <h3 className="font-semibold">No Programme Generated Yet</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Generate a tailored 90-day accelerator programme with milestones, KPIs, and mentor matching.
+                  </p>
+                </div>
+                <Button onClick={handleGenerateProgramme} disabled={programmeLoading}>
+                  {programmeLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <GraduationCap className="h-4 w-4 mr-2" />
+                  )}
+                  Generate Programme
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Feedback Tab */}
+        <TabsContent value="feedback">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <MessageSquareText className="h-5 w-5" />
+                  Assessment Feedback
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Your feedback improves the AI&apos;s due diligence accuracy over time through the Calibration Engine.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Overall Agreement */}
+                <div className="space-y-2">
+                  <Label>Do you agree with the AI assessment?</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {(['agree', 'partially_agree', 'disagree'] as const).map((val) => (
+                      <Button
+                        key={val}
+                        variant={feedbackAgreement === val ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setFeedbackAgreement(val)}
+                      >
+                        {val === 'agree' ? 'Agree' : val === 'partially_agree' ? 'Partially Agree' : 'Disagree'}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dimension Score Adjustments */}
+                {application.aiAssessment && (
+                  <div className="space-y-4">
+                    <Label>Score Adjustments (slide to your assessment)</Label>
+                    {[
+                      { key: 'founder', label: 'Founder', score: application.aiAssessment.founderScore },
+                      { key: 'problem', label: 'Problem', score: application.aiAssessment.problemScore },
+                      { key: 'userValue', label: 'User Value', score: application.aiAssessment.userValueScore },
+                      { key: 'execution', label: 'Execution', score: application.aiAssessment.executionScore },
+                    ].map((dim) => (
+                      <div key={dim.key} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>{dim.label}</span>
+                          <span className="text-muted-foreground">
+                            AI: {dim.score ?? 'N/A'} | You: {feedbackDimensions[dim.key] ?? dim.score ?? 'N/A'}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={feedbackDimensions[dim.key] ?? dim.score ?? 50}
+                          onChange={(e) => setFeedbackDimensions((prev) => ({
+                            ...prev,
+                            [dim.key]: parseInt(e.target.value),
+                          }))}
+                          className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Notes */}
+                <div className="space-y-2">
+                  <Label htmlFor="feedback-notes">Notes</Label>
+                  <Textarea
+                    id="feedback-notes"
+                    placeholder="What did the AI get right or wrong? What signals did it miss?"
+                    value={feedbackNotes}
+                    onChange={(e) => setFeedbackNotes(e.target.value)}
+                    rows={4}
+                  />
+                </div>
+
+                <Button
+                  onClick={handleSubmitFeedback}
+                  disabled={submittingFeedback}
+                  className="w-full"
+                >
+                  {submittingFeedback ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                  )}
+                  Submit Feedback
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

@@ -1,5 +1,11 @@
 'use client'
 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@sanctuary/ui'
 import { useMemo } from 'react'
 import {
   AreaChart,
@@ -12,7 +18,6 @@ import {
   ReferenceLine,
 } from 'recharts'
 import { format, parseISO } from 'date-fns'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { MetricDataPoint } from '@/types'
 
 interface RetentionChartProps {

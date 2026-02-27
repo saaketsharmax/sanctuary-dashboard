@@ -1,7 +1,7 @@
 'use client'
 
+import { cn } from '@sanctuary/ui'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import type { TrendDirection } from '@/types'
 
 interface TrendIndicatorProps {
@@ -14,18 +14,18 @@ interface TrendIndicatorProps {
 const trendConfig = {
   up: {
     icon: TrendingUp,
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
+    color: 'text-success',
+    bgColor: 'bg-success/15',
   },
   down: {
     icon: TrendingDown,
-    color: 'text-red-600',
-    bgColor: 'bg-red-100',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/15',
   },
   flat: {
     icon: Minus,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
+    color: 'text-info',
+    bgColor: 'bg-info/15',
   },
 }
 

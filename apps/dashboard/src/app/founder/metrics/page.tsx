@@ -1,13 +1,18 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Badge,
+  Skeleton,
+  Toaster,
+} from '@sanctuary/ui'
 import { TrendingUp, TrendingDown, DollarSign, Users, Percent, BarChart3, Lock } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { Toaster } from '@/components/ui/sonner'
-
 interface MetricData {
   value: number
   change: number
@@ -84,7 +89,7 @@ export default function FounderMetricsPage() {
           <Skeleton className="h-9 w-32" />
           <Skeleton className="h-5 w-64 mt-2" />
         </div>
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
             <Card key={i}>
               <CardContent className="pt-6">
@@ -114,7 +119,7 @@ export default function FounderMetricsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Metrics</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Metrics</h1>
         <p className="text-muted-foreground mt-1">
           Track your key performance indicators
           {isMock && <Badge variant="outline" className="ml-2 text-xs">Demo Mode</Badge>}
@@ -141,7 +146,7 @@ export default function FounderMetricsPage() {
       ) : (
         <>
           {/* Key Metrics */}
-          <div className="grid md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {metrics.mrr && (
               <Card>
                 <CardContent className="pt-6">
@@ -150,7 +155,7 @@ export default function FounderMetricsPage() {
                     <span className="text-sm text-muted-foreground">MRR</span>
                   </div>
                   <p className="text-2xl font-bold mt-1">${metrics.mrr.value.toLocaleString()}</p>
-                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.mrr.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.mrr.trend === 'up' ? 'text-success' : 'text-destructive'}`}>
                     {metrics.mrr.trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {metrics.mrr.change > 0 ? '+' : ''}{metrics.mrr.change}% this month
                   </div>
@@ -166,7 +171,7 @@ export default function FounderMetricsPage() {
                     <span className="text-sm text-muted-foreground">Active Users</span>
                   </div>
                   <p className="text-2xl font-bold mt-1">{metrics.activeUsers.value.toLocaleString()}</p>
-                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.activeUsers.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.activeUsers.trend === 'up' ? 'text-success' : 'text-destructive'}`}>
                     {metrics.activeUsers.trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {metrics.activeUsers.change > 0 ? '+' : ''}{metrics.activeUsers.change}% this week
                   </div>
@@ -182,7 +187,7 @@ export default function FounderMetricsPage() {
                     <span className="text-sm text-muted-foreground">Retention</span>
                   </div>
                   <p className="text-2xl font-bold mt-1">{metrics.retention.value}%</p>
-                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.retention.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.retention.trend === 'up' ? 'text-success' : 'text-destructive'}`}>
                     {metrics.retention.trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {metrics.retention.change > 0 ? '+' : ''}{metrics.retention.change}% this month
                   </div>
@@ -198,7 +203,7 @@ export default function FounderMetricsPage() {
                     <span className="text-sm text-muted-foreground">NPS</span>
                   </div>
                   <p className="text-2xl font-bold mt-1">{metrics.nps.value}</p>
-                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.nps.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className={`text-xs flex items-center gap-1 mt-1 ${metrics.nps.trend === 'up' ? 'text-success' : 'text-destructive'}`}>
                     {metrics.nps.trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {metrics.nps.change > 0 ? '+' : ''}{metrics.nps.change} points
                   </div>
@@ -217,7 +222,7 @@ export default function FounderMetricsPage() {
               <CardContent>
                 <div className="space-y-4">
                   {metrics.mrr && (
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 rounded-lg bg-muted/50">
                       <span className="font-medium">MRR</span>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
@@ -236,7 +241,7 @@ export default function FounderMetricsPage() {
                   )}
 
                   {metrics.activeUsers && (
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 rounded-lg bg-muted/50">
                       <span className="font-medium">Active Users</span>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
@@ -255,7 +260,7 @@ export default function FounderMetricsPage() {
                   )}
 
                   {metrics.retention && (
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 rounded-lg bg-muted/50">
                       <span className="font-medium">Retention</span>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
@@ -274,7 +279,7 @@ export default function FounderMetricsPage() {
                   )}
 
                   {metrics.nps && (
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 rounded-lg bg-muted/50">
                       <span className="font-medium">NPS Score</span>
                       <div className="flex items-center gap-4">
                         <div className="text-right">

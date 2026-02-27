@@ -1,10 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Loader2, Users, Lightbulb, Target, Zap, Info } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -12,18 +7,21 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Slider } from '@/components/ui/slider'
-import {
+  Button,
+  Input,
+  Label,
+  Slider,
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
+  cn,
+} from '@sanctuary/ui'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Loader2, Users, Lightbulb, Target, Zap, Info } from 'lucide-react'
 import type { Startup } from '@/types'
 import { calculateOverallScore, calculateRiskLevel } from '@/types'
 
@@ -110,17 +108,17 @@ function ScoreSlider({ name, value, onChange, error }: ScoreSliderProps) {
   const Icon = info.icon
 
   const getScoreColor = (v: number) => {
-    if (v >= 75) return 'text-green-600'
-    if (v >= 50) return 'text-blue-600'
-    if (v >= 25) return 'text-yellow-600'
-    return 'text-red-600'
+    if (v >= 75) return 'text-success'
+    if (v >= 50) return 'text-info'
+    if (v >= 25) return 'text-warning'
+    return 'text-destructive'
   }
 
   const getSliderColor = (v: number) => {
-    if (v >= 75) return '[&>span:first-child]:bg-green-500'
-    if (v >= 50) return '[&>span:first-child]:bg-blue-500'
-    if (v >= 25) return '[&>span:first-child]:bg-yellow-500'
-    return '[&>span:first-child]:bg-red-500'
+    if (v >= 75) return '[&>span:first-child]:bg-success'
+    if (v >= 50) return '[&>span:first-child]:bg-info'
+    if (v >= 25) return '[&>span:first-child]:bg-warning'
+    return '[&>span:first-child]:bg-destructive'
   }
 
   return (
@@ -216,11 +214,11 @@ export function ScoreInputModal({
   const riskLevel = calculateRiskLevel(calculatedOverall)
 
   const getOverallColor = (score: number | null) => {
-    if (score === null) return 'text-gray-500'
-    if (score >= 75) return 'text-green-600 bg-green-50 border-green-200'
-    if (score >= 50) return 'text-blue-600 bg-blue-50 border-blue-200'
-    if (score >= 25) return 'text-yellow-600 bg-yellow-50 border-yellow-200'
-    return 'text-red-600 bg-red-50 border-red-200'
+    if (score === null) return 'text-muted-foreground'
+    if (score >= 75) return 'text-success bg-success/10 border-success/30'
+    if (score >= 50) return 'text-info bg-info/10 border-info/30'
+    if (score >= 25) return 'text-warning bg-warning/10 border-warning/30'
+    return 'text-destructive bg-destructive/10 border-destructive/30'
   }
 
   const onSubmit = async (data: ScoreFormData) => {

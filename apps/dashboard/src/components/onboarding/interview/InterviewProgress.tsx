@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@sanctuary/ui'
 import { INTERVIEW_SECTIONS } from '@/types'
 import type { InterviewSection } from '@/types'
 import { Check } from 'lucide-react'

@@ -1,5 +1,16 @@
 'use client'
 
+import {
+  Button,
+  Input,
+  Label,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Separator,
+} from '@sanctuary/ui'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -7,11 +18,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { signIn, signInWithOAuth, getUserProfile } from '@/lib/supabase/auth'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 import { AlertCircle, Loader2 } from 'lucide-react'
 
 const loginSchema = z.object({

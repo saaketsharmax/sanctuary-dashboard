@@ -1,8 +1,10 @@
 'use client'
-
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
+import {
+  Card,
+  CardContent,
+  Badge,
+  Progress,
+} from '@sanctuary/ui'
 
 interface DDScoreHeaderProps {
   grade: string
@@ -15,11 +17,11 @@ interface DDScoreHeaderProps {
 }
 
 const gradeColors: Record<string, string> = {
-  A: 'bg-green-500 text-white',
-  B: 'bg-blue-500 text-white',
-  C: 'bg-yellow-500 text-white',
-  D: 'bg-orange-500 text-white',
-  F: 'bg-red-500 text-white',
+  A: 'bg-success text-white',
+  B: 'bg-info text-white',
+  C: 'bg-warning text-white',
+  D: 'bg-warning text-white',
+  F: 'bg-destructive text-white',
 }
 
 export function DDScoreHeader({
@@ -69,11 +71,11 @@ export function DDScoreHeader({
               <p className="text-xs text-muted-foreground">Total Claims</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-semibold text-green-600">{confirmedClaims}</p>
+              <p className="text-2xl font-semibold text-success">{confirmedClaims}</p>
               <p className="text-xs text-muted-foreground">Confirmed</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-semibold text-red-600">{refutedClaims}</p>
+              <p className="text-2xl font-semibold text-destructive">{refutedClaims}</p>
               <p className="text-xs text-muted-foreground">Refuted</p>
             </div>
             {redFlagCount > 0 && (

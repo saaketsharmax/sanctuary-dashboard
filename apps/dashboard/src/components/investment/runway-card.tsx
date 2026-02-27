@@ -1,9 +1,7 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, cn } from '@sanctuary/ui'
 import { formatInvestmentCurrency } from '@/types'
-import { cn } from '@/lib/utils'
-
 interface RunwayCardProps {
   cashRemaining: number
   monthlyBurnRate: number
@@ -13,10 +11,10 @@ interface RunwayCardProps {
 export function RunwayCard({ cashRemaining, monthlyBurnRate, runwayMonths }: RunwayCardProps) {
   const runwayColor =
     runwayMonths > 6
-      ? 'text-green-600 dark:text-green-400'
+      ? 'text-success'
       : runwayMonths >= 3
-        ? 'text-yellow-600 dark:text-yellow-400'
-        : 'text-red-600 dark:text-red-400'
+        ? 'text-warning'
+        : 'text-destructive'
 
   return (
     <Card>

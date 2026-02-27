@@ -1,17 +1,21 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+  Button,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+  Toaster,
+} from '@sanctuary/ui'
+import { useEffect, useState, useCallback } from 'react'
 import { BalanceCard } from '@/components/investment'
 import {
   formatInvestmentCurrency,
@@ -20,14 +24,13 @@ import {
 } from '@/types'
 import { DollarSign, CreditCard, Clock, TrendingUp, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Toaster } from '@/components/ui/sonner'
 import { useInvestmentRealtime } from '@/hooks/use-investment-realtime'
 import Link from 'next/link'
 
 const statusColors: Record<string, string> = {
-  active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  frozen: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-  closed: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
+  active: 'bg-success/15 text-success',
+  frozen: 'bg-warning/15 text-warning',
+  closed: 'bg-muted text-foreground',
 }
 
 export default function PartnerInvestmentsPage() {
@@ -103,7 +106,7 @@ export default function PartnerInvestmentsPage() {
   if (!summary || summary.totalInvestments === 0) {
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Investments</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Investments</h1>
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-8">
@@ -122,12 +125,12 @@ export default function PartnerInvestmentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Investments</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Investments</h1>
         <p className="text-muted-foreground mt-1">Portfolio investment tracker</p>
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -142,14 +145,14 @@ export default function PartnerInvestmentsPage() {
           totalCents={summary.totalInvestments * 5000000}
           usedCents={summary.totalCashDeployed}
           pendingCents={0}
-          colorClass="text-green-600 dark:text-green-400"
+          colorClass="text-success"
         />
         <BalanceCard
           label="Credits Used"
           totalCents={summary.totalInvestments * 5000000}
           usedCents={summary.totalCreditsUsed}
           pendingCents={0}
-          colorClass="text-blue-600 dark:text-blue-400"
+          colorClass="text-info"
         />
         <Card>
           <CardContent className="pt-6">
@@ -174,8 +177,8 @@ export default function PartnerInvestmentsPage() {
           <CardContent>
             <div className="space-y-3">
               {pendingTxns.map((txn) => (
-                <div key={txn.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
+                <div key={txn.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 border rounded-lg">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="font-medium">{txn.title}</p>
                       <Badge variant="outline">
@@ -211,6 +214,7 @@ export default function PartnerInvestmentsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -227,7 +231,7 @@ export default function PartnerInvestmentsPage() {
                   <TableCell className="font-medium">{inv.companyName}</TableCell>
                   <TableCell className="text-right font-mono">
                     <div>
-                      <span className="text-green-600 dark:text-green-400">
+                      <span className="text-success">
                         {formatInvestmentCurrency(inv.cashRemaining)}
                       </span>
                       <span className="text-xs text-muted-foreground ml-1">
@@ -237,7 +241,7 @@ export default function PartnerInvestmentsPage() {
                   </TableCell>
                   <TableCell className="text-right font-mono">
                     <div>
-                      <span className="text-blue-600 dark:text-blue-400">
+                      <span className="text-info">
                         {formatInvestmentCurrency(inv.creditsRemaining)}
                       </span>
                       <span className="text-xs text-muted-foreground ml-1">
@@ -259,6 +263,7 @@ export default function PartnerInvestmentsPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

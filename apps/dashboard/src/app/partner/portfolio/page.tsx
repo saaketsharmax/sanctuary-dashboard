@@ -1,11 +1,15 @@
 'use client'
 
+import {
+  Button,
+  Card,
+  CardContent,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from '@sanctuary/ui'
 import { useState } from 'react'
 import { LayoutGrid, List, Briefcase } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-
 type ViewMode = 'grid' | 'list'
 
 export default function PartnerPortfolioPage() {
@@ -18,13 +22,13 @@ export default function PartnerPortfolioPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Portfolio</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Portfolio</h1>
           <p className="text-muted-foreground mt-1">Manage your startup portfolio</p>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <div className="rounded-lg border bg-card p-4">
           <p className="text-sm text-muted-foreground">Total Startups</p>
           <p className="text-2xl font-bold">0</p>

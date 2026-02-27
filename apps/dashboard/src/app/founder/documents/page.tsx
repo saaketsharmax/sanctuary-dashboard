@@ -1,14 +1,19 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Button,
+  Badge,
+  Skeleton,
+  Toaster,
+} from '@sanctuary/ui'
 import { FileText, Upload, Download, Eye, Trash2, Share2, Loader2 } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
-import { Toaster } from '@/components/ui/sonner'
-
 interface Document {
   id: string
   name: string
@@ -23,11 +28,11 @@ interface Document {
 }
 
 const documentTypes: Record<string, { label: string; color: string }> = {
-  pitch_deck: { label: 'Pitch Deck', color: 'bg-blue-100 text-blue-700' },
-  financials: { label: 'Financials', color: 'bg-green-100 text-green-700' },
+  pitch_deck: { label: 'Pitch Deck', color: 'bg-info/15 text-info' },
+  financials: { label: 'Financials', color: 'bg-success/15 text-success' },
   legal: { label: 'Legal', color: 'bg-purple-100 text-purple-700' },
-  product: { label: 'Product', color: 'bg-orange-100 text-orange-700' },
-  other: { label: 'Other', color: 'bg-gray-100 text-gray-700' },
+  product: { label: 'Product', color: 'bg-warning/15 text-warning' },
+  other: { label: 'Other', color: 'bg-muted text-foreground' },
 }
 
 export default function DocumentsPage() {
@@ -128,7 +133,7 @@ export default function DocumentsPage() {
           </div>
           <Skeleton className="h-10 w-40" />
         </div>
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
             <Card key={i}>
               <CardContent className="pt-6">
@@ -155,9 +160,9 @@ export default function DocumentsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Documents</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Documents</h1>
           <p className="text-muted-foreground mt-1">
             Upload and manage your startup documents
             {isMock && <Badge variant="outline" className="ml-2 text-xs">Demo Mode</Badge>}
@@ -183,7 +188,7 @@ export default function DocumentsPage() {
       </div>
 
       {/* Document Categories */}
-      <div className="grid md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {Object.entries(documentTypes).map(([key, { label, color }]) => {
           const count = documents.filter(d => d.type === key).length
           return (
@@ -220,7 +225,7 @@ export default function DocumentsPage() {
                 return (
                   <div
                     key={doc.id}
-                    className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors"
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-lg border hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">

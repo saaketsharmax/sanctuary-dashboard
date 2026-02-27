@@ -1,7 +1,13 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+  cn,
+} from '@sanctuary/ui'
 import {
   CheckCircle2,
   AlertTriangle,
@@ -11,7 +17,6 @@ import {
   Calendar,
   Shield,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import type { Assessment, AssessmentStrength, AssessmentRisk } from '@/types'
 
 interface AssessmentAnalysisProps {
@@ -22,11 +27,11 @@ function StrengthCard({ strength }: { strength: AssessmentStrength }) {
   return (
     <div className="border rounded-lg p-4 space-y-2">
       <div className="flex items-start gap-2">
-        <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+        <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
         <div className="space-y-1">
           <h4 className="font-medium text-sm">{strength.strength}</h4>
           <p className="text-xs text-muted-foreground italic">"{strength.evidence}"</p>
-          <p className="text-xs text-green-700">{strength.impact}</p>
+          <p className="text-xs text-success">{strength.impact}</p>
         </div>
       </div>
     </div>
@@ -35,16 +40,16 @@ function StrengthCard({ strength }: { strength: AssessmentStrength }) {
 
 function RiskCard({ risk }: { risk: AssessmentRisk }) {
   const severityColors = {
-    low: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    medium: 'bg-orange-100 text-orange-700 border-orange-200',
-    high: 'bg-red-100 text-red-700 border-red-200',
-    critical: 'bg-red-200 text-red-800 border-red-300',
+    low: 'bg-warning/15 text-warning border-warning/30',
+    medium: 'bg-warning/15 text-warning border-warning/30',
+    high: 'bg-destructive/15 text-destructive border-destructive/30',
+    critical: 'bg-destructive/20 text-destructive border-destructive/40',
   }
 
   return (
     <div className="border rounded-lg p-4 space-y-2">
       <div className="flex items-start gap-2">
-        <AlertTriangle className="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
+        <AlertTriangle className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
         <div className="space-y-2 flex-1">
           <div className="flex items-center justify-between gap-2">
             <h4 className="font-medium text-sm">{risk.risk}</h4>
@@ -54,8 +59,8 @@ function RiskCard({ risk }: { risk: AssessmentRisk }) {
           </div>
           <p className="text-xs text-muted-foreground italic">"{risk.evidence}"</p>
           <div className="flex items-start gap-1 text-xs">
-            <Shield className="h-3 w-3 mt-0.5 text-blue-600" />
-            <span className="text-blue-700">{risk.mitigation}</span>
+            <Shield className="h-3 w-3 mt-0.5 text-info" />
+            <span className="text-info">{risk.mitigation}</span>
           </div>
         </div>
       </div>
@@ -70,7 +75,7 @@ export function AssessmentAnalysis({ assessment }: AssessmentAnalysisProps) {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <CheckCircle2 className="h-4 w-4 text-success" />
               Key Strengths ({assessment.keyStrengths.length})
             </CardTitle>
           </CardHeader>
@@ -86,7 +91,7 @@ export function AssessmentAnalysis({ assessment }: AssessmentAnalysisProps) {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-orange-600" />
+              <AlertTriangle className="h-4 w-4 text-warning" />
               Key Risks ({assessment.keyRisks.length})
             </CardTitle>
           </CardHeader>
@@ -102,7 +107,7 @@ export function AssessmentAnalysis({ assessment }: AssessmentAnalysisProps) {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <HelpCircle className="h-4 w-4 text-blue-600" />
+              <HelpCircle className="h-4 w-4 text-info" />
               Critical Questions
             </CardTitle>
           </CardHeader>

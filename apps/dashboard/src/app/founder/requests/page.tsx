@@ -1,19 +1,34 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Button,
+  Badge,
+  Skeleton,
+  Input,
+  Label,
+  Textarea,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Toaster,
+} from '@sanctuary/ui'
 import { Plus, MessageSquare, Users, Lightbulb, HelpCircle, Loader2, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { Toaster } from '@/components/ui/sonner'
-
 interface Request {
   id: string
   type: string
@@ -29,21 +44,21 @@ interface Request {
 }
 
 const requestTypes: Record<string, { label: string; icon: any; color: string; description: string }> = {
-  mentor: { label: 'Mentor Request', icon: Users, color: 'bg-blue-100 text-blue-700', description: 'Request a mentor match' },
+  mentor: { label: 'Mentor Request', icon: Users, color: 'bg-info/15 text-info', description: 'Request a mentor match' },
   intro: { label: 'Introduction', icon: Users, color: 'bg-indigo-100 text-indigo-700', description: 'Request an introduction' },
   feature: { label: 'Feature Request', icon: Lightbulb, color: 'bg-purple-100 text-purple-700', description: 'Suggest a new feature' },
-  feedback: { label: 'Feedback', icon: MessageSquare, color: 'bg-green-100 text-green-700', description: 'Request feedback' },
-  other: { label: 'Other', icon: HelpCircle, color: 'bg-gray-100 text-gray-700', description: 'Other requests' },
+  feedback: { label: 'Feedback', icon: MessageSquare, color: 'bg-success/15 text-success', description: 'Request feedback' },
+  other: { label: 'Other', icon: HelpCircle, color: 'bg-muted text-foreground', description: 'Other requests' },
 }
 
 const statusColors: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-700',
-  in_progress: 'bg-blue-100 text-blue-700',
-  in_review: 'bg-blue-100 text-blue-700',
-  approved: 'bg-green-100 text-green-700',
-  completed: 'bg-green-100 text-green-700',
-  declined: 'bg-red-100 text-red-700',
-  cancelled: 'bg-gray-100 text-gray-700',
+  pending: 'bg-warning/15 text-warning',
+  in_progress: 'bg-info/15 text-info',
+  in_review: 'bg-info/15 text-info',
+  approved: 'bg-success/15 text-success',
+  completed: 'bg-success/15 text-success',
+  declined: 'bg-destructive/15 text-destructive',
+  cancelled: 'bg-muted text-foreground',
 }
 
 export default function RequestsPage() {
@@ -152,7 +167,7 @@ export default function RequestsPage() {
           </div>
           <Skeleton className="h-10 w-32" />
         </div>
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
             <Card key={i}>
               <CardContent className="pt-6">
@@ -179,9 +194,9 @@ export default function RequestsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Requests</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Requests</h1>
           <p className="text-muted-foreground mt-1">
             Request mentors, features, or support
             {isMock && <Badge variant="outline" className="ml-2 text-xs">Demo Mode</Badge>}
@@ -268,7 +283,7 @@ export default function RequestsPage() {
       </div>
 
       {/* Request Type Cards */}
-      <div className="grid md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {Object.entries(requestTypes).map(([key, { label, icon: Icon, description }]) => (
           <Card
             key={key}
@@ -310,7 +325,7 @@ export default function RequestsPage() {
                 return (
                   <div
                     key={request.id}
-                    className="flex items-center justify-between p-4 rounded-lg border"
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-lg border"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
@@ -331,7 +346,7 @@ export default function RequestsPage() {
                           <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{request.description}</p>
                         )}
                         {request.resolutionNotes && (
-                          <p className="text-sm text-green-600 mt-2">Resolution: {request.resolutionNotes}</p>
+                          <p className="text-sm text-success mt-2">Resolution: {request.resolutionNotes}</p>
                         )}
                       </div>
                     </div>

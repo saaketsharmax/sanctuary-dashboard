@@ -1,12 +1,20 @@
 'use client'
 
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Toaster,
+} from '@sanctuary/ui'
 import { use, useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Loader2, RefreshCw, Shield, ShieldCheck } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Toaster } from '@/components/ui/sonner'
+import { ArrowLeft, Loader2, RefreshCw, Shield, ShieldCheck, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   DDScoreHeader,
@@ -16,8 +24,12 @@ import {
   DDRecommendationBanner,
   DDFollowUpQuestions,
   DDOmissions,
+  DDTeamAssessment,
+  DDMarketAssessment,
+  DDGodMode,
 } from '@/components/dd'
 import type { DueDiligenceReport, DDClaim } from '@/lib/ai/types/due-diligence'
+import type { GodModeDDReport } from '@/lib/ai/types/god-mode-dd'
 
 interface DDPageProps {
   params: Promise<{ id: string }>
@@ -48,6 +60,10 @@ export default function DDPage({ params }: DDPageProps) {
   const [report, setReport] = useState<DueDiligenceReport | null>(null)
   const [claims, setClaims] = useState<DDClaim[]>([])
   const [companyName, setCompanyName] = useState('')
+
+  // God Mode state
+  const [godModeReport, setGodModeReport] = useState<GodModeDDReport | null>(null)
+  const [runningGodMode, setRunningGodMode] = useState(false)
 
   // Category filter
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
@@ -105,6 +121,40 @@ export default function DDPage({ params }: DDPageProps) {
     }
   }
 
+  // Fetch God Mode report
+  const fetchGodMode = async () => {
+    try {
+      const res = await fetch(`/api/applications/${id}/dd/god-mode`)
+      const data = await res.json()
+      if (data.godModeReport) {
+        setGodModeReport(data.godModeReport)
+      }
+    } catch (error) {
+      console.error('Failed to fetch God Mode report:', error)
+    }
+  }
+
+  // Run God Mode analysis
+  const handleRunGodMode = async () => {
+    setRunningGodMode(true)
+    try {
+      const res = await fetch(`/api/applications/${id}/dd/god-mode`, {
+        method: 'POST',
+      })
+      const data = await res.json()
+      if (data.godModeReport) {
+        setGodModeReport(data.godModeReport)
+        toast.success(`God Mode complete — Score: ${data.godModeReport.godModeScore}/100`)
+      } else {
+        toast.error(data.error || 'God Mode analysis failed')
+      }
+    } catch (error) {
+      toast.error('Failed to run God Mode analysis')
+    } finally {
+      setRunningGodMode(false)
+    }
+  }
+
   // Initial load
   useEffect(() => {
     const load = async () => {
@@ -115,11 +165,12 @@ export default function DDPage({ params }: DDPageProps) {
     load()
   }, [id])
 
-  // Load report + claims when DD is completed
+  // Load report + claims + god mode when DD is completed
   useEffect(() => {
     if (ddStatus?.ddStatus === 'completed') {
       fetchReport()
       fetchClaims()
+      fetchGodMode()
     }
   }, [ddStatus?.ddStatus])
 
@@ -203,9 +254,9 @@ export default function DDPage({ params }: DDPageProps) {
       </Link>
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
             <Shield className="h-6 w-6" />
             Due Diligence {companyName && `— ${companyName}`}
           </h1>
@@ -215,7 +266,7 @@ export default function DDPage({ params }: DDPageProps) {
             </p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {isCompleted && (
             <Button
               variant="outline"
@@ -276,14 +327,28 @@ export default function DDPage({ params }: DDPageProps) {
       {/* Completed state */}
       {isCompleted && report && (
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList>
+          <TabsList className="flex-wrap h-auto gap-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            {report.teamAssessment && (
+              <TabsTrigger value="team">
+                Team ({report.teamAssessment.teamGrade})
+              </TabsTrigger>
+            )}
+            {report.marketAssessment && (
+              <TabsTrigger value="market">
+                Market ({report.marketAssessment.marketGrade})
+              </TabsTrigger>
+            )}
             <TabsTrigger value="claims">Claims ({claims.length})</TabsTrigger>
             <TabsTrigger value="redflags">
               Red Flags ({report.redFlags?.length || 0})
             </TabsTrigger>
             <TabsTrigger value="followup">
               Follow-up ({report.followUpQuestions?.length || 0})
+            </TabsTrigger>
+            <TabsTrigger value="godmode" className="gap-1">
+              <Sparkles className="h-3.5 w-3.5" />
+              God Mode {godModeReport && `(${godModeReport.godModeScore})`}
             </TabsTrigger>
           </TabsList>
 
@@ -342,6 +407,20 @@ export default function DDPage({ params }: DDPageProps) {
               <DDOmissions omissions={report.omissions} />
             )}
           </TabsContent>
+
+          {/* Team Tab */}
+          {report.teamAssessment && (
+            <TabsContent value="team" className="space-y-6">
+              <DDTeamAssessment assessment={report.teamAssessment} />
+            </TabsContent>
+          )}
+
+          {/* Market Tab */}
+          {report.marketAssessment && (
+            <TabsContent value="market" className="space-y-6">
+              <DDMarketAssessment assessment={report.marketAssessment} />
+            </TabsContent>
+          )}
 
           {/* Claims Tab */}
           <TabsContent value="claims" className="space-y-4">
@@ -405,6 +484,42 @@ export default function DDPage({ params }: DDPageProps) {
               <Card>
                 <CardContent className="py-8 text-center text-sm text-muted-foreground">
                   No follow-up questions generated.
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* God Mode Tab */}
+          <TabsContent value="godmode" className="space-y-6">
+            {godModeReport ? (
+              <DDGodMode report={godModeReport} />
+            ) : (
+              <Card>
+                <CardContent className="py-12 flex flex-col items-center justify-center gap-4">
+                  {runningGodMode ? (
+                    <>
+                      <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+                      <p className="text-muted-foreground">Running God Mode analysis...</p>
+                      <p className="text-xs text-muted-foreground">
+                        Behavioral forensics, signal consistency, contrarian detection, pattern matching
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-12 w-12 text-purple-400" />
+                      <div className="text-center">
+                        <h3 className="font-semibold">God Mode Analysis</h3>
+                        <p className="text-sm text-muted-foreground mt-1 max-w-md">
+                          Go beyond traditional DD. Analyze behavioral patterns, find contrarian signals,
+                          project moat durability, and uncover what everyone else misses.
+                        </p>
+                      </div>
+                      <Button onClick={handleRunGodMode} className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Run God Mode
+                      </Button>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             )}

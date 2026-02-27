@@ -1,9 +1,8 @@
 'use client'
 
+import { cn } from '@sanctuary/ui'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
-
 const tabs = [
   { label: 'Cash Investment', href: '/founder/investment/cash' },
   { label: 'Service Credits', href: '/founder/investment/credits' },

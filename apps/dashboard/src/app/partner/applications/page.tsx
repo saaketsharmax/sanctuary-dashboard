@@ -1,10 +1,16 @@
 'use client'
 
+import {
+  Card,
+  CardContent,
+  Button,
+  Badge,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@sanctuary/ui'
 import { useEffect, useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Eye, Loader2, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 
@@ -30,14 +36,14 @@ interface Application {
 }
 
 const statusColors: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-700',
-  submitted: 'bg-blue-100 text-blue-700',
+  draft: 'bg-muted text-foreground',
+  submitted: 'bg-info/15 text-info',
   interview_scheduled: 'bg-purple-100 text-purple-700',
   interview_completed: 'bg-indigo-100 text-indigo-700',
-  assessment_generated: 'bg-yellow-100 text-yellow-700',
-  under_review: 'bg-orange-100 text-orange-700',
-  approved: 'bg-green-100 text-green-700',
-  rejected: 'bg-red-100 text-red-700',
+  assessment_generated: 'bg-warning/15 text-warning',
+  under_review: 'bg-warning/15 text-warning',
+  approved: 'bg-success/15 text-success',
+  rejected: 'bg-destructive/15 text-destructive',
 }
 
 export default function ApplicationsPage() {
@@ -87,9 +93,9 @@ export default function ApplicationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Applications</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Applications</h1>
           <p className="text-muted-foreground mt-1">
             Review founder applications
             {isMock && <Badge variant="outline" className="ml-2">Demo Mode</Badge>}
@@ -151,11 +157,11 @@ function ApplicationList({ applications }: { applications: Application[] }) {
       {applications.map((app) => (
         <Card key={app.id}>
           <CardContent className="py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                   <h3 className="font-semibold">{app.companyName}</h3>
-                  <Badge className={statusColors[app.status] || 'bg-gray-100 text-gray-700'}>
+                  <Badge className={statusColors[app.status] || 'bg-muted text-foreground'}>
                     {app.status.replace(/_/g, ' ')}
                   </Badge>
                   {app.aiScore && (
@@ -165,7 +171,7 @@ function ApplicationList({ applications }: { applications: Application[] }) {
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">{app.companyOneLiner}</p>
-                <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs text-muted-foreground">
                   <span>Stage: {app.stage?.replace('_', ' ') || 'N/A'}</span>
                   <span>Users: {app.userCount || 0}</span>
                   <span>MRR: ${app.mrr || 0}</span>
@@ -175,7 +181,7 @@ function ApplicationList({ applications }: { applications: Application[] }) {
                       : 'Draft'}
                   </span>
                   {app.interviewCompletedAt && (
-                    <span className="text-green-600">Interview Done</span>
+                    <span className="text-success">Interview Done</span>
                   )}
                 </div>
               </div>
