@@ -172,7 +172,7 @@ export function DDAccuracyDashboard({ period = 'monthly' }: DDAccuracyDashboardP
                 <CardTitle className="text-sm">Partner Override Patterns</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {metrics?.partnerOverrides.dimensionOverrides.map((dim) => (
+                {metrics?.partnerOverrides?.dimensionOverrides?.map((dim) => (
                   <div key={dim.dimension} className="space-y-1">
                     <div className="flex justify-between text-sm">
                       <span className="capitalize">{dim.dimension}</span>
@@ -208,7 +208,7 @@ export function DDAccuracyDashboard({ period = 'monthly' }: DDAccuracyDashboardP
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-5 gap-2">
-                {metrics?.confidenceCalibration.map((bucket) => (
+                {metrics?.confidenceCalibration?.map((bucket) => (
                   <div key={bucket.bucket} className="text-center p-3 bg-muted/50 rounded-lg">
                     <p className="text-xs text-muted-foreground">{bucket.bucket}</p>
                     <p className="text-lg font-bold">{bucket.actualAccuracy}%</p>

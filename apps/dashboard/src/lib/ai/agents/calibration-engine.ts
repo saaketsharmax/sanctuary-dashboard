@@ -500,9 +500,14 @@ export class CalibrationEngine {
         ],
       });
 
-      const text = response.content[0].type === 'text' ? response.content[0].text : '[]';
+      const text = response.content?.[0]?.type === 'text' ? response.content[0].text : '[]';
       const jsonMatch = text.match(/\[[\s\S]*\]/);
-      return jsonMatch ? JSON.parse(jsonMatch[0]) : this.generateDeterministicRecommendations(data);
+      if (!jsonMatch) return this.generateDeterministicRecommendations(data);
+      try {
+        return JSON.parse(jsonMatch[0]);
+      } catch {
+        return this.generateDeterministicRecommendations(data);
+      }
     } catch {
       return this.generateDeterministicRecommendations(data);
     }

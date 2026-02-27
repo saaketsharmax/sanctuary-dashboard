@@ -45,9 +45,15 @@ export class ProgrammeAgent {
       ],
     });
 
-    const text = response.content[0].type === 'text' ? response.content[0].text : '';
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+    const text = response.content?.[0]?.type === 'text' ? response.content[0].text : '';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let parsed: any = {};
+    try {
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
+    } catch {
+      console.error('Programme agent: failed to parse response JSON');
+    }
 
     // Post-process: fill in computed fields
     const startDate = new Date();
@@ -61,7 +67,7 @@ export class ProgrammeAgent {
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
       currentWeek: 1,
-      phases: parsed.phases || [],
+      phases: Array.isArray(parsed.phases) ? parsed.phases : [],
       overallProgress: 0,
       riskLevel: this.assessRisk(input),
       nextMilestone: this.findNextMilestone(parsed.phases || []),
@@ -73,7 +79,8 @@ export class ProgrammeAgent {
 
     // Ensure milestone IDs and dates
     let milestoneIdx = 0;
-    for (const phase of programme.phases) {
+    for (const phase of programme.phases || []) {
+      if (!phase.milestones) phase.milestones = [];
       for (const milestone of phase.milestones) {
         if (!milestone.id) milestone.id = `ms-${++milestoneIdx}`;
         if (!milestone.status) milestone.status = 'upcoming';
