@@ -256,21 +256,21 @@ export default function EventsPage() {
   const upcomingEvents = filteredEvents.filter((e) => !isToday(parseISO(e.date)))
 
   return (
-    <div className="min-h-screen bg-[#faf9f6]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/" className="text-gray-500 hover:text-gray-700">
+              <Link href="/" className="text-muted-foreground hover:text-foreground lg:hidden">
                 <ChevronLeft className="h-5 w-5" />
               </Link>
               <h1 className="text-2xl font-bold newspaper-masthead tracking-wider">EVENTS</h1>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-sanctuary-navy text-white rounded-lg hover:bg-opacity-90 transition-colors">
+            <Link href="/events/create" className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
               <Plus className="h-4 w-4" />
               <span>Host Event</span>
-            </button>
+            </Link>
           </div>
         </div>
       </header>
