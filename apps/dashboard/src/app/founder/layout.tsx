@@ -157,12 +157,6 @@ export default function FounderLayout({ children }: { children: React.ReactNode 
     }
   }
 
-  // Dashboard page uses its own full-screen OS layout — skip the sidebar
-  const isDashboard = pathname === '/founder/dashboard'
-  if (isDashboard) {
-    return <>{children}</>
-  }
-
   const displayName = user?.name || 'Founder'
   const displayEmail = user?.email || ''
 
