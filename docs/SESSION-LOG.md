@@ -5,6 +5,83 @@
 
 ---
 
+## Session: 2026-02-27 (b) — Comprehensive Responsive Breakpoints
+
+### What Was Done
+
+Added responsive breakpoints targeting mobile (375px), tablet (768px), and desktop (1280px+) across the entire dashboard. No functionality changes -- only Tailwind CSS class additions.
+
+**Layout files (2 files):**
+- `founder/layout.tsx` + `partner/layout.tsx` -- added responsive sidebar with 3 states:
+  - **Mobile (<md):** sidebar hidden off-screen, fixed mobile header bar with hamburger menu, slide-out drawer with overlay backdrop
+  - **Tablet (md):** icon-only collapsed sidebar (w-16), labels hidden with `hidden lg:inline`
+  - **Desktop (lg+):** full sidebar with labels (w-64)
+- Added `Menu` and `X` icons from lucide-react, `mobileMenuOpen` state
+- Main content padding: `p-4 md:p-6 lg:p-8` with `pt-18 md:pt-6` for mobile header clearance
+- Nav links close mobile menu on click (`setMobileMenuOpen(false)`)
+
+**Page heading pattern (all pages):**
+- `text-3xl` -> `text-2xl md:text-3xl` on all page headings
+
+**Header row pattern (pages with header + button):**
+- `flex items-center justify-between` -> `flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4`
+- Applied to: company, documents, requests, applications, matches, DD, investments
+
+**Grid patterns updated:**
+- `grid-cols-5` -> `grid-cols-2 sm:grid-cols-3 md:grid-cols-5` (documents, requests, partner metrics)
+- `grid-cols-4` -> `grid-cols-1 sm:grid-cols-2 md:grid-cols-4` (metrics, documents skeleton, requests skeleton, portfolio, investments)
+- `grid-cols-3` -> `grid-cols-1 sm:grid-cols-2 md:grid-cols-3` (company)
+
+**List item stacking:**
+- Document rows, request items, application cards, investment pending requests: `flex-col sm:flex-row` with gap
+- Flex-wrap on metadata rows (tags, badges, stats)
+
+**Table overflow:**
+- Partner investments portfolio table wrapped in `<div className="overflow-x-auto">`
+
+**Tab lists:**
+- Application detail + DD page tabs: `flex-wrap h-auto gap-1` to prevent overflow on narrow screens
+
+**Files modified (18 total):**
+1. `src/app/founder/layout.tsx`
+2. `src/app/partner/layout.tsx`
+3. `src/app/founder/apply/page.tsx`
+4. `src/app/founder/company/page.tsx`
+5. `src/app/founder/metrics/page.tsx`
+6. `src/app/founder/documents/page.tsx`
+7. `src/app/founder/requests/page.tsx`
+8. `src/app/founder/investment/cash/page.tsx`
+9. `src/app/founder/investment/credits/page.tsx`
+10. `src/app/partner/applications/page.tsx`
+11. `src/app/partner/applications/[id]/page.tsx`
+12. `src/app/partner/applications/[id]/dd/page.tsx`
+13. `src/app/partner/metrics/page.tsx`
+14. `src/app/partner/matches/page.tsx`
+15. `src/app/partner/portfolio/page.tsx`
+16. `src/app/partner/investments/page.tsx`
+17. `src/app/auth/login/page.tsx` (no changes needed -- already responsive)
+18. `src/app/auth/signup/page.tsx` (no changes needed -- already responsive)
+
+### Build Status
+
+Clean build -- `npm run build:dashboard` passes with 0 errors, all 50 routes compile.
+
+### Current State
+
+- **Branch:** `design-merge`
+- **Build:** clean
+- **Auth pages:** already had responsive layout (centered card with max-w-md + p-4), no changes needed
+- **Dashboard pages (founder + partner):** use OS layout which bypasses sidebar entirely, no changes needed
+
+### What's Next
+
+1. Deploy migrations 009 + 012 to Supabase
+2. Re-apply design migration when ready
+3. Auth `gh` + create PR for `design-merge` -> `main`
+4. Community + Marketing apps
+
+---
+
 ## Session: 2026-02-25 (b) — Design System Migration (applied then reverted)
 
 ### What Was Done
@@ -1151,3 +1228,82 @@ docs/SANCTUARY-OS-LATEST.md
 5. **Calibration Engine** — use accuracy metrics + feedback to auto-adjust weights
 6. **Programme Agent** — milestone generation for accepted startups
 7. **Auth `gh` CLI** + create PR for all this work
+
+---
+
+## Session: 2026-02-27 (b) — God Mode Parallel Build
+
+### What Was Done
+
+**6 agents launched in parallel — all tasks completed:**
+
+1. **Design System Migration (re-applied):**
+   - Cherry-picked `b7a5248` (imports) + `d709418` (colors) with conflict resolution on 4 files
+   - Extended to 3 new files from overnight build (dd-accuracy-dashboard, dd-god-mode, partner [id]/page)
+   - 45+ remaining hardcoded color classes → semantic tokens across 6 files
+   - Deleted 24 duplicate `components/ui/` files + `lib/utils.ts`
+   - Commits: `3acb87c`, `dcf1354`, `63a5ce3`
+
+2. **Responsive Breakpoints (16 pages):**
+   - Three-tier sidebar: mobile drawer / tablet icon-only / desktop full
+   - Added `Menu`/`X` icons, mobile hamburger header, overlay backdrop
+   - Grid breakpoints, flex stacking, table overflow, tab wrapping across all pages
+   - Targets: 375px (mobile), 768px (tablet), 1280px+ (desktop)
+   - Commit: `ff9823b`
+
+3. **Community App (20 files, 3541 lines):**
+   - New pages: events/[id], events/create, mentors, mentors/[id], discussions, discussions/[id], announcements
+   - Components: Navigation sidebar, EventCard, MentorCard, DiscussionThread, SearchFilter
+   - Mock data: 6 mentors, 5 discussions, 5 announcements, events
+   - Build clean on port 3006
+   - Commit: `2f091a1`
+
+4. **Marketing Site (26 files, 2743 lines):**
+   - 9 pages: landing, about, programme, apply, partners, blog, blog/[slug], faq, contact
+   - 9 components: Hero (framer-motion), Navigation, Footer, FeatureCard, ProgrammePhase, FAQAccordion, BlogCard, ContactForm, SectionHeader
+   - OKLCH semantic tokens, scroll animations, mobile-first responsive
+   - Build clean on port 3007
+   - Commit: `81a62ae`
+
+5. **Supabase Migrations 009-012 Deployed:**
+   - 009: Fixed `applications_status_check` (added 'approved'/'rejected'), decision columns
+   - 010: Already applied remotely (DD phase 1 columns)
+   - 011: Outcome tracking columns, expanded `agent_runs` constraint
+   - 012: Decision flow — startups.application_id, RLS policies, expanded agent types
+   - Fixed naming conflict: added legacy `agent_type` names for backward compat
+   - Commit: `0b6ff58`
+
+6. **gh CLI + PR:**
+   - Installed `~/bin/gh` v2.67.0 (direct binary download, no Homebrew needed)
+   - Authenticated via PAT, token stored in macOS keyring
+   - Added `~/bin` to PATH in `~/.zshrc`
+   - Created PR #1: `design-merge` → `main`
+   - URL: https://github.com/saaketsharmax/sanctuary-dashboard/pull/1
+
+### Commits This Session (7 total)
+
+1. `3acb87c` — Cherry-pick: migrate dashboard UI imports to @sanctuary/ui
+2. `dcf1354` — Cherry-pick: convert hardcoded Tailwind colors to semantic tokens
+3. `63a5ce3` — Complete design system migration for new overnight files
+4. `0b6ff58` — Fix migration 012: legacy agent_type names for data compat
+5. `ff9823b` — Responsive breakpoints across 16 dashboard pages
+6. `2f091a1` — Community events hub app (20 files)
+7. `81a62ae` — Marketing public site (26 files)
+
+### Current State
+
+- **Branch:** `design-merge` at `81a62ae` (pushed)
+- **PR:** #1 open — `design-merge` → `main`
+- **All 3 builds:** clean (dashboard, community, marketing)
+- **Supabase:** migrations 009-012 all deployed
+- **gh CLI:** `~/bin/gh` authenticated as `saaketsharmax`, persistent
+- **Tests:** 59 passing (vitest)
+
+### What's Next
+
+1. **Merge PR #1** after review
+2. **Per-page restyling** with designer screenshots as input
+3. **Wire Eleven Labs voice** — WebSocket integration in interview page
+4. **Vercel deployment** — `vercel login` + deploy all 3 apps
+5. **Community + Marketing** — connect to Supabase for real data
+6. **E2E tests** — Playwright for critical flows
