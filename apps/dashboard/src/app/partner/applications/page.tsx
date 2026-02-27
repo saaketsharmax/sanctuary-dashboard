@@ -93,9 +93,9 @@ export default function ApplicationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Applications</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Applications</h1>
           <p className="text-muted-foreground mt-1">
             Review founder applications
             {isMock && <Badge variant="outline" className="ml-2">Demo Mode</Badge>}
@@ -157,9 +157,9 @@ function ApplicationList({ applications }: { applications: Application[] }) {
       {applications.map((app) => (
         <Card key={app.id}>
           <CardContent className="py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                   <h3 className="font-semibold">{app.companyName}</h3>
                   <Badge className={statusColors[app.status] || 'bg-muted text-foreground'}>
                     {app.status.replace(/_/g, ' ')}
@@ -171,7 +171,7 @@ function ApplicationList({ applications }: { applications: Application[] }) {
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">{app.companyOneLiner}</p>
-                <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs text-muted-foreground">
                   <span>Stage: {app.stage?.replace('_', ' ') || 'N/A'}</span>
                   <span>Users: {app.userCount || 0}</span>
                   <span>MRR: ${app.mrr || 0}</span>

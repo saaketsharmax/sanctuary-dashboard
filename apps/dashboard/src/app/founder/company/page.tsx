@@ -127,9 +127,9 @@ export default function CompanyPage() {
 
   return (
     <div className="space-y-8 max-w-4xl">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Company Profile</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Company Profile</h1>
           <p className="text-muted-foreground mt-1">
             Manage your company information
             {isMock && <Badge variant="outline" className="ml-2 text-xs">Demo Mode</Badge>}
@@ -199,7 +199,7 @@ export default function CompanyPage() {
             />
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="industry">Industry</Label>
               <Input

@@ -318,17 +318,17 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
       {/* Application Header */}
       <Card>
         <CardContent className="py-6">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
             <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold">{application.companyName}</h1>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <h1 className="text-xl sm:text-2xl font-bold">{application.companyName}</h1>
                 <Badge className={statusColors[application.status] || 'bg-muted text-foreground'}>
                   {application.status.replace(/_/g, ' ')}
                 </Badge>
                 {isMock && <Badge variant="outline">Demo Mode</Badge>}
               </div>
               <p className="text-muted-foreground mt-1">{application.companyOneLiner}</p>
-              <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-3 text-sm text-muted-foreground">
                 <span>Stage: {application.stage?.replace('_', ' ')}</span>
                 <span>Users: {application.userCount}</span>
                 <span>MRR: ${application.mrr}</span>
@@ -368,7 +368,7 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="interview">
             Interview {hasInterview && <Badge variant="secondary" className="ml-1">✓</Badge>}
@@ -545,7 +545,7 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
         {/* Assessment Tab */}
         <TabsContent value="assessment">
           {hasAssessment && application.aiAssessment ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>AI Scores</CardTitle>
@@ -896,7 +896,7 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
                 {/* Overall Agreement */}
                 <div className="space-y-2">
                   <Label>Do you agree with the AI assessment?</Label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {(['agree', 'partially_agree', 'disagree'] as const).map((val) => (
                       <Button
                         key={val}

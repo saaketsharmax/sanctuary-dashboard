@@ -84,9 +84,9 @@ export default function MatchesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Mentor Matches</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Mentor Matches</h1>
           <p className="text-muted-foreground mt-1">AI-powered mentor-startup matching</p>
         </div>
         <Button onClick={handleGenerateSuggestions} disabled={generating}>
@@ -239,8 +239,8 @@ function MatchCard({ match }: { match: MatchResult }) {
 
   return (
     <Card className="overflow-hidden">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
+      <CardContent className="p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
           <div className="flex items-start gap-4">
             {/* Avatar placeholder */}
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
@@ -271,7 +271,7 @@ function MatchCard({ match }: { match: MatchResult }) {
                   </Badge>
                 )}
               </div>
-              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs text-muted-foreground">
                 {candidate.location && (
                   <span className="flex items-center gap-1">
                     <MapPin className="h-3 w-3" />

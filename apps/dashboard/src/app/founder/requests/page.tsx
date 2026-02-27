@@ -167,7 +167,7 @@ export default function RequestsPage() {
           </div>
           <Skeleton className="h-10 w-32" />
         </div>
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
             <Card key={i}>
               <CardContent className="pt-6">
@@ -194,9 +194,9 @@ export default function RequestsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Requests</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Requests</h1>
           <p className="text-muted-foreground mt-1">
             Request mentors, features, or support
             {isMock && <Badge variant="outline" className="ml-2 text-xs">Demo Mode</Badge>}
@@ -283,7 +283,7 @@ export default function RequestsPage() {
       </div>
 
       {/* Request Type Cards */}
-      <div className="grid md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {Object.entries(requestTypes).map(([key, { label, icon: Icon, description }]) => (
           <Card
             key={key}
@@ -325,7 +325,7 @@ export default function RequestsPage() {
                 return (
                   <div
                     key={request.id}
-                    className="flex items-center justify-between p-4 rounded-lg border"
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-lg border"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">

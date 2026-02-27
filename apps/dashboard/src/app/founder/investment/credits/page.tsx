@@ -120,7 +120,7 @@ export default function CreditsInvestmentPage() {
   if (!investment) {
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Service Credits</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Service Credits</h1>
         <InvestmentSubNav />
         <Card>
           <CardContent className="pt-6">
@@ -151,7 +151,7 @@ export default function CreditsInvestmentPage() {
       )}
 
       <div>
-        <h1 className="text-3xl font-bold">Service Credits</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Service Credits</h1>
         <p className="text-muted-foreground mt-1">{investment.companyName}</p>
       </div>
 

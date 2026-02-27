@@ -89,7 +89,7 @@ export default function FounderMetricsPage() {
           <Skeleton className="h-9 w-32" />
           <Skeleton className="h-5 w-64 mt-2" />
         </div>
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
             <Card key={i}>
               <CardContent className="pt-6">
@@ -119,7 +119,7 @@ export default function FounderMetricsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Metrics</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Metrics</h1>
         <p className="text-muted-foreground mt-1">
           Track your key performance indicators
           {isMock && <Badge variant="outline" className="ml-2 text-xs">Demo Mode</Badge>}
@@ -146,7 +146,7 @@ export default function FounderMetricsPage() {
       ) : (
         <>
           {/* Key Metrics */}
-          <div className="grid md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {metrics.mrr && (
               <Card>
                 <CardContent className="pt-6">
@@ -222,7 +222,7 @@ export default function FounderMetricsPage() {
               <CardContent>
                 <div className="space-y-4">
                   {metrics.mrr && (
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 rounded-lg bg-muted/50">
                       <span className="font-medium">MRR</span>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
@@ -241,7 +241,7 @@ export default function FounderMetricsPage() {
                   )}
 
                   {metrics.activeUsers && (
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 rounded-lg bg-muted/50">
                       <span className="font-medium">Active Users</span>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
@@ -260,7 +260,7 @@ export default function FounderMetricsPage() {
                   )}
 
                   {metrics.retention && (
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 rounded-lg bg-muted/50">
                       <span className="font-medium">Retention</span>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
@@ -279,7 +279,7 @@ export default function FounderMetricsPage() {
                   )}
 
                   {metrics.nps && (
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 rounded-lg bg-muted/50">
                       <span className="font-medium">NPS Score</span>
                       <div className="flex items-center gap-4">
                         <div className="text-right">

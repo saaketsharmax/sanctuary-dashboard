@@ -254,9 +254,9 @@ export default function DDPage({ params }: DDPageProps) {
       </Link>
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
             <Shield className="h-6 w-6" />
             Due Diligence {companyName && `— ${companyName}`}
           </h1>
@@ -266,7 +266,7 @@ export default function DDPage({ params }: DDPageProps) {
             </p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {isCompleted && (
             <Button
               variant="outline"
@@ -327,7 +327,7 @@ export default function DDPage({ params }: DDPageProps) {
       {/* Completed state */}
       {isCompleted && report && (
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList>
+          <TabsList className="flex-wrap h-auto gap-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             {report.teamAssessment && (
               <TabsTrigger value="team">

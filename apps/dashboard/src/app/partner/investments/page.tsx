@@ -106,7 +106,7 @@ export default function PartnerInvestmentsPage() {
   if (!summary || summary.totalInvestments === 0) {
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Investments</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Investments</h1>
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-8">
@@ -125,12 +125,12 @@ export default function PartnerInvestmentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Investments</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Investments</h1>
         <p className="text-muted-foreground mt-1">Portfolio investment tracker</p>
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -177,8 +177,8 @@ export default function PartnerInvestmentsPage() {
           <CardContent>
             <div className="space-y-3">
               {pendingTxns.map((txn) => (
-                <div key={txn.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
+                <div key={txn.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 border rounded-lg">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="font-medium">{txn.title}</p>
                       <Badge variant="outline">
@@ -214,6 +214,7 @@ export default function PartnerInvestmentsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -262,6 +263,7 @@ export default function PartnerInvestmentsPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

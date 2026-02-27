@@ -122,7 +122,7 @@ export default function CashInvestmentPage() {
   if (!investment) {
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Cash Investment</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Cash Investment</h1>
         <InvestmentSubNav />
         <Card>
           <CardContent className="pt-6">
@@ -153,7 +153,7 @@ export default function CashInvestmentPage() {
       )}
 
       <div>
-        <h1 className="text-3xl font-bold">Cash Investment</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Cash Investment</h1>
         <p className="text-muted-foreground mt-1">{investment.companyName}</p>
       </div>
 

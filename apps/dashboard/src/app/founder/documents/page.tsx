@@ -133,7 +133,7 @@ export default function DocumentsPage() {
           </div>
           <Skeleton className="h-10 w-40" />
         </div>
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
             <Card key={i}>
               <CardContent className="pt-6">
@@ -160,9 +160,9 @@ export default function DocumentsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Documents</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Documents</h1>
           <p className="text-muted-foreground mt-1">
             Upload and manage your startup documents
             {isMock && <Badge variant="outline" className="ml-2 text-xs">Demo Mode</Badge>}
@@ -188,7 +188,7 @@ export default function DocumentsPage() {
       </div>
 
       {/* Document Categories */}
-      <div className="grid md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {Object.entries(documentTypes).map(([key, { label, color }]) => {
           const count = documents.filter(d => d.type === key).length
           return (
@@ -225,7 +225,7 @@ export default function DocumentsPage() {
                 return (
                   <div
                     key={doc.id}
-                    className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors"
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-lg border hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">

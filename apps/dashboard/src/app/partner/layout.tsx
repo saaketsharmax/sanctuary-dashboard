@@ -20,7 +20,9 @@ import {
   DollarSign,
   Share2,
   Settings,
-  LogOut
+  LogOut,
+  Menu,
+  X
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -47,6 +49,7 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
   const { setRole, clearRole } = useAuthStore()
   const [user, setUser] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Set role when entering partner section
   useEffect(() => {
@@ -170,15 +173,43 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
 
   return (
     <div className="flex min-h-screen">
+      {/* Mobile header bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b bg-card px-4 md:hidden">
+        <Link href="/partner/dashboard" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-sm">S</span>
+          </div>
+          <span className="font-semibold">Sanctuary</span>
+        </Link>
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="p-2 rounded-lg hover:bg-accent"
+        >
+          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </div>
+
+      {/* Mobile overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 border-r bg-card flex flex-col transition-all duration-300">
+      <aside className={cn(
+        'fixed inset-y-0 left-0 z-50 w-64 border-r bg-card flex flex-col transition-transform duration-200',
+        'md:relative md:translate-x-0 md:w-16 lg:w-64',
+        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      )}>
         {/* Logo */}
         <div className="flex h-16 items-center justify-between border-b px-4">
           <Link href="/partner/dashboard" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">S</span>
             </div>
-            <span className="font-semibold">Sanctuary</span>
+            <span className="font-semibold hidden lg:inline">Sanctuary</span>
           </Link>
         </div>
 
@@ -190,6 +221,7 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => setMobileMenuOpen(false)}
                 className={cn(
                   'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                   isActive
@@ -198,7 +230,7 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
                 )}
               >
                 <item.icon className="h-5 w-5 shrink-0" />
-                {item.label}
+                <span className="hidden lg:inline">{item.label}</span>
               </Link>
             )
           })}
@@ -206,20 +238,20 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
 
         {/* User section */}
         <div className="border-t p-2">
-          <div className="mb-2 rounded-lg bg-accent/50 px-3 py-2">
+          <div className="mb-2 rounded-lg bg-accent/50 px-3 py-2 hidden lg:block">
             <p className="text-sm font-medium">{loading ? '...' : displayName}</p>
             <p className="text-xs text-muted-foreground truncate">{displayEmail}</p>
           </div>
           <Button variant="ghost" size="sm" className="w-full justify-start" onClick={handleLogout}>
-            <LogOut className="h-5 w-5 shrink-0 mr-3" />
-            Logout
+            <LogOut className="h-5 w-5 shrink-0 lg:mr-3" />
+            <span className="hidden lg:inline">Logout</span>
           </Button>
         </div>
       </aside>
 
       {/* Main content */}
       <main className="flex-1 overflow-auto">
-        <div className="p-8">
+        <div className="p-4 md:p-6 lg:p-8 pt-18 md:pt-6 lg:pt-8">
           {children}
         </div>
       </main>

@@ -185,7 +185,7 @@ export default function FounderApplyPage() {
     <div className="max-w-3xl mx-auto space-y-8">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">Apply to Sanctuary</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Apply to Sanctuary</h1>
         <p className="text-muted-foreground max-w-xl mx-auto">
           Tell us about your startup. After submitting, you&apos;ll complete a brief AI-powered interview.
         </p>
