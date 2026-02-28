@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 
 /**
  * GET /api/founder/requests
@@ -21,6 +22,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({
@@ -31,11 +34,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's startup_id
-    const { data: profile } = await supabase
-      .from('users')
-      .select('startup_id')
-      .eq('id', user.id)
-      .single()
+    const { data: profile } = await db.users.getById(user.id)
 
     if (!profile?.startup_id) {
       return NextResponse.json({
@@ -46,24 +45,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get requests
-    const { data: requests, error: requestsError } = await supabase
-      .from('founder_requests')
-      .select(`
-        id,
-        type,
-        title,
-        description,
-        status,
-        priority,
-        created_at,
-        updated_at,
-        assigned_to,
-        resolution_notes,
-        resolved_at,
-        users!founder_requests_assigned_to_fkey (name)
-      `)
-      .eq('startup_id', profile.startup_id)
-      .order('created_at', { ascending: false })
+    const { data: requests, error: requestsError } = await db.requests.getByStartupId(profile.startup_id)
 
     if (requestsError) {
       console.error('Requests fetch error:', requestsError)
@@ -87,7 +69,8 @@ export async function GET(request: NextRequest) {
       resolved_at: string | null
       users?: { name: string } | null
     }
-    const formattedRequests = (requests || []).map((req: RequestRecord) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const formattedRequests = (requests || []).map((req: any) => ({
       id: req.id,
       type: req.type,
       title: req.title,
@@ -128,6 +111,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -141,32 +126,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's startup_id
-    const { data: profile } = await supabase
-      .from('users')
-      .select('startup_id')
-      .eq('id', user.id)
-      .single()
+    const { data: profile } = await db.users.getById(user.id)
 
     if (!profile?.startup_id) {
       return NextResponse.json({ error: 'No startup found' }, { status: 404 })
     }
 
     // Create request
-    const { data: newRequest, error: insertError } = await supabase
-      .from('founder_requests')
-      .insert({
-        startup_id: profile.startup_id,
-        created_by: user.id,
-        type,
-        title,
-        description: description || null,
-        priority: priority || 'normal',
-        status: 'pending',
-      })
-      .select()
-      .single()
+    const { data: newRequest, error: insertError } = await db.requests.create({
+      startup_id: profile.startup_id,
+      created_by: user.id,
+      type,
+      title,
+      description: description || null,
+      priority: priority || 'normal',
+      status: 'pending',
+    })
 
-    if (insertError) {
+    if (insertError || !newRequest) {
       console.error('Insert request error:', insertError)
       return NextResponse.json({ error: 'Failed to create request' }, { status: 500 })
     }
@@ -201,6 +178,8 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -219,12 +198,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Verify request belongs to user and is pending
-    const { data: existingRequest } = await supabase
-      .from('founder_requests')
-      .select('id, status, created_by')
-      .eq('id', requestId)
-      .eq('created_by', user.id)
-      .single()
+    const { data: existingRequest } = await db.requests.getByIdForOwner(requestId, user.id)
 
     if (!existingRequest) {
       return NextResponse.json({ error: 'Request not found' }, { status: 404 })
@@ -235,12 +209,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update status
-    const { data: updated, error: updateError } = await supabase
-      .from('founder_requests')
-      .update({ status: 'cancelled' })
-      .eq('id', requestId)
-      .select()
-      .single()
+    const { data: updated, error: updateError } = await db.requests.update(requestId, { status: 'cancelled' })
 
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 500 })

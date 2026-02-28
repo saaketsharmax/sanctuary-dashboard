@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
+import { createDb } from '@sanctuary/database'
 import { useAuthStore, type UserProfile } from '@/lib/stores/auth-store'
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
@@ -41,6 +42,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     let mounted = true
     let timeoutId: NodeJS.Timeout | null = null
     const supabase = createClient()
+    const db = createDb({ type: 'supabase-client', client: supabase })
 
     // Check for existing session on mount with timeout
     const initAuth = async () => {
@@ -74,11 +76,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           // Fetch user profile from our users table
           try {
-            const { data: profile, error: profileError } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', user.id)
-              .single()
+            const { data: profile, error: profileError } = await db.users.getById(user.id)
 
             if (!mounted) return
 
@@ -135,11 +133,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setAuthError(null)
 
               // Fetch user profile
-              const { data: profile } = await supabase
-                .from('users')
-                .select('*')
-                .eq('id', session.user.id)
-                .single()
+              const { data: profile } = await db.users.getById(session.user.id)
 
               if (mounted && profile) {
                 setProfile({

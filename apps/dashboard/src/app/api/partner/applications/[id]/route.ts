@@ -3,7 +3,8 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -34,12 +35,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     // Check if user is a partner
-    const { data: profile } = await supabase
-      .from('users')
-      .select('user_type')
-      .eq('id', user.id)
-      .single()
+    const { data: profile } = await db.users.getUserType(user.id)
 
     if (profile?.user_type !== 'partner') {
       return NextResponse.json(
@@ -49,11 +48,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     // Fetch full application
-    const { data: application, error } = await supabase
-      .from('applications')
-      .select('*')
-      .eq('id', id)
-      .single()
+    const { data: application, error } = await db.applications.getById(id)
 
     if (error || !application) {
       return NextResponse.json(
@@ -139,12 +134,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     // Check if user is a partner
-    const { data: profile } = await supabase
-      .from('users')
-      .select('user_type')
-      .eq('id', user.id)
-      .single()
+    const { data: profile } = await db.users.getUserType(user.id)
 
     if (profile?.user_type !== 'partner') {
       return NextResponse.json(
@@ -162,18 +155,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     const newStatus = action === 'approve' ? 'approved' : 'rejected'
 
-    const { data: updated, error: updateError } = await supabase
-      .from('applications')
-      .update({
-        status: newStatus,
-        review_decision: action,
-        reviewed_by: user.id,
-        reviewed_at: new Date().toISOString(),
-        review_notes: notes || null,
-      })
-      .eq('id', id)
-      .select()
-      .single()
+    const { data: updated, error: updateError } = await db.applications.updateAndReturn(id, {
+      status: newStatus,
+      review_decision: action,
+      reviewed_by: user.id,
+      reviewed_at: new Date().toISOString(),
+      review_notes: notes || null,
+    })
 
     if (updateError) {
       console.error('Update error:', updateError)
@@ -183,8 +171,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // Auto-create investment record on approval
     if (action === 'approve') {
       try {
-        const adminClient = createAdminClient()
-        await adminClient.from('investments').insert({
+        const adminDb = createDb({ type: 'admin' })
+        await adminDb.investments.create({
           application_id: id,
           cash_amount_cents: 5000000,    // $50,000
           credits_amount_cents: 5000000, // $50,000

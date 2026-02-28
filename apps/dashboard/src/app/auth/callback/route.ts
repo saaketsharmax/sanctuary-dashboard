@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -24,11 +25,8 @@ export async function GET(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (user) {
-      const { data: profile } = await supabase
-        .from('users')
-        .select('user_type')
-        .eq('id', user.id)
-        .single()
+      const db = createDb({ type: 'supabase-client', client: supabase })
+      const { data: profile } = await db.users.getUserType(user.id)
 
       // If user has a role, redirect to their dashboard
       if (profile?.user_type) {

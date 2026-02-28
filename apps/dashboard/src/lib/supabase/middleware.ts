@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { createDb } from '@sanctuary/database'
 
 // Check if Supabase is configured
 const isSupabaseConfigured = () => {
@@ -63,11 +64,8 @@ export async function updateSession(request: NextRequest) {
     // Look up user_type from the users table
     let userType: string | null = null
     if (user) {
-      const { data: profile } = await supabase
-        .from('users')
-        .select('user_type')
-        .eq('id', user.id)
-        .single()
+      const db = createDb({ type: 'supabase-client', client: supabase })
+      const { data: profile } = await db.users.getUserType(user.id)
       userType = profile?.user_type ?? null
     }
 

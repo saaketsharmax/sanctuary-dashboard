@@ -1367,3 +1367,124 @@ Complete revert of Shubhy's design system migration while preserving all feature
 3. Wire Eleven Labs voice — WebSocket integration
 4. Community + Marketing — connect to Supabase for real data
 5. E2E tests — Playwright for critical flows
+
+---
+
+## Session: 2026-02-28 (a) — Migrate 14 API Routes to Database Abstraction Layer
+
+### What Was Done
+
+Migrated all 14 application API route files to use the `@sanctuary/database` abstraction layer (`createDb`) instead of calling Supabase directly via `.from(...)`.
+
+**Pattern applied:**
+- Routes using `createClient()` → `createDb({ type: 'supabase-client', client: supabase })` (auth calls unchanged)
+- Routes using `createAdminClient()` → `createDb({ type: 'admin' })` (adminClient variable removed)
+- All `.from('tableName')...` calls replaced with `db.repo.method()` calls
+
+### Files Migrated (14 total)
+
+1. `apps/dashboard/src/app/api/applications/route.ts`
+   - `db.applications.create(data)` — POST
+   - `db.applications.getByUserId(user.id)` — GET
+
+2. `apps/dashboard/src/app/api/applications/[id]/assess/route.ts`
+   - `db.users.getUserType(id)` × 2
+   - `db.applications.getById(id)`, `getByIdWithFields(id, fields)`
+   - `db.applications.getSignals(id)`, `update(id, data)`
+   - `db.dd.logAgentRun(data)` × 2
+
+3. `apps/dashboard/src/app/api/applications/[id]/interview/route.ts`
+   - `db.applications.getByIdWithFields(id, fields)` × 3
+   - `db.applications.update(id, data)` × 2
+   - `db.applications.insertSignals(signals)`
+   - `db.users.getUserType(id)`
+
+4. `apps/dashboard/src/app/api/applications/[id]/memo/route.ts`
+   - `db.applications.getByIdWithFields(id, fields)`
+   - `db.users.getUserType(id)`
+   - `db.applications.getById(id)`, `update(id, data)`
+
+5. `apps/dashboard/src/app/api/applications/[id]/research/route.ts`
+   - `db.applications.getByIdWithFields(id, fields)`
+   - `db.applications.getById(id)`, `update(id, data)`
+
+6. `apps/dashboard/src/app/api/applications/[id]/dd/route.ts` (COMPLEX — ~23 Supabase calls)
+   - `db.applications.getByIdWithFields`, `getById`, `update` × 5
+   - `db.dd.getClaimCount`, `getReport`, `logAgentRun` × 4, `deleteClaims`, `insertClaims`
+   - `db.dd.updateClaim` (in loop), `getClaims`, `getVerifications`, `deleteVerifications`, `insertVerifications`
+   - `db.dd.deleteReports`, `insertReport`
+   - `db.documents.getByStartupId`
+
+7. `apps/dashboard/src/app/api/applications/[id]/dd/claims/route.ts`
+   - `db.dd.getClaims(id, filters)`, `getVerifications(claimIds)`
+
+8. `apps/dashboard/src/app/api/applications/[id]/dd/god-mode/route.ts`
+   - `db.dd.getLatestReportData(id)` × 2, `updateLatestReport(id, data)`, `logAgentRun(data)`
+   - `db.applications.getById(id)`, `getSignals(id)`
+
+9. `apps/dashboard/src/app/api/applications/[id]/dd/report/route.ts`
+   - `db.applications.getByIdWithFields` × 2, `update(id, data)`
+   - `db.dd.getReport`, `getClaims`, `getVerifications`, `getReportByApplicationId`
+   - `db.dd.deleteReports`, `insertReport`
+
+10. `apps/dashboard/src/app/api/applications/[id]/decision/route.ts`
+    - `db.applications.getById(id)`, `update(id, data)`
+    - `db.startups.create(data)`, `db.users.update(id, data)`, `db.investments.create(data)`
+
+11. `apps/dashboard/src/app/api/applications/[id]/feedback/route.ts`
+    - `db.applications.getByIdWithFields(id, 'id')`, `insertFeedback(data)`, `getFeedback(id)`
+
+12. `apps/dashboard/src/app/api/applications/[id]/programme/route.ts`
+    - `db.applications.getByIdWithFields`, `getById`, `update`, `getFounders`
+    - `db.dd.getLatestReportData`, `logAgentRun`, `updateAgentRun`
+    - `db.startups.getByApplicationId`
+
+13. `apps/dashboard/src/app/api/applications/dd/accuracy/route.ts`
+    - `db.applications.getAllFiltered(filters, fields)`
+    - `db.applications.getAllFeedbackFiltered({ createdAtGte })`
+    - `db.dd.getClaimsFiltered({ createdAtGte })`
+    - `db.applications.getSignalsFiltered({ createdAtGte })`
+
+14. `apps/dashboard/src/app/api/applications/dd/calibration/route.ts`
+    - `db.dd.getLatestAgentRun('calibration_engine')` × 2
+    - `db.dd.logAgentRun(data)`, `updateAgentRun(id, data)`
+    - `db.applications.getAllFeedback()`
+
+### Verification
+- Zero `.from('...')` calls remain in any of the 14 route files
+- Zero `createAdminClient` imports remain
+- Auth calls (`supabase.auth.getUser()`) preserved unchanged in the 4 non-admin routes
+- All error handling and response shapes preserved exactly
+
+### Git State
+- Not committed (migration only — no commit requested)
+
+---
+
+## Session: 2026-02-28 (b) — Database Abstraction Build Verification
+
+### What Was Done
+Completed the database abstraction layer implementation (Phases 1-3) and verified everything works:
+
+1. **Fixed all TypeScript compilation errors** from the route migrations:
+   - Changed all repository return types from `Record<string, unknown>` to `Record<string, any>` to match Supabase SDK behavior
+   - Fixed typed callbacks in `.map()`, `.filter()`, `.reduce()` with proper casts
+   - Fixed `packages/database/src/index.ts` export name mismatch
+   - Fixed `providers/supabase/client.ts` DbContext switch case alignment
+   - Fixed `realtime/providers/supabase.ts` channelConfig type with `as any` cast
+   - Fixed fields arrays vs strings, null checks, arithmetic operations in migrated routes
+
+2. **Build verification:**
+   - `npm run build:dashboard` — 0 errors, all pages compiled
+   - `npx vitest run` — 3 test suites, 59 tests, all passing
+
+### Summary of Full Abstraction (from prior session + this one)
+- **18 new files** created in `packages/database/src/` (repositories, providers, auth, storage, realtime)
+- **~35 files modified** (all 27 API routes, 6 auth/layout files, package exports)
+- **Zero** `supabase.from('tableName')` calls remain in app code (only `supabase.storage.from('documents')` — intentional)
+- **Zero** `createAdminClient` imports remain — all use `createDb({ type: 'admin' })`
+- Auth calls (`supabase.auth.getUser()`) preserved unchanged
+- Provider switchable via `DB_PROVIDER` env var (defaults to `supabase`)
+
+### Git State
+- Not committed yet

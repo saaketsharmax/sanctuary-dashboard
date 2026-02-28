@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 import { z } from 'zod'
 import type { ApplicationMetadata } from '@/types/metadata'
 
@@ -213,6 +214,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     // Analyze content and detect flags
     const contentAnalysis = analyzeContent(data)
     const { redFlags, greenFlags } = detectFlags(data)
@@ -276,11 +279,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert into database
-    const { data: application, error } = await supabase
-      .from('applications')
-      .insert(applicationData)
-      .select()
-      .single()
+    const { data: application, error } = await db.applications.create(applicationData)
 
     if (error) {
       console.error('Database error:', error)
@@ -291,7 +290,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      id: application.id,
+      id: (application as any).id,
       message: 'Application submitted successfully',
     })
   } catch (error) {
@@ -320,11 +319,9 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const { data: applications, error } = await supabase
-      .from('applications')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
+    const { data: applications, error } = await db.applications.getByUserId(user.id)
 
     if (error) {
       console.error('Database error:', error)

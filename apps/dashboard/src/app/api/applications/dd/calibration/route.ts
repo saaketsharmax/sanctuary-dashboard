@@ -5,7 +5,8 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 import { getCalibrationEngine } from '@/lib/ai/agents/calibration-engine'
 import { DEFAULT_CALIBRATION_CONFIG } from '@/lib/ai/types/calibration-engine'
 import type { PartnerFeedbackEntry } from '@/lib/ai/types/calibration-engine'
@@ -35,17 +36,10 @@ export async function GET() {
     })
   }
 
-  const supabase = createAdminClient()
+  const db = createDb({ type: 'admin' })
 
   // Fetch the most recent calibration report from agent_runs
-  const { data: latestRun } = await supabase
-    .from('agent_runs')
-    .select('*')
-    .eq('agent_type', 'calibration_engine')
-    .eq('status', 'completed')
-    .order('completed_at', { ascending: false })
-    .limit(1)
-    .single()
+  const { data: latestRun } = await db.dd.getLatestAgentRun('calibration_engine')
 
   if (!latestRun) {
     return NextResponse.json({
@@ -57,8 +51,8 @@ export async function GET() {
 
   return NextResponse.json({
     success: true,
-    report: latestRun.result,
-    runAt: latestRun.completed_at,
+    report: (latestRun as any).result,
+    runAt: (latestRun as any).completed_at,
   })
 }
 
@@ -86,25 +80,18 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  const supabase = createAdminClient()
+  const db = createDb({ type: 'admin' })
 
   // Record agent run start
-  const { data: agentRun } = await supabase
-    .from('agent_runs')
-    .insert({
-      agent_type: 'calibration_engine',
-      status: 'running',
-      started_at: new Date().toISOString(),
-    })
-    .select()
-    .single()
+  const { data: agentRun } = await db.dd.logAgentRun({
+    agent_type: 'calibration_engine',
+    status: 'running',
+    started_at: new Date().toISOString(),
+  })
 
   try {
     // Fetch all assessment feedback
-    const { data: feedbackRows } = await supabase
-      .from('assessment_feedback')
-      .select('*')
-      .order('created_at', { ascending: true })
+    const { data: feedbackRows } = await db.applications.getAllFeedback()
 
     // Transform to PartnerFeedbackEntry format
     const feedbackEntries: PartnerFeedbackEntry[] = (feedbackRows || []).map((row: any) => ({
@@ -120,19 +107,12 @@ export async function POST(request: NextRequest) {
     }))
 
     // Get current weights (from last calibration or defaults)
-    const { data: lastCalibration } = await supabase
-      .from('agent_runs')
-      .select('result')
-      .eq('agent_type', 'calibration_engine')
-      .eq('status', 'completed')
-      .order('completed_at', { ascending: false })
-      .limit(1)
-      .single()
+    const { data: lastCalibration } = await db.dd.getLatestAgentRun('calibration_engine')
 
-    const currentWeights = lastCalibration?.result?.newWeights || {
+    const currentWeights = (lastCalibration as any)?.result?.newWeights || {
       founder: 1.2, problem: 1.0, userValue: 1.1, execution: 1.0, market: 0.8, team: 0.9,
     }
-    const currentSignalWeights = lastCalibration?.result?.newSignalWeights || {}
+    const currentSignalWeights = (lastCalibration as any)?.result?.newSignalWeights || {}
 
     const engine = getCalibrationEngine()
     const result = await engine.runCalibration({
@@ -144,14 +124,11 @@ export async function POST(request: NextRequest) {
 
     // Update agent run
     if (agentRun) {
-      await supabase
-        .from('agent_runs')
-        .update({
-          status: 'completed',
-          completed_at: new Date().toISOString(),
-          result,
-        })
-        .eq('id', agentRun.id)
+      await db.dd.updateAgentRun((agentRun as any).id, {
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+        result,
+      })
     }
 
     return NextResponse.json({
@@ -161,14 +138,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     // Update agent run as failed
     if (agentRun) {
-      await supabase
-        .from('agent_runs')
-        .update({
-          status: 'failed',
-          completed_at: new Date().toISOString(),
-          error_message: error instanceof Error ? error.message : 'Unknown error',
-        })
-        .eq('id', agentRun.id)
+      await db.dd.updateAgentRun((agentRun as any).id, {
+        status: 'failed',
+        completed_at: new Date().toISOString(),
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+      })
     }
 
     return NextResponse.json(

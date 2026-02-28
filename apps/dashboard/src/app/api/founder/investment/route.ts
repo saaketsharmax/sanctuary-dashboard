@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 import { generateInvestmentMockData } from '@/lib/mock-data/investment-mock'
 import { format } from 'date-fns'
 
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = await createClient()
+    const db = createDb({ type: 'supabase-client', client: supabase })
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
@@ -32,13 +34,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Find the founder's application
-    const { data: application } = await supabase
-      .from('applications')
-      .select('id, company_name, status')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single()
+    const { data: applicationList } = await db.applications.getByUserId(user.id)
+
+    const application = Array.isArray(applicationList) ? applicationList[0] : applicationList
 
     if (!application) {
       // No application — return mock data
@@ -47,11 +45,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Find the investment for this application
-    const { data: investment } = await supabase
-      .from('investments')
-      .select('*')
-      .eq('application_id', application.id)
-      .single()
+    const { data: investment } = await db.investments.getByApplicationId(application.id)
 
     if (!investment) {
       // No investment — return mock data
@@ -60,49 +54,45 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all transactions for this investment
-    const { data: transactions } = await supabase
-      .from('investment_transactions')
-      .select('*')
-      .eq('investment_id', investment.id)
-      .order('created_at', { ascending: false })
+    const { data: transactions } = await db.investments.getTransactions(investment.id)
 
     const txns = transactions || []
 
     // Compute balances from approved transactions
-    const approvedTxns = txns.filter((t: { status: string }) => t.status === 'approved')
-    const pendingTxns = txns.filter((t: { status: string }) => t.status === 'pending')
+    const approvedTxns = txns.filter((t) => t.status === 'approved')
+    const pendingTxns = txns.filter((t) => t.status === 'pending')
 
     const cashUsed = approvedTxns
-      .filter((t: { type: string }) => t.type === 'cash_disbursement')
-      .reduce((sum: number, t: { amount_cents: number }) => sum + t.amount_cents, 0)
+      .filter((t) => t.type === 'cash_disbursement')
+      .reduce((sum: number, t) => sum + (t.amount_cents as number), 0)
 
     const creditsUsed = approvedTxns
-      .filter((t: { type: string }) => t.type === 'credit_usage')
-      .reduce((sum: number, t: { amount_cents: number }) => sum + t.amount_cents, 0)
+      .filter((t) => t.type === 'credit_usage')
+      .reduce((sum: number, t) => sum + (t.amount_cents as number), 0)
 
     const pendingCash = pendingTxns
-      .filter((t: { type: string }) => t.type === 'cash_disbursement')
-      .reduce((sum: number, t: { amount_cents: number }) => sum + t.amount_cents, 0)
+      .filter((t) => t.type === 'cash_disbursement')
+      .reduce((sum: number, t) => sum + (t.amount_cents as number), 0)
 
     const pendingCredits = pendingTxns
-      .filter((t: { type: string }) => t.type === 'credit_usage')
-      .reduce((sum: number, t: { amount_cents: number }) => sum + t.amount_cents, 0)
+      .filter((t) => t.type === 'credit_usage')
+      .reduce((sum: number, t) => sum + (t.amount_cents as number), 0)
 
     // Compute per-category credit usage
     const creditsByCategory: Record<string, number> = {}
     const pendingByCategory: Record<string, number> = {}
 
-    for (const t of approvedTxns.filter((t: { type: string }) => t.type === 'credit_usage')) {
-      const cat = (t as { credit_category: string | null }).credit_category
+    for (const t of approvedTxns.filter((t) => t.type === 'credit_usage')) {
+      const cat = t.credit_category as string | null
       if (cat) {
-        creditsByCategory[cat] = (creditsByCategory[cat] || 0) + (t as { amount_cents: number }).amount_cents
+        creditsByCategory[cat] = (creditsByCategory[cat] || 0) + (t.amount_cents as number)
       }
     }
 
-    for (const t of pendingTxns.filter((t: { type: string }) => t.type === 'credit_usage')) {
-      const cat = (t as { credit_category: string | null }).credit_category
+    for (const t of pendingTxns.filter((t) => t.type === 'credit_usage')) {
+      const cat = t.credit_category as string | null
       if (cat) {
-        pendingByCategory[cat] = (pendingByCategory[cat] || 0) + (t as { amount_cents: number }).amount_cents
+        pendingByCategory[cat] = (pendingByCategory[cat] || 0) + (t.amount_cents as number)
       }
     }
 
@@ -117,8 +107,8 @@ export async function GET(request: NextRequest) {
       approvedAt: investment.approved_at,
       createdAt: investment.created_at,
       updatedAt: investment.updated_at,
-      cashRemaining: investment.cash_amount_cents - cashUsed,
-      creditsRemaining: investment.credits_amount_cents - creditsUsed,
+      cashRemaining: (investment.cash_amount_cents as number) - cashUsed,
+      creditsRemaining: (investment.credits_amount_cents as number) - creditsUsed,
       cashUsed,
       creditsUsed,
       pendingCash,
@@ -147,7 +137,8 @@ export async function GET(request: NextRequest) {
 
     // Compute cashDashboard for cash view
     const cashDashboard = computeCashDashboard(
-      formattedTransactions.filter((t: { type: string }) => t.type === 'cash_disbursement'),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (formattedTransactions as any[]).filter((t) => t.type === 'cash_disbursement'),
       formattedInvestment.cashRemaining
     )
 

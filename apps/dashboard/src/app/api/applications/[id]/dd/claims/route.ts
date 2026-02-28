@@ -4,7 +4,8 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -22,25 +23,20 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    const supabase = createAdminClient()
+    const db = createDb({ type: 'admin' })
     const url = new URL(request.url)
     const category = url.searchParams.get('category')
     const status = url.searchParams.get('status')
     const priority = url.searchParams.get('priority')
 
-    // Build query
-    let query = supabase
-      .from('dd_claims')
-      .select('*')
-      .eq('application_id', id)
+    // Fetch claims with optional filters
+    const filters = {
+      ...(category ? { category } : {}),
+      ...(status ? { status } : {}),
+      ...(priority ? { priority } : {}),
+    }
 
-    if (category) query = query.eq('category', category)
-    if (status) query = query.eq('status', status)
-    if (priority) query = query.eq('priority', priority)
-
-    query = query.order('priority', { ascending: true }).order('category')
-
-    const { data: claims, error } = await query
+    const { data: claims, error } = await db.dd.getClaims(id, filters)
 
     if (error) {
       return NextResponse.json({ error: 'Failed to fetch claims' }, { status: 500 })
@@ -52,10 +48,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     // Fetch verifications for all claims
     const claimIds = claims.map((c: any) => c.id)
-    const { data: verifications } = await supabase
-      .from('dd_verifications')
-      .select('*')
-      .in('claim_id', claimIds)
+    const { data: verifications } = await db.dd.getVerifications(claimIds)
 
     // Map to camelCase
     const formattedClaims = claims.map((c: any) => ({

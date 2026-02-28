@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 
 /**
  * GET /api/founder/progress
@@ -21,6 +22,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({
@@ -31,11 +34,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's startup_id
-    const { data: profile } = await supabase
-      .from('users')
-      .select('startup_id')
-      .eq('id', user.id)
-      .single()
+    const { data: profile } = await db.users.getById(user.id)
 
     if (!profile?.startup_id) {
       return NextResponse.json({
@@ -46,42 +45,24 @@ export async function GET(request: NextRequest) {
     }
 
     // Get checkpoints
-    const { data: checkpoints, error: checkpointsError } = await supabase
-      .from('checkpoints')
-      .select('*')
-      .eq('startup_id', profile.startup_id)
-      .order('due_date', { ascending: true })
+    const { data: checkpoints, error: checkpointsError } = await db.startups.getCheckpoints(profile.startup_id)
 
     if (checkpointsError) {
       console.error('Checkpoints fetch error:', checkpointsError)
     }
 
     // Get partner feedback
-    const { data: feedback, error: feedbackError } = await supabase
-      .from('partner_feedback')
-      .select(`
-        id,
-        message,
-        feedback_type,
-        created_at,
-        from_name,
-        checkpoint_id
-      `)
-      .eq('startup_id', profile.startup_id)
-      .eq('is_visible_to_founder', true)
-      .order('created_at', { ascending: false })
-      .limit(10)
+    const { data: feedback, error: feedbackError } = await db.startups.getPartnerFeedback(profile.startup_id, {
+      visibleToFounder: true,
+      limit: 10,
+    })
 
     if (feedbackError) {
       console.error('Feedback fetch error:', feedbackError)
     }
 
     // Get startup stage info
-    const { data: startup } = await supabase
-      .from('startups')
-      .select('stage, residency_start, residency_end')
-      .eq('id', profile.startup_id)
-      .single()
+    const { data: startup } = await db.startups.getById(profile.startup_id)
 
     // Format checkpoints
     interface CheckpointRecord {
@@ -93,7 +74,8 @@ export async function GET(request: NextRequest) {
       completed_at: string | null
       notes: string | null
     }
-    const formattedCheckpoints = (checkpoints || []).map((cp: CheckpointRecord) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const formattedCheckpoints = (checkpoints || []).map((cp: any) => ({
       id: cp.id,
       name: cp.name,
       description: cp.description,
@@ -117,7 +99,8 @@ export async function GET(request: NextRequest) {
       from_name: string
       checkpoint_id: string | null
     }
-    const formattedFeedback = (feedback || []).map((fb: FeedbackRecord) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const formattedFeedback = (feedback || []).map((fb: any) => ({
       id: fb.id,
       message: fb.message,
       type: fb.feedback_type,
@@ -162,6 +145,8 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -175,23 +160,14 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Get user's startup_id
-    const { data: profile } = await supabase
-      .from('users')
-      .select('startup_id')
-      .eq('id', user.id)
-      .single()
+    const { data: profile } = await db.users.getById(user.id)
 
     if (!profile?.startup_id) {
       return NextResponse.json({ error: 'No startup found' }, { status: 404 })
     }
 
     // Verify checkpoint belongs to startup
-    const { data: checkpoint } = await supabase
-      .from('checkpoints')
-      .select('id')
-      .eq('id', checkpointId)
-      .eq('startup_id', profile.startup_id)
-      .single()
+    const { data: checkpoint } = await db.startups.getCheckpointById(checkpointId, profile.startup_id)
 
     if (!checkpoint) {
       return NextResponse.json({ error: 'Checkpoint not found' }, { status: 404 })
@@ -208,12 +184,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update checkpoint
-    const { data: updated, error: updateError } = await supabase
-      .from('checkpoints')
-      .update(updates)
-      .eq('id', checkpointId)
-      .select()
-      .single()
+    const { data: updated, error: updateError } = await db.startups.updateCheckpoint(checkpointId, updates)
 
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 500 })

@@ -1,4 +1,5 @@
 import { createClient } from './client'
+import { createDb } from '@sanctuary/database'
 import type { UserRole, PartnerSubType } from '@/lib/stores/auth-store'
 
 /**
@@ -67,6 +68,7 @@ export async function updateUserType(
   partnerSubType?: PartnerSubType
 ) {
   const supabase = createClient()
+  const db = createDb({ type: 'supabase-client', client: supabase })
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -74,15 +76,10 @@ export async function updateUserType(
     return { error: new Error('Not authenticated') }
   }
 
-  const { data, error } = await supabase
-    .from('users')
-    .update({
-      user_type: userType,
-      partner_sub_type: partnerSubType || null,
-    })
-    .eq('id', user.id)
-    .select()
-    .single()
+  const { data, error } = await db.users.update(user.id, {
+    user_type: userType,
+    partner_sub_type: partnerSubType || null,
+  })
 
   return { data, error }
 }
@@ -92,6 +89,7 @@ export async function updateUserType(
  */
 export async function getUserProfile() {
   const supabase = createClient()
+  const db = createDb({ type: 'supabase-client', client: supabase })
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -99,11 +97,7 @@ export async function getUserProfile() {
     return { data: null, error: null }
   }
 
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  const { data, error } = await db.users.getById(user.id)
 
   return { data, error }
 }
@@ -116,6 +110,7 @@ export async function updateUserProfile(updates: {
   avatar_url?: string
 }) {
   const supabase = createClient()
+  const db = createDb({ type: 'supabase-client', client: supabase })
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -123,12 +118,7 @@ export async function updateUserProfile(updates: {
     return { error: new Error('Not authenticated') }
   }
 
-  const { data, error } = await supabase
-    .from('users')
-    .update(updates)
-    .eq('id', user.id)
-    .select()
-    .single()
+  const { data, error } = await db.users.update(user.id, updates)
 
   return { data, error }
 }

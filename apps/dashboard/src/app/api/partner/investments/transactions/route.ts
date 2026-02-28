@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 
 /**
  * GET /api/partner/investments/transactions
@@ -22,11 +23,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: profile } = await supabase
-      .from('users')
-      .select('user_type')
-      .eq('id', user.id)
-      .single()
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
+    const { data: profile } = await db.users.getUserType(user.id)
 
     if (profile?.user_type !== 'partner') {
       return NextResponse.json({ error: 'Only partners can view transactions' }, { status: 403 })
@@ -35,24 +34,9 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url)
     const statusFilter = url.searchParams.get('status') // 'pending', 'approved', 'denied', or null for all
 
-    let query = supabase
-      .from('investment_transactions')
-      .select(`
-        *,
-        investments!inner(
-          application_id,
-          applications!inner(company_name)
-        ),
-        requester:users!investment_transactions_requested_by_fkey(name),
-        reviewer:users!investment_transactions_reviewed_by_fkey(name)
-      `)
-      .order('created_at', { ascending: false })
-
-    if (statusFilter) {
-      query = query.eq('status', statusFilter)
-    }
-
-    const { data: transactions, error: txnError } = await query
+    const { data: transactions, error: txnError } = await db.investments.getAllTransactions(
+      statusFilter ? { status: statusFilter } : undefined
+    )
 
     if (txnError) {
       console.error('Transactions fetch error:', txnError)
@@ -111,11 +95,9 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: profile } = await supabase
-      .from('users')
-      .select('user_type')
-      .eq('id', user.id)
-      .single()
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
+    const { data: profile } = await db.users.getUserType(user.id)
 
     if (profile?.user_type !== 'partner') {
       return NextResponse.json({ error: 'Only partners can update transactions' }, { status: 403 })
@@ -128,12 +110,8 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'transactionId and action (approve/deny) required' }, { status: 400 })
     }
 
-    // Fetch the transaction
-    const { data: transaction } = await supabase
-      .from('investment_transactions')
-      .select('*, investments!inner(cash_amount_cents, credits_amount_cents)')
-      .eq('id', transactionId)
-      .single()
+    // Fetch the transaction with its parent investment for balance checks
+    const { data: transaction } = await db.investments.getTransactionWithInvestment(transactionId)
 
     if (!transaction) {
       return NextResponse.json({ error: 'Transaction not found' }, { status: 404 })
@@ -145,32 +123,28 @@ export async function PATCH(request: NextRequest) {
 
     // If approving, validate balance
     if (action === 'approve') {
-      const { data: approvedTxns } = await supabase
-        .from('investment_transactions')
-        .select('type, amount_cents')
-        .eq('investment_id', transaction.investment_id)
-        .eq('status', 'approved')
+      const { data: approvedTxns } = await db.investments.getApprovedTransactions(transaction.investment_id as string)
 
       const inv = transaction.investments as { cash_amount_cents: number; credits_amount_cents: number }
 
       if (transaction.type === 'cash_disbursement') {
         const usedCash = (approvedTxns || [])
-          .filter((t: { type: string }) => t.type === 'cash_disbursement')
-          .reduce((sum: number, t: { amount_cents: number }) => sum + t.amount_cents, 0)
+          .filter((t) => t.type === 'cash_disbursement')
+          .reduce((sum: number, t) => sum + (t.amount_cents as number), 0)
 
         const remaining = inv.cash_amount_cents - usedCash
-        if (transaction.amount_cents > remaining) {
+        if ((transaction.amount_cents as number) > remaining) {
           return NextResponse.json({
             error: `Insufficient cash balance. Remaining: $${(remaining / 100).toLocaleString()}`,
           }, { status: 400 })
         }
       } else {
         const usedCredits = (approvedTxns || [])
-          .filter((t: { type: string }) => t.type === 'credit_usage')
-          .reduce((sum: number, t: { amount_cents: number }) => sum + t.amount_cents, 0)
+          .filter((t) => t.type === 'credit_usage')
+          .reduce((sum: number, t) => sum + (t.amount_cents as number), 0)
 
         const remaining = inv.credits_amount_cents - usedCredits
-        if (transaction.amount_cents > remaining) {
+        if ((transaction.amount_cents as number) > remaining) {
           return NextResponse.json({
             error: `Insufficient credits balance. Remaining: $${(remaining / 100).toLocaleString()}`,
           }, { status: 400 })
@@ -180,16 +154,11 @@ export async function PATCH(request: NextRequest) {
 
     const newStatus = action === 'approve' ? 'approved' : 'denied'
 
-    const { data: updated, error: updateError } = await supabase
-      .from('investment_transactions')
-      .update({
-        status: newStatus,
-        reviewed_by: user.id,
-        reviewed_at: new Date().toISOString(),
-      })
-      .eq('id', transactionId)
-      .select()
-      .single()
+    const { data: updated, error: updateError } = await db.investments.updateTransaction(transactionId, {
+      status: newStatus,
+      reviewed_by: user.id,
+      reviewed_at: new Date().toISOString(),
+    })
 
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 500 })

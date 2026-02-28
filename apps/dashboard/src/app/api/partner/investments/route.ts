@@ -4,6 +4,7 @@
 
 import { NextResponse } from 'next/server'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 
 /**
  * GET /api/partner/investments
@@ -22,38 +23,29 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     // Check partner role
-    const { data: profile } = await supabase
-      .from('users')
-      .select('user_type')
-      .eq('id', user.id)
-      .single()
+    const { data: profile } = await db.users.getUserType(user.id)
 
     if (profile?.user_type !== 'partner') {
       return NextResponse.json({ error: 'Only partners can view investments' }, { status: 403 })
     }
 
     // Fetch all investments with application company names
-    const { data: investments, error: investError } = await supabase
-      .from('investments')
-      .select('*, applications!inner(company_name)')
-      .order('created_at', { ascending: false })
+    const { data: investments, error: investError } = await db.investments.getAllWithCompanyName()
 
     if (investError) {
       console.error('Investments fetch error:', investError)
       return NextResponse.json({ error: 'Failed to fetch investments' }, { status: 500 })
     }
 
-    // Fetch all approved transactions in one go
-    const investmentIds = (investments || []).map((i: { id: string }) => i.id)
+    // Fetch all transactions in one go
+    const investmentIds = (investments || []).map((i) => i.id as string)
 
     let allTransactions: Record<string, unknown>[] = []
     if (investmentIds.length > 0) {
-      const { data: txns } = await supabase
-        .from('investment_transactions')
-        .select('*')
-        .in('investment_id', investmentIds)
-
+      const { data: txns } = await db.investments.getTransactionsBatch(investmentIds)
       allTransactions = txns || []
     }
 

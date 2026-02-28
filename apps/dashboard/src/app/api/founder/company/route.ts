@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 
 /**
  * GET /api/founder/company
@@ -22,6 +23,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
@@ -33,39 +36,33 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user profile with startup_id
-    const { data: profile } = await supabase
-      .from('users')
-      .select('startup_id')
-      .eq('id', user.id)
-      .single()
+    const { data: profile } = await db.users.getById(user.id)
 
     if (!profile?.startup_id) {
       // User might be in application phase, get from applications
-      const { data: application } = await supabase
-        .from('applications')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+      const { data: application } = await db.applications.getByUserId(user.id)
 
-      if (application) {
+      const singleApplication = Array.isArray(application) ? application[0] : application
+
+      if (singleApplication) {
         return NextResponse.json({
           success: true,
           company: {
-            id: application.id,
-            name: application.company_name,
-            oneLiner: application.company_one_liner,
-            description: application.company_description,
-            website: application.company_website,
-            problem: application.problem_description,
-            solution: application.solution_description,
-            targetCustomer: application.target_customer,
-            stage: application.stage || 'applied',
+            id: singleApplication.id,
+            name: singleApplication.company_name,
+            oneLiner: singleApplication.company_one_liner,
+            description: singleApplication.company_description,
+            website: singleApplication.company_website,
+            problem: singleApplication.problem_description,
+            solution: singleApplication.solution_description,
+            targetCustomer: singleApplication.target_customer,
+            stage: singleApplication.stage || 'applied',
             industry: 'Not specified',
             location: 'Not specified',
-            founded: new Date(application.created_at).getFullYear().toString(),
+            founded: new Date(singleApplication.created_at).getFullYear().toString(),
             metrics: {
-              users: application.user_count || 0,
-              mrr: application.mrr || 0,
+              users: singleApplication.user_count || 0,
+              mrr: singleApplication.mrr || 0,
             },
             isApplication: true,
           },
@@ -81,14 +78,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get startup data
-    const { data: startup, error: startupError } = await supabase
-      .from('startups')
-      .select(`
-        *,
-        cohorts (name, start_date, end_date)
-      `)
-      .eq('id', profile.startup_id)
-      .single()
+    const { data: startup, error: startupError } = await db.startups.getByIdWithCohort(profile.startup_id)
 
     if (startupError || !startup) {
       return NextResponse.json({
@@ -99,13 +89,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get latest metrics
-    const { data: latestMetrics } = await supabase
-      .from('metrics')
-      .select('*')
-      .eq('startup_id', profile.startup_id)
-      .order('date', { ascending: false })
-      .limit(1)
-      .single()
+    const { data: latestMetrics } = await db.startups.getLatestMetrics(profile.startup_id)
 
     return NextResponse.json({
       success: true,
@@ -156,6 +140,8 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -164,32 +150,23 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json()
 
     // Get user's startup_id
-    const { data: profile } = await supabase
-      .from('users')
-      .select('startup_id')
-      .eq('id', user.id)
-      .single()
+    const { data: profile } = await db.users.getById(user.id)
 
     if (!profile?.startup_id) {
       return NextResponse.json({ error: 'No startup found' }, { status: 404 })
     }
 
     // Update startup
-    const { data: updated, error: updateError } = await supabase
-      .from('startups')
-      .update({
-        name: body.name,
-        one_liner: body.oneLiner,
-        description: body.description,
-        website: body.website,
-        problem_statement: body.problem,
-        solution_description: body.solution,
-        target_customer: body.targetCustomer,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', profile.startup_id)
-      .select()
-      .single()
+    const { data: updated, error: updateError } = await db.startups.update(profile.startup_id, {
+      name: body.name,
+      one_liner: body.oneLiner,
+      description: body.description,
+      website: body.website,
+      problem_statement: body.problem,
+      solution_description: body.solution,
+      target_customer: body.targetCustomer,
+      updated_at: new Date().toISOString(),
+    })
 
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 500 })

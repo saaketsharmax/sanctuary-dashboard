@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 
 /**
  * GET /api/partner/applications
@@ -30,12 +31,10 @@ export async function GET(request: NextRequest) {
       }, { status: 401 })
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     // Check if user is a partner
-    const { data: profile } = await supabase
-      .from('users')
-      .select('user_type')
-      .eq('id', user.id)
-      .single()
+    const { data: profile } = await db.users.getUserType(user.id)
 
     if (profile?.user_type !== 'partner') {
       return NextResponse.json(
@@ -45,25 +44,23 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch all applications
-    const { data: applications, error } = await supabase
-      .from('applications')
-      .select(`
-        id,
-        status,
-        company_name,
-        company_one_liner,
-        company_website,
-        stage,
-        user_count,
-        mrr,
-        founders,
-        submitted_at,
-        created_at,
-        interview_completed_at,
-        assessment_completed_at,
-        ai_score
-      `)
-      .order('created_at', { ascending: false })
+    const fields = [
+      'id',
+      'status',
+      'company_name',
+      'company_one_liner',
+      'company_website',
+      'stage',
+      'user_count',
+      'mrr',
+      'founders',
+      'submitted_at',
+      'created_at',
+      'interview_completed_at',
+      'assessment_completed_at',
+      'ai_score',
+    ].join(', ')
+    const { data: applications, error } = await db.applications.getAll(fields)
 
     if (error) {
       console.error('Applications fetch error:', error)
@@ -100,7 +97,8 @@ export async function GET(request: NextRequest) {
       ai_score: number | null
     }
 
-    const formattedApplications = (applications || []).map((app: ApplicationRecord) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const formattedApplications = (applications || []).map((app: any) => ({
       id: app.id,
       status: app.status,
       companyName: app.company_name,

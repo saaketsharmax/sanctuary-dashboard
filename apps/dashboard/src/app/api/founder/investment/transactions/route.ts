@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 
 const VALID_TYPES = ['cash_disbursement', 'credit_usage'] as const
 const VALID_CATEGORIES = ['space', 'design', 'gtm', 'launch_media'] as const
@@ -19,6 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createClient()
+    const db = createDb({ type: 'supabase-client', client: supabase })
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
@@ -45,12 +47,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Amount must be positive' }, { status: 400 })
     }
 
-    // Verify investment belongs to this founder
-    const { data: investment } = await supabase
-      .from('investments')
-      .select('id, cash_amount_cents, credits_amount_cents, status, application_id')
-      .eq('id', investmentId)
-      .single()
+    // Verify investment exists and get its details
+    const { data: investment } = await db.investments.getById(investmentId, 'id, cash_amount_cents, credits_amount_cents, status, application_id')
 
     if (!investment) {
       return NextResponse.json({ error: 'Investment not found' }, { status: 404 })
@@ -61,60 +59,48 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify founder owns this investment (via application)
-    const { data: application } = await supabase
-      .from('applications')
-      .select('user_id')
-      .eq('id', investment.application_id)
-      .single()
+    const { data: application } = await db.applications.getByIdWithFields(investment.application_id, 'user_id')
 
     if (!application || application.user_id !== user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
     // Check balance: get sum of approved transactions
-    const { data: approvedTxns } = await supabase
-      .from('investment_transactions')
-      .select('type, amount_cents')
-      .eq('investment_id', investmentId)
-      .eq('status', 'approved')
+    const { data: approvedTxns } = await db.investments.getApprovedTransactions(investmentId)
 
     const usedCash = (approvedTxns || [])
-      .filter((t: { type: string }) => t.type === 'cash_disbursement')
-      .reduce((sum: number, t: { amount_cents: number }) => sum + t.amount_cents, 0)
+      .filter((t) => t.type === 'cash_disbursement')
+      .reduce((sum: number, t) => sum + (t.amount_cents as number), 0)
 
     const usedCredits = (approvedTxns || [])
-      .filter((t: { type: string }) => t.type === 'credit_usage')
-      .reduce((sum: number, t: { amount_cents: number }) => sum + t.amount_cents, 0)
+      .filter((t) => t.type === 'credit_usage')
+      .reduce((sum: number, t) => sum + (t.amount_cents as number), 0)
 
     if (type === 'cash_disbursement') {
-      const remaining = investment.cash_amount_cents - usedCash
+      const remaining = (investment.cash_amount_cents as number) - usedCash
       if (amountCents > remaining) {
         return NextResponse.json({ error: `Insufficient cash balance. Remaining: $${(remaining / 100).toLocaleString()}` }, { status: 400 })
       }
     } else {
-      const remaining = investment.credits_amount_cents - usedCredits
+      const remaining = (investment.credits_amount_cents as number) - usedCredits
       if (amountCents > remaining) {
         return NextResponse.json({ error: `Insufficient credits balance. Remaining: $${(remaining / 100).toLocaleString()}` }, { status: 400 })
       }
     }
 
     // Create the transaction
-    const { data: transaction, error: insertError } = await supabase
-      .from('investment_transactions')
-      .insert({
-        investment_id: investmentId,
-        type,
-        credit_category: type === 'credit_usage' ? creditCategory : null,
-        amount_cents: amountCents,
-        title,
-        description: description || null,
-        status: 'pending',
-        requested_by: user.id,
-      })
-      .select()
-      .single()
+    const { data: transaction, error: insertError } = await db.investments.createTransaction({
+      investment_id: investmentId,
+      type,
+      credit_category: type === 'credit_usage' ? creditCategory : null,
+      amount_cents: amountCents,
+      title,
+      description: description || null,
+      status: 'pending',
+      requested_by: user.id,
+    })
 
-    if (insertError) {
+    if (insertError || !transaction) {
       console.error('Insert transaction error:', insertError)
       return NextResponse.json({ error: 'Failed to create transaction' }, { status: 500 })
     }
@@ -151,6 +137,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const supabase = await createClient()
+    const db = createDb({ type: 'supabase-client', client: supabase })
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
@@ -165,12 +152,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Verify transaction belongs to user and is pending
-    const { data: transaction } = await supabase
-      .from('investment_transactions')
-      .select('id, status, requested_by')
-      .eq('id', transactionId)
-      .eq('requested_by', user.id)
-      .single()
+    const { data: transaction } = await db.investments.getTransactionByIdForOwner(transactionId, user.id)
 
     if (!transaction) {
       return NextResponse.json({ error: 'Transaction not found' }, { status: 404 })
@@ -180,12 +162,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Can only cancel pending transactions' }, { status: 400 })
     }
 
-    const { data: updated, error: updateError } = await supabase
-      .from('investment_transactions')
-      .update({ status: 'cancelled' })
-      .eq('id', transactionId)
-      .select()
-      .single()
+    const { data: updated, error: updateError } = await db.investments.updateTransaction(transactionId, { status: 'cancelled' })
 
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 500 })

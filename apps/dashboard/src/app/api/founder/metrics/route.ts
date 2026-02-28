@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 
 /**
  * GET /api/founder/metrics
@@ -21,6 +22,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({
@@ -31,11 +34,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's startup_id
-    const { data: profile } = await supabase
-      .from('users')
-      .select('startup_id')
-      .eq('id', user.id)
-      .single()
+    const { data: profile } = await db.users.getById(user.id)
 
     if (!profile?.startup_id) {
       return NextResponse.json({
@@ -46,40 +45,24 @@ export async function GET(request: NextRequest) {
     }
 
     // Get which metrics are shared with this founder
-    const { data: sharedConfig } = await supabase
-      .from('shared_metrics')
-      .select('metric_type, show_portfolio_benchmark, show_cohort_benchmark')
-      .eq('startup_id', profile.startup_id)
-      .eq('is_active', true)
+    const { data: sharedConfig } = await db.startups.getSharedMetrics(profile.startup_id)
 
     // If no shared config, return limited data
-    interface SharedConfig {
-      metric_type: string
-      show_portfolio_benchmark: boolean
-      show_cohort_benchmark: boolean
-    }
-    const sharedTypes = (sharedConfig || []).map((s: SharedConfig) => s.metric_type)
-    const showBenchmarks = sharedConfig?.some((s: SharedConfig) => s.show_portfolio_benchmark || s.show_cohort_benchmark)
+    const sharedTypes = (sharedConfig || []).map((s) => s.metric_type as string)
+    const showBenchmarks = sharedConfig?.some((s) => s.show_portfolio_benchmark || s.show_cohort_benchmark)
 
     // Get latest metrics
-    const { data: latestMetrics } = await supabase
-      .from('metrics')
-      .select('*')
-      .eq('startup_id', profile.startup_id)
-      .order('date', { ascending: false })
-      .limit(1)
-      .single()
+    const { data: latestMetrics } = await db.startups.getLatestMetrics(profile.startup_id)
 
     // Get historical metrics (last 6 months)
     const sixMonthsAgo = new Date()
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
 
-    const { data: historicalMetrics } = await supabase
-      .from('metrics')
-      .select('date, mrr, active_users, churn_rate, nps_score')
-      .eq('startup_id', profile.startup_id)
-      .gte('date', sixMonthsAgo.toISOString())
-      .order('date', { ascending: true })
+    const { data: historicalMetrics } = await db.startups.getMetricsHistory(
+      profile.startup_id,
+      sixMonthsAgo.toISOString(),
+      'date, mrr, active_users, churn_rate, nps_score'
+    )
 
     // Calculate trends
     interface MetricRecord {
@@ -89,18 +72,16 @@ export async function GET(request: NextRequest) {
       churn_rate?: number
       nps_score?: number
     }
-    const history: MetricRecord[] = historicalMetrics || []
-    const current: MetricRecord = latestMetrics || {}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const history: MetricRecord[] = (historicalMetrics || []) as any[]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const current: MetricRecord = (latestMetrics || {}) as any
 
     // Get previous month for comparison
-    const { data: previousMetrics } = await supabase
-      .from('metrics')
-      .select('*')
-      .eq('startup_id', profile.startup_id)
-      .order('date', { ascending: false })
-      .limit(2)
+    const { data: previousMetrics } = await db.startups.getMetricsSeries(profile.startup_id, 2)
 
-    const prev: MetricRecord = previousMetrics?.[1] || {}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const prev: MetricRecord = (previousMetrics?.[1] || {}) as any
 
     // Build metrics response
     const metrics: Record<string, any> = {}
@@ -159,11 +140,7 @@ export async function GET(request: NextRequest) {
     let benchmarks = null
     if (showBenchmarks) {
       // Calculate portfolio averages (simplified)
-      const { data: portfolioMetrics } = await supabase
-        .from('metrics')
-        .select('mrr, active_users, churn_rate, nps_score')
-        .order('date', { ascending: false })
-        .limit(100)
+      const { data: portfolioMetrics } = await db.startups.getAllRecentMetrics(100)
 
       if (portfolioMetrics && portfolioMetrics.length > 0) {
         interface PortfolioMetric {

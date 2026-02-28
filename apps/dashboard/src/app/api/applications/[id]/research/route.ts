@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 import { getResearchAgent } from '@/lib/ai/agents/research-agent'
 import type { ResearchOutput } from '@/types'
 
@@ -28,13 +29,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   try {
     const supabase = await createClient()
+    const db = createDb({ type: 'supabase-client', client: supabase })
 
     // Fetch application with research data
-    const { data: application, error } = await supabase
-      .from('applications')
-      .select('id, research_data, research_completed_at')
-      .eq('id', id)
-      .single()
+    const { data: application, error } = await db.applications.getByIdWithFields(
+      id,
+      'id, research_data, research_completed_at'
+    )
 
     if (error || !application) {
       return NextResponse.json(
@@ -43,11 +44,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    if (application.research_data) {
+    if ((application as any).research_data) {
       return NextResponse.json({
         success: true,
-        research: application.research_data,
-        completedAt: application.research_completed_at,
+        research: (application as any).research_data,
+        completedAt: (application as any).research_completed_at,
       })
     }
 
@@ -81,13 +82,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
   try {
     const supabase = await createClient()
+    const db = createDb({ type: 'supabase-client', client: supabase })
 
     // Fetch application
-    const { data: application, error } = await supabase
-      .from('applications')
-      .select('*')
-      .eq('id', id)
-      .single()
+    const { data: application, error } = await db.applications.getById(id)
 
     if (error || !application) {
       return NextResponse.json(
@@ -97,13 +95,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Check if research already exists
-    if (application.research_data) {
+    if ((application as any).research_data) {
       const body = await request.json().catch(() => ({}))
       if (!body.force) {
         return NextResponse.json({
           success: true,
-          research: application.research_data,
-          completedAt: application.research_completed_at,
+          research: (application as any).research_data,
+          completedAt: (application as any).research_completed_at,
           message: 'Research already exists. Use force=true to regenerate.',
         })
       }
@@ -111,24 +109,24 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // Format application for research agent - cast to any to allow partial data
     const formattedApplication = {
-      id: application.id,
-      status: application.status,
-      companyName: application.company_name,
-      companyOneLiner: application.company_one_liner,
-      companyWebsite: application.company_website,
-      companyDescription: application.company_description,
-      problemDescription: application.problem_description,
-      targetCustomer: application.target_customer,
-      solutionDescription: application.solution_description,
-      stage: application.stage,
-      userCount: application.user_count || 0,
-      mrr: application.mrr || 0,
-      biggestChallenge: application.biggest_challenge,
-      whySanctuary: application.why_sanctuary,
-      whatTheyWant: application.what_they_want,
-      founders: application.founders || [],
-      submittedAt: application.submitted_at,
-      createdAt: application.created_at,
+      id: (application as any).id,
+      status: (application as any).status,
+      companyName: (application as any).company_name,
+      companyOneLiner: (application as any).company_one_liner,
+      companyWebsite: (application as any).company_website,
+      companyDescription: (application as any).company_description,
+      problemDescription: (application as any).problem_description,
+      targetCustomer: (application as any).target_customer,
+      solutionDescription: (application as any).solution_description,
+      stage: (application as any).stage,
+      userCount: (application as any).user_count || 0,
+      mrr: (application as any).mrr || 0,
+      biggestChallenge: (application as any).biggest_challenge,
+      whySanctuary: (application as any).why_sanctuary,
+      whatTheyWant: (application as any).what_they_want,
+      founders: (application as any).founders || [],
+      submittedAt: (application as any).submitted_at,
+      createdAt: (application as any).created_at,
     }
 
     // Run research agent
@@ -147,13 +145,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // Store in database
     const completedAt = new Date().toISOString()
-    const { error: updateError } = await supabase
-      .from('applications')
-      .update({
-        research_data: result.research,
-        research_completed_at: completedAt,
-      })
-      .eq('id', id)
+    const { error: updateError } = await db.applications.update(id, {
+      research_data: result.research,
+      research_completed_at: completedAt,
+    })
 
     if (updateError) {
       console.error('Research update error:', updateError)

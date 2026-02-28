@@ -4,7 +4,8 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -35,42 +36,35 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     )
   }
 
-  const supabase = createAdminClient()
+  const db = createDb({ type: 'admin' })
 
   // 1. Fetch the application
-  const { data: application, error: appError } = await supabase
-    .from('applications')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const { data: application, error: appError } = await db.applications.getById(id)
 
   if (appError || !application) {
     return NextResponse.json({ error: 'Application not found' }, { status: 404 })
   }
 
-  if (['approved', 'rejected'].includes(application.status)) {
+  if (['approved', 'rejected'].includes((application as any).status)) {
     return NextResponse.json(
-      { error: `Application already ${application.status}` },
+      { error: `Application already ${(application as any).status}` },
       { status: 400 },
     )
   }
 
   // 2. Update application status
   const now = new Date().toISOString()
-  const { error: updateError } = await supabase
-    .from('applications')
-    .update({
-      status: decision,
-      review_decision: decision,
-      reviewed_at: now,
-      decision_made_at: now,
-      decision_notes: notes || null,
-      review_metadata: {
-        conditions: conditions || [],
-        decided_at: now,
-      },
-    })
-    .eq('id', id)
+  const { error: updateError } = await db.applications.update(id, {
+    status: decision,
+    review_decision: decision,
+    reviewed_at: now,
+    decision_made_at: now,
+    decision_notes: notes || null,
+    review_metadata: {
+      conditions: conditions || [],
+      decided_at: now,
+    },
+  })
 
   if (updateError) {
     return NextResponse.json({ error: 'Failed to update application: ' + updateError.message }, { status: 500 })
@@ -81,29 +75,25 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   // 3. On approval: auto-create startup + link founder + allocate investment
   if (decision === 'approved') {
     // Determine starting stage from assessment
-    const assessment = application.ai_assessment
+    const assessment = (application as any).ai_assessment
     const startingStage = assessment?.startingStage || 'problem_discovery'
 
     // Create startup record
-    const { data: newStartup, error: startupError } = await supabase
-      .from('startups')
-      .insert({
-        name: application.company_name,
-        one_liner: application.company_one_liner,
-        website: application.company_website,
-        description: application.solution_description,
-        industry: application.target_customer,
-        stage: startingStage,
-        status: 'active',
-        application_id: id,
-        founder_score: assessment?.founderScore || null,
-        problem_score: assessment?.problemScore || null,
-        user_value_score: assessment?.userValueScore || null,
-        execution_score: assessment?.executionScore || null,
-        overall_score: application.ai_score || null,
-      })
-      .select()
-      .single()
+    const { data: newStartup, error: startupError } = await db.startups.create({
+      name: (application as any).company_name,
+      one_liner: (application as any).company_one_liner,
+      website: (application as any).company_website,
+      description: (application as any).solution_description,
+      industry: (application as any).target_customer,
+      stage: startingStage,
+      status: 'active',
+      application_id: id,
+      founder_score: assessment?.founderScore || null,
+      problem_score: assessment?.problemScore || null,
+      user_value_score: assessment?.userValueScore || null,
+      execution_score: assessment?.executionScore || null,
+      overall_score: (application as any).ai_score || null,
+    })
 
     if (startupError) {
       console.error('Failed to create startup:', startupError)
@@ -111,17 +101,16 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       startup = newStartup
 
       // Link founder to startup
-      if (application.user_id) {
-        await supabase
-          .from('users')
-          .update({ startup_id: newStartup.id })
-          .eq('id', application.user_id)
+      if ((application as any).user_id) {
+        await db.users.update((application as any).user_id, {
+          startup_id: (newStartup as any).id,
+        })
       }
 
       // Auto-allocate investment: $50k cash + $50k credits
-      await supabase.from('investments').insert({
+      await db.investments.create({
         application_id: id,
-        startup_id: newStartup.id,
+        startup_id: (newStartup as any).id,
         cash_total: 50000,
         cash_disbursed: 0,
         credits_total: 50000,
@@ -134,9 +123,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   return NextResponse.json({
     success: true,
     application: { id, status: decision, decision_made_at: now },
-    startup: startup ? { id: startup.id, name: startup.name } : null,
+    startup: startup ? { id: (startup as any).id, name: (startup as any).name } : null,
     message: decision === 'approved'
-      ? `Application approved. Startup "${application.company_name}" created with $50k cash + $50k credits.`
+      ? `Application approved. Startup "${(application as any).company_name}" created with $50k cash + $50k credits.`
       : `Application rejected.${notes ? ' Notes: ' + notes : ''}`,
   })
 }

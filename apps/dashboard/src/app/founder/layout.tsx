@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { createClient } from '@/lib/supabase/client'
+import { createDb } from '@sanctuary/database'
 import {
   LayoutDashboard,
   Building2,
@@ -75,11 +76,8 @@ export default function FounderLayout({ children }: { children: React.ReactNode 
         if (authUser) {
           // Get user profile from users table
           try {
-            const { data: profile } = await supabase
-              .from('users')
-              .select('name, email')
-              .eq('id', authUser.id)
-              .single()
+            const db = createDb({ type: 'supabase-client', client: supabase })
+            const { data: profile } = await db.users.getById(authUser.id)
 
             if (!mounted) return
 

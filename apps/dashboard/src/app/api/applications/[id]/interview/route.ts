@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 import { z } from 'zod'
 import type { InterviewMetadata, InterviewSectionMetadata } from '@/types/metadata'
 
@@ -209,12 +210,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       )
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     // Verify the user owns this application
-    const { data: application, error: fetchError } = await supabase
-      .from('applications')
-      .select('id, user_id, status')
-      .eq('id', applicationId)
-      .single()
+    const { data: application, error: fetchError } = await db.applications.getByIdWithFields(
+      applicationId,
+      'id, user_id, status'
+    )
 
     if (fetchError || !application) {
       return NextResponse.json(
@@ -223,7 +225,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    if (application.user_id !== user.id) {
+    if ((application as any).user_id !== user.id) {
       return NextResponse.json(
         { error: 'You do not have permission to access this application' },
         { status: 403 }
@@ -232,13 +234,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     if (data.action === 'start') {
       // Update application to mark interview as started
-      const { error: updateError } = await supabase
-        .from('applications')
-        .update({
-          status: 'interviewing',
-          interview_started_at: new Date().toISOString(),
-        })
-        .eq('id', applicationId)
+      const { error: updateError } = await db.applications.update(applicationId, {
+        status: 'interviewing',
+        interview_started_at: new Date().toISOString(),
+      })
 
       if (updateError) {
         console.error('Database error:', updateError)
@@ -268,15 +267,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       )
 
       // Save the completed interview with metadata
-      const { error: updateError } = await supabase
-        .from('applications')
-        .update({
-          status: 'under_review',
-          interview_completed_at: data.completedAt,
-          interview_transcript: data.transcript,
-          interview_metadata: interviewMetadata,
-        })
-        .eq('id', applicationId)
+      const { error: updateError } = await db.applications.update(applicationId, {
+        status: 'under_review',
+        interview_completed_at: data.completedAt,
+        interview_transcript: data.transcript,
+        interview_metadata: interviewMetadata,
+      })
 
       if (updateError) {
         console.error('Database error:', updateError)
@@ -313,9 +309,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }))
 
         // Try to insert signals (table may not exist yet)
-        const { error: signalsError } = await supabase
-          .from('interview_signals')
-          .insert(signalsToInsert)
+        const { error: signalsError } = await db.applications.insertSignals(signalsToInsert)
 
         if (signalsError) {
           // Log but don't fail - signals table may not exist yet
@@ -371,12 +365,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     // Fetch application with interview data
-    const { data: application, error } = await supabase
-      .from('applications')
-      .select('id, user_id, status, interview_started_at, interview_completed_at, interview_transcript')
-      .eq('id', applicationId)
-      .single()
+    const { data: application, error } = await db.applications.getByIdWithFields(
+      applicationId,
+      'id, user_id, status, interview_started_at, interview_completed_at, interview_transcript'
+    )
 
     if (error || !application) {
       return NextResponse.json(
@@ -386,13 +381,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     // Check if user owns this application or is a partner
-    const { data: userProfile } = await supabase
-      .from('users')
-      .select('user_type')
-      .eq('id', user.id)
-      .single()
+    const { data: userProfile } = await db.users.getUserType(user.id)
 
-    const isOwner = application.user_id === user.id
+    const isOwner = (application as any).user_id === user.id
     const isPartner = userProfile?.user_type === 'partner'
 
     if (!isOwner && !isPartner) {
@@ -403,11 +394,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     return NextResponse.json({
-      applicationId: application.id,
-      status: application.status,
-      interview_started_at: application.interview_started_at,
-      interview_completed_at: application.interview_completed_at,
-      interview_transcript: application.interview_transcript,
+      applicationId: (application as any).id,
+      status: (application as any).status,
+      interview_started_at: (application as any).interview_started_at,
+      interview_completed_at: (application as any).interview_completed_at,
+      interview_transcript: (application as any).interview_transcript,
     })
   } catch (error) {
     console.error('API error:', error)

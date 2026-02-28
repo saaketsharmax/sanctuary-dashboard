@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 
 /**
  * GET /api/founder/documents
@@ -21,6 +22,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({
@@ -31,11 +34,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's startup_id
-    const { data: profile } = await supabase
-      .from('users')
-      .select('startup_id')
-      .eq('id', user.id)
-      .single()
+    const { data: profile } = await db.users.getById(user.id)
 
     if (!profile?.startup_id) {
       return NextResponse.json({
@@ -46,24 +45,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Get documents
-    const { data: documents, error: docsError } = await supabase
-      .from('documents')
-      .select(`
-        id,
-        name,
-        type,
-        file_url,
-        file_size,
-        mime_type,
-        version,
-        is_current,
-        created_at,
-        uploaded_by,
-        users!documents_uploaded_by_fkey (name)
-      `)
-      .eq('startup_id', profile.startup_id)
-      .eq('is_current', true)
-      .order('created_at', { ascending: false })
+    const { data: documents, error: docsError } = await db.documents.getByStartupId(profile.startup_id, {
+      currentOnly: true,
+      fields: 'id, name, type, file_url, file_size, mime_type, version, is_current, created_at, uploaded_by, users!documents_uploaded_by_fkey (name)',
+    })
 
     if (docsError) {
       console.error('Documents fetch error:', docsError)
@@ -74,17 +59,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    const formattedDocs = (documents || []).map((doc: {
-      id: string
-      name: string
-      type: string
-      file_url: string
-      file_size: number
-      mime_type: string
-      version: number
-      created_at: string
-      users?: { name: string } | null
-    }) => ({
+    const formattedDocs = (documents || []).map((doc) => ({
       id: doc.id,
       name: doc.name,
       type: doc.type,
@@ -124,17 +99,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Get user's startup_id
-    const { data: profile } = await supabase
-      .from('users')
-      .select('startup_id')
-      .eq('id', user.id)
-      .single()
+    const { data: profile } = await db.users.getById(user.id)
 
     if (!profile?.startup_id) {
       return NextResponse.json({ error: 'No startup found' }, { status: 404 })
@@ -168,43 +141,27 @@ export async function POST(request: NextRequest) {
       .getPublicUrl(fileName)
 
     // Mark previous versions as not current
-    await supabase
-      .from('documents')
-      .update({ is_current: false })
-      .eq('startup_id', profile.startup_id)
-      .eq('name', docName)
-      .eq('type', docType)
+    await db.documents.markNotCurrent(profile.startup_id, docName, docType)
 
     // Get next version number
-    const { data: versionData } = await supabase
-      .from('documents')
-      .select('version')
-      .eq('startup_id', profile.startup_id)
-      .eq('name', docName)
-      .order('version', { ascending: false })
-      .limit(1)
-      .single()
+    const { data: versionData } = await db.documents.getMaxVersion(profile.startup_id, docName)
 
     const nextVersion = (versionData?.version || 0) + 1
 
     // Create document record
-    const { data: document, error: docError } = await supabase
-      .from('documents')
-      .insert({
-        startup_id: profile.startup_id,
-        uploaded_by: user.id,
-        name: docName,
-        type: docType,
-        file_url: urlData.publicUrl,
-        file_size: file.size,
-        mime_type: file.type,
-        version: nextVersion,
-        is_current: true,
-      })
-      .select()
-      .single()
+    const { data: document, error: docError } = await db.documents.create({
+      startup_id: profile.startup_id,
+      uploaded_by: user.id,
+      name: docName,
+      type: docType,
+      file_url: urlData.publicUrl,
+      file_size: file.size,
+      mime_type: file.type,
+      version: nextVersion,
+      is_current: true,
+    })
 
-    if (docError) {
+    if (docError || !document) {
       console.error('Document record error:', docError)
       return NextResponse.json({ error: 'Failed to save document' }, { status: 500 })
     }
@@ -239,6 +196,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -252,23 +211,14 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Get user's startup_id
-    const { data: profile } = await supabase
-      .from('users')
-      .select('startup_id')
-      .eq('id', user.id)
-      .single()
+    const { data: profile } = await db.users.getById(user.id)
 
     if (!profile?.startup_id) {
       return NextResponse.json({ error: 'No startup found' }, { status: 404 })
     }
 
     // Verify document belongs to startup
-    const { data: doc } = await supabase
-      .from('documents')
-      .select('id, file_url')
-      .eq('id', docId)
-      .eq('startup_id', profile.startup_id)
-      .single()
+    const { data: doc } = await db.documents.getById(docId, profile.startup_id)
 
     if (!doc) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 })
@@ -281,7 +231,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete record
-    await supabase.from('documents').delete().eq('id', docId)
+    await db.documents.delete(docId)
 
     return NextResponse.json({ success: true })
   } catch (error) {

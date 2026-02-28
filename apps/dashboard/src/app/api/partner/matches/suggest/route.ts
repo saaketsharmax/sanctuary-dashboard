@@ -5,7 +5,8 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 import { getMatchmakingAgent } from '@/lib/ai/agents/matchmaking-agent'
 import type { MatchRequest, MatchCandidate } from '@/lib/ai/types/matchmaking'
 
@@ -26,14 +27,10 @@ export async function POST(request: NextRequest) {
   let historicalMatches: { candidateId: string; startupId: string; outcome: 'successful' | 'neutral' | 'unsuccessful'; feedback: string }[] = []
 
   if (isSupabaseConfigured()) {
-    const supabase = createAdminClient()
+    const db = createDb({ type: 'admin' })
 
     // Fetch mentors as candidates
-    const { data: mentors } = await supabase
-      .from('users')
-      .select('*')
-      .eq('user_type', 'partner')
-      .in('partner_sub_type', ['mentor', 'vc', 'startup_manager'])
+    const { data: mentors } = await db.mentors.getCandidates()
 
     if (mentors) {
       candidates = mentors.map((m: Record<string, unknown>) => ({
@@ -51,10 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch historical match outcomes
-    const { data: matches } = await supabase
-      .from('matches')
-      .select('mentor_id, startup_id, status, feedback')
-      .in('status', ['completed', 'rejected'])
+    const { data: matches } = await db.mentors.getHistoricalMatches(['completed', 'rejected'])
 
     if (matches) {
       historicalMatches = matches.map((m: Record<string, unknown>) => ({
@@ -92,13 +86,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ matches: [], message: 'Database not configured' })
   }
 
-  const supabase = createAdminClient()
+  const db = createDb({ type: 'admin' })
 
-  const { data: matches, error } = await supabase
-    .from('matches')
-    .select('*')
-    .eq('startup_id', startupId)
-    .order('score', { ascending: false })
+  const { data: matches, error } = await db.mentors.getMatches(startupId)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

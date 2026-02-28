@@ -5,7 +5,8 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 import { getProgrammeAgent } from '@/lib/ai/agents/programme-agent'
 import type { ProgrammeInput } from '@/lib/ai/types/programme'
 
@@ -43,25 +44,24 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ success: true, programme, isMock: true })
   }
 
-  const supabase = createAdminClient()
+  const db = createDb({ type: 'admin' })
 
   // Check for existing programme in application metadata
-  const { data: application, error } = await supabase
-    .from('applications')
-    .select('id, company_name, status, application_metadata')
-    .eq('id', id)
-    .single()
+  const { data: application, error } = await db.applications.getByIdWithFields(
+    id,
+    'id, company_name, status, application_metadata'
+  )
 
   if (error || !application) {
     return NextResponse.json({ error: 'Application not found' }, { status: 404 })
   }
 
-  const programme = application.application_metadata?.programme || null
+  const programme = (application as any).application_metadata?.programme || null
 
   return NextResponse.json({
     success: true,
     programme,
-    hasApproval: application.status === 'approved',
+    hasApproval: (application as any).status === 'approved',
   })
 }
 
@@ -94,39 +94,32 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ success: true, programme, isMock: true })
   }
 
-  const supabase = createAdminClient()
+  const db = createDb({ type: 'admin' })
 
   // Fetch application with all data
-  const { data: application, error: appError } = await supabase
-    .from('applications')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const { data: application, error: appError } = await db.applications.getById(id)
 
   if (appError || !application) {
     return NextResponse.json({ error: 'Application not found' }, { status: 404 })
   }
 
   // Fetch founders
-  const { data: founders } = await supabase
-    .from('founders')
-    .select('*')
-    .eq('application_id', id)
+  const { data: founders } = await db.applications.getFounders(id)
 
   // Build programme input
   const input: ProgrammeInput = {
     applicationId: id,
-    companyName: application.company_name,
-    stage: application.stage || 'pre-seed',
-    industry: application.target_customer || 'Technology',
+    companyName: (application as any).company_name,
+    stage: (application as any).stage || 'pre-seed',
+    industry: (application as any).target_customer || 'Technology',
     applicationData: {
-      problemDescription: application.problem_description || '',
-      solutionDescription: application.solution_description || '',
-      targetCustomer: application.target_customer || '',
-      userCount: application.user_count || 0,
-      mrr: application.mrr || 0,
-      biggestChallenge: application.biggest_challenge || '',
-      whatTheyWant: application.what_they_want || '',
+      problemDescription: (application as any).problem_description || '',
+      solutionDescription: (application as any).solution_description || '',
+      targetCustomer: (application as any).target_customer || '',
+      userCount: (application as any).user_count || 0,
+      mrr: (application as any).mrr || 0,
+      biggestChallenge: (application as any).biggest_challenge || '',
+      whatTheyWant: (application as any).what_they_want || '',
     },
     founders: (founders || []).map((f: any) => ({
       name: f.name,
@@ -134,91 +127,68 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       yearsExperience: f.years_experience,
       hasStartedBefore: f.has_started_before,
     })),
-    aiAssessment: application.ai_assessment || undefined,
+    aiAssessment: (application as any).ai_assessment || undefined,
   }
 
   // Check for DD report
-  const { data: ddReport } = await supabase
-    .from('dd_reports')
-    .select('report_data')
-    .eq('application_id', id)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
+  const { data: ddReport } = await db.dd.getLatestReportData(id)
 
   if (ddReport?.report_data) {
     input.ddReport = {
-      overallDDScore: ddReport.report_data.overallDDScore || 0,
-      redFlags: (ddReport.report_data.redFlags || []).map((rf: any) => ({
+      overallDDScore: (ddReport.report_data as any).overallDDScore || 0,
+      redFlags: ((ddReport.report_data as any).redFlags || []).map((rf: any) => ({
         claimText: rf.claimText,
         severity: rf.severity,
       })),
-      recommendation: ddReport.report_data.recommendation || { verdict: 'unknown', conditions: [] },
+      recommendation: (ddReport.report_data as any).recommendation || { verdict: 'unknown', conditions: [] },
     }
   }
 
   // Record agent run
-  const { data: agentRun } = await supabase
-    .from('agent_runs')
-    .insert({
-      application_id: id,
-      agent_type: 'programme_generator',
-      status: 'running',
-      started_at: new Date().toISOString(),
-    })
-    .select()
-    .single()
+  const { data: agentRun } = await db.dd.logAgentRun({
+    application_id: id,
+    agent_type: 'programme_generator',
+    status: 'running',
+    started_at: new Date().toISOString(),
+  })
 
   try {
     const agent = getProgrammeAgent()
     const programme = await agent.generateProgramme(input)
 
     // Store programme in application metadata
-    const existingMetadata = application.application_metadata || {}
-    await supabase
-      .from('applications')
-      .update({
-        application_metadata: {
-          ...existingMetadata,
-          programme,
-        },
-      })
-      .eq('id', id)
+    const existingMetadata = (application as any).application_metadata || {}
+    await db.applications.update(id, {
+      application_metadata: {
+        ...existingMetadata,
+        programme,
+      },
+    })
 
     // If startup exists, also store on startup record
-    const { data: startup } = await supabase
-      .from('startups')
-      .select('id')
-      .eq('application_id', id)
-      .single()
+    const { data: startup } = await db.startups.getByApplicationId(id)
 
     if (startup) {
-      programme.startupId = startup.id
+      programme.startupId = (startup as any).id
     }
 
     // Update agent run
     if (agentRun) {
-      await supabase
-        .from('agent_runs')
-        .update({
-          status: 'completed',
-          completed_at: new Date().toISOString(),
-          result: { programmeId: programme.id, milestoneCount: programme.phases.reduce((s, p) => s + p.milestones.length, 0) },
-        })
-        .eq('id', agentRun.id)
+      await db.dd.updateAgentRun((agentRun as any).id, {
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+        result: { programmeId: programme.id, milestoneCount: programme.phases.reduce((s: number, p: any) => s + p.milestones.length, 0) },
+      })
     }
 
     return NextResponse.json({ success: true, programme })
   } catch (error) {
     if (agentRun) {
-      await supabase
-        .from('agent_runs')
-        .update({
-          status: 'failed',
-          completed_at: new Date().toISOString(),
-          error_message: error instanceof Error ? error.message : 'Unknown error',
-        })
-        .eq('id', agentRun.id)
+      await db.dd.updateAgentRun((agentRun as any).id, {
+        status: 'failed',
+        completed_at: new Date().toISOString(),
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+      })
     }
 
     return NextResponse.json(

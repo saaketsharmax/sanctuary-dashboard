@@ -5,7 +5,8 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 import { getDDReportGenerator } from '@/lib/ai/agents/dd-report-generator'
 import type { DDClaim } from '@/lib/ai/types/due-diligence'
 
@@ -25,19 +26,18 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    const supabase = createAdminClient()
+    const db = createDb({ type: 'admin' })
 
-    const { data: application } = await supabase
-      .from('applications')
-      .select('dd_report_id, company_name')
-      .eq('id', id)
-      .single()
+    const { data: application } = await db.applications.getByIdWithFields(
+      id,
+      'dd_report_id, company_name'
+    )
 
     if (!application) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 })
     }
 
-    if (!application.dd_report_id) {
+    if (!(application as any).dd_report_id) {
       return NextResponse.json({
         success: true,
         report: null,
@@ -45,11 +45,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       })
     }
 
-    const { data: report } = await supabase
-      .from('dd_reports')
-      .select('*')
-      .eq('id', application.dd_report_id)
-      .single()
+    const { data: report } = await db.dd.getReport((application as any).dd_report_id)
 
     if (!report) {
       return NextResponse.json({ success: true, report: null })
@@ -57,7 +53,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({
       success: true,
-      report: report.report_data,
+      report: (report as any).report_data,
     })
   } catch (error) {
     console.error('DD report GET error:', error)
@@ -77,23 +73,19 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    const supabase = createAdminClient()
+    const db = createDb({ type: 'admin' })
 
-    const { data: application } = await supabase
-      .from('applications')
-      .select('id, company_name')
-      .eq('id', id)
-      .single()
+    const { data: application } = await db.applications.getByIdWithFields(
+      id,
+      'id, company_name'
+    )
 
     if (!application) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 })
     }
 
     // Fetch existing claims
-    const { data: claims } = await supabase
-      .from('dd_claims')
-      .select('*')
-      .eq('application_id', id)
+    const { data: claims } = await db.dd.getClaims(id)
 
     if (!claims || claims.length === 0) {
       return NextResponse.json({
@@ -103,10 +95,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // Fetch verifications
     const claimIds = claims.map((c: any) => c.id)
-    const { data: verifications } = await supabase
-      .from('dd_verifications')
-      .select('*')
-      .in('claim_id', claimIds)
+    const { data: verifications } = await db.dd.getVerifications(claimIds)
 
     // Map to typed claims
     const fullClaims: DDClaim[] = claims.map((c: any) => ({
@@ -144,27 +133,23 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // Try to recover omissions and team assessment from the existing report's report_data
     let existingOmissions: any[] = []
     let existingTeamAssessment: any = null
-    const { data: existingReport } = await supabase
-      .from('dd_reports')
-      .select('report_data')
-      .eq('application_id', id)
-      .single()
-    if (existingReport?.report_data?.omissions) {
-      existingOmissions = existingReport.report_data.omissions
+    const { data: existingReport } = await db.dd.getReportByApplicationId(id)
+    if ((existingReport as any)?.report_data?.omissions) {
+      existingOmissions = (existingReport as any).report_data.omissions
     }
-    if (existingReport?.report_data?.teamAssessment) {
-      existingTeamAssessment = existingReport.report_data.teamAssessment
+    if ((existingReport as any)?.report_data?.teamAssessment) {
+      existingTeamAssessment = (existingReport as any).report_data.teamAssessment
     }
     let existingMarketAssessment: any = null
-    if (existingReport?.report_data?.marketAssessment) {
-      existingMarketAssessment = existingReport.report_data.marketAssessment
+    if ((existingReport as any)?.report_data?.marketAssessment) {
+      existingMarketAssessment = (existingReport as any).report_data.marketAssessment
     }
 
     // Generate report
     const generator = getDDReportGenerator()
     const result = await generator.generateReport({
       applicationId: id,
-      companyName: application.company_name,
+      companyName: (application as any).company_name,
       claims: fullClaims,
       omissions: existingOmissions,
       teamAssessment: existingTeamAssessment,
@@ -176,29 +161,22 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Delete old report and insert new
-    await supabase.from('dd_reports').delete().eq('application_id', id)
+    await db.dd.deleteReports(id)
 
-    const { data: insertedReport } = await supabase
-      .from('dd_reports')
-      .insert({
-        application_id: id,
-        report_data: result.report,
-        overall_dd_score: result.report.overallDDScore,
-        dd_grade: result.report.ddGrade,
-        total_claims: fullClaims.length,
-        verified_claims: fullClaims.filter(c => c.status === 'confirmed' || c.status === 'ai_verified').length,
-        refuted_claims: fullClaims.filter(c => c.status === 'refuted').length,
-        verification_coverage: result.report.verificationCoverage,
-      })
-      .select('id')
-      .single()
+    const { data: insertedReport } = await db.dd.insertReport({
+      application_id: id,
+      report_data: result.report,
+      overall_dd_score: result.report.overallDDScore,
+      dd_grade: result.report.ddGrade,
+      total_claims: fullClaims.length,
+      verified_claims: fullClaims.filter(c => c.status === 'confirmed' || c.status === 'ai_verified').length,
+      refuted_claims: fullClaims.filter(c => c.status === 'refuted').length,
+      verification_coverage: result.report.verificationCoverage,
+    })
 
     // Update application reference
     if (insertedReport) {
-      await supabase
-        .from('applications')
-        .update({ dd_report_id: insertedReport.id })
-        .eq('id', id)
+      await db.applications.update(id, { dd_report_id: insertedReport.id })
     }
 
     return NextResponse.json({

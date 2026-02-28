@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createDb } from '@sanctuary/database'
 import { getAssessmentAgent, type AssessmentInput } from '@/lib/ai/agents/assessment-agent'
 
 interface RouteParams {
@@ -31,12 +32,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       )
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     // Check if user is a partner
-    const { data: userProfile } = await supabase
-      .from('users')
-      .select('user_type')
-      .eq('id', user.id)
-      .single()
+    const { data: userProfile } = await db.users.getUserType(user.id)
 
     if (userProfile?.user_type !== 'partner') {
       return NextResponse.json(
@@ -46,11 +45,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Fetch the application with all data
-    const { data: application, error: fetchError } = await supabase
-      .from('applications')
-      .select('*')
-      .eq('id', applicationId)
-      .single()
+    const { data: application, error: fetchError } = await db.applications.getById(applicationId)
 
     if (fetchError || !application) {
       return NextResponse.json(
@@ -60,7 +55,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Check if interview is completed
-    if (!application.interview_transcript || application.interview_transcript.length === 0) {
+    if (!(application as any).interview_transcript || (application as any).interview_transcript.length === 0) {
       return NextResponse.json(
         { error: 'Interview must be completed before assessment' },
         { status: 400 }
@@ -68,36 +63,33 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Fetch signals if available
-    const { data: signals } = await supabase
-      .from('interview_signals')
-      .select('*')
-      .eq('application_id', applicationId)
+    const { data: signals } = await db.applications.getSignals(applicationId)
 
     // Build assessment input
     const assessmentInput: AssessmentInput = {
       applicationId,
-      companyName: application.company_name,
+      companyName: (application as any).company_name,
       applicationData: {
-        companyOneLiner: application.company_one_liner,
-        companyDescription: application.company_description,
-        problemDescription: application.problem_description,
-        targetCustomer: application.target_customer,
-        solutionDescription: application.solution_description,
-        stage: application.stage,
-        userCount: application.user_count,
-        mrr: application.mrr,
-        biggestChallenge: application.biggest_challenge,
-        whySanctuary: application.why_sanctuary,
-        whatTheyWant: application.what_they_want,
-        founders: application.founders || [],
+        companyOneLiner: (application as any).company_one_liner,
+        companyDescription: (application as any).company_description,
+        problemDescription: (application as any).problem_description,
+        targetCustomer: (application as any).target_customer,
+        solutionDescription: (application as any).solution_description,
+        stage: (application as any).stage,
+        userCount: (application as any).user_count,
+        mrr: (application as any).mrr,
+        biggestChallenge: (application as any).biggest_challenge,
+        whySanctuary: (application as any).why_sanctuary,
+        whatTheyWant: (application as any).what_they_want,
+        founders: (application as any).founders || [],
       },
-      transcript: application.interview_transcript,
-      signals: signals?.map((s: { signal_type: string; content: string; dimension: string; impact_score: number }) => ({
+      transcript: (application as any).interview_transcript,
+      signals: ((signals || []) as { signal_type: string; content: string; dimension: string; impact_score: number }[]).map((s) => ({
         type: s.signal_type,
         content: s.content,
         dimension: s.dimension,
         impact: s.impact_score,
-      })) || [],
+      })),
     }
 
     // Generate assessment
@@ -106,7 +98,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     if (!result.success || !result.assessment) {
       // Log the agent run as failed
-      await supabase.from('agent_runs').insert({
+      await db.dd.logAgentRun({
         agent_type: 'assessment',
         agent_version: 'v1.0',
         application_id: applicationId,
@@ -156,14 +148,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Save assessment to application
-    const { error: updateError } = await supabase
-      .from('applications')
-      .update({
-        ai_assessment: aiAssessment,
-        ai_score: result.assessment.overallScore / 100, // Store as 0-1 decimal
-        assessment_metadata: result.metadata,
-      })
-      .eq('id', applicationId)
+    const { error: updateError } = await db.applications.update(applicationId, {
+      ai_assessment: aiAssessment,
+      ai_score: result.assessment.overallScore / 100, // Store as 0-1 decimal
+      assessment_metadata: result.metadata,
+    })
 
     if (updateError) {
       console.error('Failed to save assessment:', updateError)
@@ -174,7 +163,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Log successful agent run
-    await supabase.from('agent_runs').insert({
+    await db.dd.logAgentRun({
       agent_type: 'assessment',
       agent_version: 'v1.0',
       application_id: applicationId,
@@ -184,8 +173,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       completed_at: new Date().toISOString(),
       status: 'completed',
       input_summary: {
-        company_name: application.company_name,
-        transcript_length: application.interview_transcript.length,
+        company_name: (application as any).company_name,
+        transcript_length: (application as any).interview_transcript.length,
         signals_count: signals?.length || 0,
       },
       output_summary: {
@@ -255,12 +244,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
+    const db = createDb({ type: 'supabase-client', client: supabase })
+
     // Fetch application
-    const { data: application, error } = await supabase
-      .from('applications')
-      .select('id, user_id, ai_assessment, ai_score, assessment_metadata')
-      .eq('id', applicationId)
-      .single()
+    const { data: application, error } = await db.applications.getByIdWithFields(
+      applicationId,
+      'id, user_id, ai_assessment, ai_score, assessment_metadata'
+    )
 
     if (error || !application) {
       return NextResponse.json(
@@ -270,13 +260,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     // Check permissions
-    const { data: userProfile } = await supabase
-      .from('users')
-      .select('user_type')
-      .eq('id', user.id)
-      .single()
+    const { data: userProfile } = await db.users.getUserType(user.id)
 
-    const isOwner = application.user_id === user.id
+    const isOwner = (application as any).user_id === user.id
     const isPartner = userProfile?.user_type === 'partner'
 
     if (!isOwner && !isPartner) {
@@ -288,9 +274,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({
       applicationId,
-      assessment: application.ai_assessment,
-      score: application.ai_score,
-      metadata: application.assessment_metadata,
+      assessment: (application as any).ai_assessment,
+      score: (application as any).ai_score,
+      metadata: (application as any).assessment_metadata,
     })
   } catch (error) {
     console.error('Assessment GET error:', error)
