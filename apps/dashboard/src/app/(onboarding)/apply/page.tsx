@@ -124,19 +124,31 @@ export default function ApplyPage() {
 
   const formData = watch()
 
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
   const onSubmit = async (data: ApplicationFormData) => {
     setIsSubmitting(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    setSubmitError(null)
 
-    // Generate a mock application ID
-    const applicationId = `app-${Date.now()}`
+    try {
+      const response = await fetch('/api/applications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
 
-    // In a real app, we'd save to database here
-    console.log('Application submitted:', data)
+      const result = await response.json()
 
-    // Redirect to success page
-    router.push(`/apply/success?id=${applicationId}`)
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit application')
+      }
+
+      router.push(`/apply/success?id=${result.id}`)
+    } catch (err) {
+      console.error('Application submission error:', err)
+      setSubmitError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      setIsSubmitting(false)
+    }
   }
 
   const nextStep = () => {
@@ -556,6 +568,13 @@ export default function ApplyPage() {
                     application and get back to you within 48 hours.
                   </p>
                 </div>
+              </div>
+            )}
+
+            {/* Submit error */}
+            {submitError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 dark:bg-red-950/30 dark:border-red-800 dark:text-red-400">
+                {submitError}
               </div>
             )}
 

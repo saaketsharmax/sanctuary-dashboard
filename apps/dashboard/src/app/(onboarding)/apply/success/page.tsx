@@ -89,19 +89,19 @@ function SuccessContent() {
         </CardContent>
       </Card>
 
-      {/* Demo Interview Link */}
+      {/* Start Interview Link */}
       <Card className="border-primary/20 bg-primary/5">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h4 className="font-medium">Want to try the interview now?</h4>
+              <h4 className="font-medium">Ready to start your interview?</h4>
               <p className="text-sm text-muted-foreground">
-                Experience our AI interview with a demo application.
+                Begin your AI voice interview now — it takes about 45-60 minutes.
               </p>
             </div>
-            <Link href="/interview/app-1">
+            <Link href={`/interview/${applicationId}`}>
               <Button>
-                Try Demo
+                Start Interview
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </Link>
