@@ -9,12 +9,13 @@ import { InterviewProgress } from '@/components/onboarding/interview'
 import { INTERVIEW_SECTIONS } from '@/types'
 import {
   Clock,
-  MessageSquare,
+  Mic,
   Lightbulb,
   ArrowRight,
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Keyboard,
 } from 'lucide-react'
 
 interface Application {
@@ -128,15 +129,30 @@ export default function InterviewWaitingRoom() {
         </CardContent>
       </Card>
 
+      {/* Voice Interview Notice */}
+      <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/30">
+        <CardContent className="flex items-center gap-4 pt-6">
+          <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center flex-shrink-0">
+            <Mic className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div>
+            <p className="font-medium text-purple-900 dark:text-purple-200">This is a voice interview</p>
+            <p className="text-sm text-purple-700 dark:text-purple-400">
+              You&apos;ll speak with our AI interviewer using your microphone. Your browser will ask for mic access when you begin. A text fallback is available if needed.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Interview Overview */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
+            <Mic className="h-5 w-5" />
             Interview Overview
           </CardTitle>
           <CardDescription>
-            A conversational deep-dive into you and your startup
+            A voice conversation to understand you and your startup
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -188,11 +204,12 @@ export default function InterviewWaitingRoom() {
         <CardContent>
           <ul className="space-y-3">
             {[
+              'Find a quiet space with good internet',
+              'Use headphones to avoid echo',
               'Be specific and use concrete examples',
               'Share real numbers when discussing traction',
               'Be honest about challenges and uncertainties',
-              'Take your time - you can pause anytime',
-              'Speak authentically about your journey',
+              'Speak naturally — take your time',
             ].map((tip, index) => (
               <li key={index} className="flex items-start gap-2 text-sm">
                 <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
@@ -205,14 +222,15 @@ export default function InterviewWaitingRoom() {
 
       {/* Start Button */}
       <div className="flex flex-col items-center gap-4 pt-4">
-        <Button size="lg" onClick={handleStartInterview} className="px-8">
-          Start Interview
-          <ArrowRight className="h-4 w-4 ml-2" />
+        <Button size="lg" onClick={handleStartInterview} className="px-8 gap-2">
+          <Mic className="h-4 w-4" />
+          Start Voice Interview
+          <ArrowRight className="h-4 w-4" />
         </Button>
         <p className="text-sm text-muted-foreground text-center">
-          Your progress will be saved automatically.
+          Your browser will request microphone access.
           <br />
-          You can pause and resume at any time.
+          You can pause anytime or switch to text if needed.
         </p>
       </div>
     </div>

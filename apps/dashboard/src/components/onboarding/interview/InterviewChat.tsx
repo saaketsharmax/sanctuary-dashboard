@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { InterviewMessage, TypingIndicator } from './InterviewMessage'
 import { InterviewProgressCompact } from './InterviewProgress'
 import { useInterviewStore } from '@/lib/stores/interview-store'
-import { Send, Pause, Square, Sparkles, Cpu, Loader2, Mic, MicOff, Volume2, VolumeX, MessageSquare } from 'lucide-react'
+import { Send, Pause, Square, Sparkles, Cpu, Loader2, Mic, MicOff, Volume2, VolumeX, MessageSquare, Keyboard } from 'lucide-react'
 import { useVoiceInterview, type TranscriptMetadata, type VoiceState } from '@/lib/hooks/use-voice-interview'
 import type { InterviewSection, InterviewMessage as InterviewMessageType } from '@/types'
 
@@ -56,11 +56,12 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
   const [collectedSignals, setCollectedSignals] = useState<CollectedSignal[]>([])
   const [pauseCount, setPauseCount] = useState(0)
   const [totalPauseTime, setTotalPauseTime] = useState(0)
-  const [mode, setMode] = useState<'text' | 'voice'>('text')
+  const [mode, setMode] = useState<'voice' | 'text'>('voice')
   const pauseStartRef = useRef<number | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const hasStartedRef = useRef(false)
+  const hasSpokenOpeningRef = useRef(false)
 
   const {
     currentInterview,
@@ -138,6 +139,10 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
 
   const handleVoiceError = useCallback((error: string) => {
     console.error('Voice error:', error)
+    // Fall back to text mode on persistent errors
+    if (error.includes('not-allowed') || error.includes('Failed to start microphone')) {
+      setMode('text')
+    }
   }, [])
 
   const voice = useVoiceInterview({
@@ -153,6 +158,13 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
     onResponse: handleVoiceResponse,
     onError: handleVoiceError,
   })
+
+  // Fall back to text if voice not supported
+  useEffect(() => {
+    if (voice.isSupported === false) {
+      setMode('text')
+    }
+  }, [voice.isSupported])
 
   // Save interview to database
   const saveInterviewToDb = useCallback(async (action: 'start' | 'complete', signals?: CollectedSignal[]) => {
@@ -204,10 +216,10 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
     }
   }, [applicationId, currentInterview, startInterview, saveInterviewToDb])
 
-  // Send opening message when interview starts
+  // Send opening message when interview starts — speak it if in voice mode
   useEffect(() => {
     if (currentInterview && messages.length === 0) {
-      const openingMessage = "Welcome to your Sanctuary interview. I'm going to ask you some direct questions to understand you and your startup better. This will take about 45-60 minutes. Let's begin.\n\nTell me about yourself in 60 seconds. Not your resume — who are you as a person?"
+      const openingMessage = "Welcome to your Sanctuary interview. I'm going to ask you some questions to understand you and your startup better. Let's begin. Tell me about yourself. Not your resume — who are you as a person?"
       setTyping(true)
 
       const timer = setTimeout(() => {
@@ -223,6 +235,24 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
       return () => clearTimeout(timer)
     }
   }, [currentInterview, messages.length, addMessage, setTyping])
+
+  // Auto-speak opening message via Eleven Labs, then start listening
+  useEffect(() => {
+    if (
+      mode === 'voice' &&
+      messages.length === 1 &&
+      messages[0].role === 'assistant' &&
+      !hasSpokenOpeningRef.current &&
+      voice.isSupported
+    ) {
+      hasSpokenOpeningRef.current = true
+      const speakAndListen = async () => {
+        await voice.speakText(messages[0].content)
+        voice.startListening()
+      }
+      speakAndListen()
+    }
+  }, [mode, messages, voice.isSupported]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -334,6 +364,10 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
 
   const handleEndInterview = async () => {
     if (confirm('Are you sure you want to end the interview early? Your progress will be saved.')) {
+      if (mode === 'voice') {
+        voice.stopListening()
+        voice.stopSpeaking()
+      }
       completeInterview()
       // Save completed interview to database
       setIsSaving(true)
@@ -379,33 +413,40 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
               {aiMode === 'live' ? 'AI' : 'Demo'}
             </div>
           )}
-          {/* Voice/Text Mode Toggle */}
-          {voice.isSupported && (
-            <div className="flex items-center bg-muted rounded-full p-0.5">
+          {/* Mode indicator with fallback switch */}
+          {mode === 'voice' ? (
+            <div className="flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-400">
+              <Mic className="h-3 w-3" />
+              Voice
+              <span className="text-muted-foreground">|</span>
               <button
                 onClick={() => {
-                  if (mode === 'voice') {
-                    voice.stopListening()
-                    voice.stopSpeaking()
-                  }
+                  voice.stopListening()
+                  voice.stopSpeaking()
                   setMode('text')
                 }}
-                className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full transition-colors ${
-                  mode === 'text' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'
-                }`}
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                <MessageSquare className="h-3 w-3" />
-                Text
+                <Keyboard className="h-3 w-3 inline mr-0.5" />
+                Switch to text
               </button>
-              <button
-                onClick={() => setMode('voice')}
-                className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full transition-colors ${
-                  mode === 'voice' ? 'bg-purple-100 text-purple-700 shadow-sm dark:bg-purple-900/40 dark:text-purple-300' : 'text-muted-foreground'
-                }`}
-              >
-                <Mic className="h-3 w-3" />
-                Voice
-              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Keyboard className="h-3 w-3" />
+              Text
+              {voice.isSupported && (
+                <>
+                  <span>|</span>
+                  <button
+                    onClick={() => setMode('voice')}
+                    className="text-purple-600 hover:text-purple-700 transition-colors dark:text-purple-400"
+                  >
+                    <Mic className="h-3 w-3 inline mr-0.5" />
+                    Switch to voice
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -419,6 +460,10 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
                   const pauseDuration = (Date.now() - pauseStartRef.current) / 1000
                   setTotalPauseTime(prev => prev + pauseDuration)
                   pauseStartRef.current = null
+                }
+                // Resume listening if in voice mode
+                if (mode === 'voice') {
+                  voice.startListening()
                 }
               } else {
                 pauseStartRef.current = Date.now()
@@ -456,19 +501,177 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <InterviewMessage
-            key={message.id}
-            role={message.role}
-            content={message.content}
-            timestamp={message.createdAt}
-          />
-        ))}
-        {isTyping && <TypingIndicator />}
-        <div ref={messagesEndRef} />
-      </div>
+      {/* Messages / Voice Visualization */}
+      {mode === 'voice' ? (
+        <div className="flex-1 flex flex-col">
+          {/* Compact transcript (scrollable, takes remaining space above voice UI) */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map((message) => (
+              <InterviewMessage
+                key={message.id}
+                role={message.role}
+                content={message.content}
+                timestamp={message.createdAt}
+              />
+            ))}
+            {isTyping && <TypingIndicator />}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Voice controls — pinned to bottom */}
+          <div className="p-6 border-t bg-muted/10">
+            <div className="flex flex-col items-center gap-3">
+              {/* Voice state indicator */}
+              <div className="flex items-center gap-2 text-sm min-h-[24px]">
+                {voice.voiceState === 'idle' && !isPaused && (
+                  <span className="text-muted-foreground">Tap the mic to start speaking</span>
+                )}
+                {voice.voiceState === 'listening' && (
+                  <span className="text-purple-600 flex items-center gap-1">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500" />
+                    </span>
+                    Listening...
+                  </span>
+                )}
+                {voice.voiceState === 'processing' && (
+                  <span className="text-blue-600 flex items-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Thinking...
+                  </span>
+                )}
+                {voice.voiceState === 'speaking' && (
+                  <span className="text-green-600 flex items-center gap-1">
+                    <Volume2 className="h-3 w-3" />
+                    Speaking...
+                  </span>
+                )}
+                {voice.voiceState === 'error' && (
+                  <span className="text-red-600">Mic error — tap to retry</span>
+                )}
+              </div>
+
+              {/* Interim text preview */}
+              {voice.interimText && (
+                <div className="text-sm text-muted-foreground italic max-w-md text-center">
+                  {voice.interimText}...
+                </div>
+              )}
+
+              {/* Mic button with volume ring */}
+              <div className="flex items-center gap-4">
+                {voice.voiceState === 'speaking' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={voice.stopSpeaking}
+                    className="text-muted-foreground"
+                  >
+                    <VolumeX className="h-4 w-4 mr-1" />
+                    Skip
+                  </Button>
+                )}
+
+                <button
+                  onClick={() => {
+                    if (voice.voiceState === 'listening') {
+                      voice.stopListening()
+                    } else if (voice.voiceState === 'idle' || voice.voiceState === 'error') {
+                      voice.startListening()
+                    }
+                  }}
+                  disabled={isPaused || voice.voiceState === 'processing' || voice.voiceState === 'speaking'}
+                  className={`relative w-20 h-20 rounded-full flex items-center justify-center transition-all ${
+                    voice.voiceState === 'listening'
+                      ? 'bg-purple-600 text-white shadow-lg shadow-purple-200 dark:shadow-purple-900/40 scale-110'
+                      : voice.voiceState === 'processing' || voice.voiceState === 'speaking'
+                      ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                      : 'bg-purple-100 text-purple-600 hover:bg-purple-200 hover:scale-105 dark:bg-purple-900/30 dark:text-purple-400 dark:hover:bg-purple-900/50'
+                  } disabled:opacity-50`}
+                >
+                  {/* Volume ring animation */}
+                  {voice.voiceState === 'listening' && voice.volume > 0.1 && (
+                    <span
+                      className="absolute inset-0 rounded-full border-2 border-purple-400 animate-ping"
+                      style={{ opacity: voice.volume * 0.5 }}
+                    />
+                  )}
+                  {voice.voiceState === 'listening' ? (
+                    <MicOff className="h-7 w-7" />
+                  ) : voice.voiceState === 'processing' ? (
+                    <Loader2 className="h-7 w-7 animate-spin" />
+                  ) : voice.voiceState === 'speaking' ? (
+                    <Volume2 className="h-7 w-7" />
+                  ) : (
+                    <Mic className="h-7 w-7" />
+                  )}
+                </button>
+
+                {voice.voiceState === 'listening' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={voice.stopListening}
+                    className="text-muted-foreground"
+                  >
+                    Done
+                  </Button>
+                )}
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                {voice.voiceState === 'listening'
+                  ? 'Speak naturally — tap mic or "Done" when finished'
+                  : 'Powered by Eleven Labs'}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Text mode — Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map((message) => (
+              <InterviewMessage
+                key={message.id}
+                role={message.role}
+                content={message.content}
+                timestamp={message.createdAt}
+              />
+            ))}
+            {isTyping && <TypingIndicator />}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Text input */}
+          <div className="p-4 border-t bg-muted/10">
+            <div className="flex gap-2">
+              <Textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={isPaused ? 'Interview paused...' : 'Type your response...'}
+                disabled={isTyping || isPaused}
+                className="min-h-[60px] max-h-[150px] resize-none"
+                rows={2}
+              />
+              <Button
+                onClick={handleSend}
+                disabled={!input.trim() || isTyping || isPaused}
+                size="lg"
+                className="px-6"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Press Enter to send, Shift+Enter for new line
+            </p>
+          </div>
+        </>
+      )}
 
       {/* Paused overlay */}
       {isPaused && (
@@ -479,7 +682,17 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
             <p className="text-sm text-muted-foreground mb-4">
               Take your time. Click Resume when you&apos;re ready.
             </p>
-            <Button onClick={() => setIsPaused(false)}>
+            <Button onClick={() => {
+              setIsPaused(false)
+              if (pauseStartRef.current) {
+                const pauseDuration = (Date.now() - pauseStartRef.current) / 1000
+                setTotalPauseTime(prev => prev + pauseDuration)
+                pauseStartRef.current = null
+              }
+              if (mode === 'voice') {
+                voice.startListening()
+              }
+            }}>
               <Send className="h-4 w-4 mr-2" />
               Resume Interview
             </Button>
@@ -495,142 +708,6 @@ export function InterviewChat({ applicationId, onComplete, applicationContext }:
             <p className="text-lg font-medium">Saving Interview</p>
             <p className="text-sm text-muted-foreground">
               Please wait while we save your interview...
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Input — Text or Voice */}
-      {mode === 'text' ? (
-        <div className="p-4 border-t bg-muted/10">
-          <div className="flex gap-2">
-            <Textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={isPaused ? 'Interview paused...' : 'Type your response...'}
-              disabled={isTyping || isPaused}
-              className="min-h-[60px] max-h-[150px] resize-none"
-              rows={2}
-            />
-            <Button
-              onClick={handleSend}
-              disabled={!input.trim() || isTyping || isPaused}
-              size="lg"
-              className="px-6"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            Press Enter to send, Shift+Enter for new line
-          </p>
-        </div>
-      ) : (
-        <div className="p-4 border-t bg-muted/10">
-          <div className="flex flex-col items-center gap-3">
-            {/* Voice state indicator */}
-            <div className="flex items-center gap-2 text-sm">
-              {voice.voiceState === 'idle' && (
-                <span className="text-muted-foreground">Click the mic to start speaking</span>
-              )}
-              {voice.voiceState === 'listening' && (
-                <span className="text-purple-600 flex items-center gap-1">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500" />
-                  </span>
-                  Listening...
-                </span>
-              )}
-              {voice.voiceState === 'processing' && (
-                <span className="text-blue-600 flex items-center gap-1">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Processing...
-                </span>
-              )}
-              {voice.voiceState === 'speaking' && (
-                <span className="text-green-600 flex items-center gap-1">
-                  <Volume2 className="h-3 w-3" />
-                  AI is speaking...
-                </span>
-              )}
-              {voice.voiceState === 'error' && (
-                <span className="text-red-600">Mic error — try again</span>
-              )}
-            </div>
-
-            {/* Interim text preview */}
-            {voice.interimText && (
-              <div className="text-sm text-muted-foreground italic max-w-md text-center">
-                {voice.interimText}...
-              </div>
-            )}
-
-            {/* Mic button with volume ring */}
-            <div className="flex items-center gap-4">
-              {voice.voiceState === 'speaking' && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={voice.stopSpeaking}
-                  className="text-muted-foreground"
-                >
-                  <VolumeX className="h-4 w-4 mr-1" />
-                  Skip
-                </Button>
-              )}
-
-              <button
-                onClick={() => {
-                  if (voice.voiceState === 'listening') {
-                    voice.stopListening()
-                  } else if (voice.voiceState === 'idle' || voice.voiceState === 'error') {
-                    voice.startListening()
-                  }
-                }}
-                disabled={isPaused || voice.voiceState === 'processing' || voice.voiceState === 'speaking'}
-                className={`relative w-16 h-16 rounded-full flex items-center justify-center transition-all ${
-                  voice.voiceState === 'listening'
-                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-200 scale-110'
-                    : voice.voiceState === 'processing' || voice.voiceState === 'speaking'
-                    ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                    : 'bg-purple-100 text-purple-600 hover:bg-purple-200 hover:scale-105'
-                } disabled:opacity-50`}
-              >
-                {/* Volume ring animation */}
-                {voice.voiceState === 'listening' && voice.volume > 0.1 && (
-                  <span
-                    className="absolute inset-0 rounded-full border-2 border-purple-400 animate-ping"
-                    style={{ opacity: voice.volume * 0.5 }}
-                  />
-                )}
-                {voice.voiceState === 'listening' ? (
-                  <MicOff className="h-6 w-6" />
-                ) : voice.voiceState === 'processing' ? (
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                ) : (
-                  <Mic className="h-6 w-6" />
-                )}
-              </button>
-
-              {voice.voiceState === 'listening' && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={voice.stopListening}
-                  className="text-muted-foreground"
-                >
-                  Done
-                </Button>
-              )}
-            </div>
-
-            <p className="text-xs text-muted-foreground">
-              {voice.voiceState === 'listening'
-                ? 'Speak naturally — tap mic or "Done" when finished'
-                : 'Powered by Eleven Labs'}
             </p>
           </div>
         </div>

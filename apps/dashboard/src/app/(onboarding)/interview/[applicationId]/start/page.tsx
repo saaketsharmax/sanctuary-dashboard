@@ -86,7 +86,7 @@ export default function InterviewChatPage() {
         <div>
           <h1 className="text-xl font-semibold">{application.companyName} Interview</h1>
           <p className="text-sm text-muted-foreground">
-            Answer honestly and take your time
+            Voice interview — speak naturally and take your time
           </p>
         </div>
       </div>

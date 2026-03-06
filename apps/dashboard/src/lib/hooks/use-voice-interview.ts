@@ -447,6 +447,20 @@ export function useVoiceInterview(options: UseVoiceInterviewOptions) {
     }
   }, [stopVolumeMonitoring, updateVoiceState])
 
+  // Speak text directly via Eleven Labs (for opening message, etc.)
+  const speakText = useCallback(async (text: string) => {
+    const config: VoiceConfig = {
+      provider: 'elevenlabs',
+      voiceId: process.env.NEXT_PUBLIC_ELEVENLABS_VOICE_ID || 'pNInz6obpgDQGcFmaJgB',
+      modelId: 'eleven_turbo_v2_5',
+      stability: 0.5,
+      similarityBoost: 0.75,
+      style: 0.3,
+      speakerBoost: true,
+    }
+    await speakWithElevenLabs(text, config)
+  }, [speakWithElevenLabs])
+
   // Full voice turn: send text to API, then speak the response
   const processVoiceTurn = useCallback(async (
     transcribedText: string,
@@ -505,6 +519,7 @@ export function useVoiceInterview(options: UseVoiceInterviewOptions) {
     startListening,
     stopListening,
     stopSpeaking,
+    speakText,
     processVoiceTurn,
   }
 }
