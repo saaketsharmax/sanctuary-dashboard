@@ -192,14 +192,12 @@ export async function POST(request: NextRequest) {
 
     const data = validationResult.data
 
-    // If Supabase is not configured, return a demo application ID
+    // Require database for submissions
     if (!isSupabaseConfigured()) {
-      const demoId = `demo-app-${Date.now()}`
-      console.log('Demo mode: Application data:', data)
-      return NextResponse.json({
-        id: demoId,
-        message: 'Application saved (demo mode)',
-      })
+      return NextResponse.json(
+        { error: 'Application service temporarily unavailable' },
+        { status: 503 }
+      )
     }
 
     // Get authenticated user
@@ -282,9 +280,9 @@ export async function POST(request: NextRequest) {
     const { data: application, error } = await db.applications.create(applicationData)
 
     if (error) {
-      console.error('Database error:', error)
+      console.error('Application save error:', error instanceof Error ? error.message : 'Unknown error')
       return NextResponse.json(
-        { error: 'Failed to save application', details: error.message },
+        { error: 'Failed to save application' },
         { status: 500 }
       )
     }
@@ -294,7 +292,7 @@ export async function POST(request: NextRequest) {
       message: 'Application submitted successfully',
     })
   } catch (error) {
-    console.error('API error:', error)
+    console.error('Application POST error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -306,7 +304,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     if (!isSupabaseConfigured()) {
-      return NextResponse.json({ applications: [] })
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
     }
 
     const supabase = await createClient()
@@ -324,7 +322,7 @@ export async function GET(request: NextRequest) {
     const { data: applications, error } = await db.applications.getByUserId(user.id)
 
     if (error) {
-      console.error('Database error:', error)
+      console.error('Applications fetch error:', error instanceof Error ? error.message : 'Unknown error')
       return NextResponse.json(
         { error: 'Failed to fetch applications' },
         { status: 500 }
@@ -333,7 +331,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ applications })
   } catch (error) {
-    console.error('API error:', error)
+    console.error('Applications GET error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

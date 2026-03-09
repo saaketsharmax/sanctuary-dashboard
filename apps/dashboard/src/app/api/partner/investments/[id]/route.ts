@@ -127,7 +127,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       creditsByCategory,
     })
   } catch (error) {
-    console.error('Partner investment detail error:', error)
+    console.error('Partner investment detail error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

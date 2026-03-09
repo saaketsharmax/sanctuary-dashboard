@@ -242,7 +242,7 @@ export function getDocumentVerificationAgent(): DocumentVerificationAgent | Mock
     if (process.env.ANTHROPIC_API_KEY && process.env.TAVILY_API_KEY) {
       agentInstance = new DocumentVerificationAgent()
     } else {
-      console.log('Missing API keys, using mock document verification agent')
+      console.warn('Missing API keys, using mock document verification agent')
       agentInstance = new MockDocumentVerificationAgent()
     }
   }

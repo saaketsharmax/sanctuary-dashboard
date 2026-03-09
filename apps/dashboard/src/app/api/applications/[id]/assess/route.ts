@@ -155,9 +155,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     })
 
     if (updateError) {
-      console.error('Failed to save assessment:', updateError)
+      console.error('Failed to save assessment:', updateError instanceof Error ? updateError.message : 'Unknown error')
       return NextResponse.json(
-        { error: 'Failed to save assessment', details: updateError.message },
+        { error: 'Failed to save assessment' },
         { status: 500 }
       )
     }
@@ -212,7 +212,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       mode: 'live',
     })
   } catch (error) {
-    console.error('Assessment API error:', error)
+    console.error('Assessment API error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -279,7 +279,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       metadata: (application as any).assessment_metadata,
     })
   } catch (error) {
-    console.error('Assessment GET error:', error)
+    console.error('Assessment GET error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

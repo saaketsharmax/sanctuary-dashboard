@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (insertError || !transaction) {
-      console.error('Insert transaction error:', insertError)
+      console.error('Insert transaction error:', insertError instanceof Error ? insertError.message : 'Unknown error')
       return NextResponse.json({ error: 'Failed to create transaction' }, { status: 500 })
     }
 
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Create transaction error:', error)
+    console.error('Create transaction error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -165,12 +165,12 @@ export async function PATCH(request: NextRequest) {
     const { data: updated, error: updateError } = await db.investments.updateTransaction(transactionId, { status: 'cancelled' })
 
     if (updateError) {
-      return NextResponse.json({ error: updateError.message }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to update transaction' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, transaction: updated })
   } catch (error) {
-    console.error('Cancel transaction error:', error)
+    console.error('Cancel transaction error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -372,7 +372,7 @@ export function getTeamAssessmentAgent(): TeamAssessmentAgent | MockTeamAssessme
     if (process.env.ANTHROPIC_API_KEY && process.env.TAVILY_API_KEY) {
       agentInstance = new TeamAssessmentAgent()
     } else {
-      console.log('Missing API keys, using mock team assessment agent')
+      console.warn('Missing API keys, using mock team assessment agent')
       agentInstance = new MockTeamAssessmentAgent()
     }
   }

@@ -36,7 +36,7 @@ export async function GET() {
     const { data: investments, error: investError } = await db.investments.getAllWithCompanyName()
 
     if (investError) {
-      console.error('Investments fetch error:', investError)
+      console.error('Investments fetch error:', investError instanceof Error ? investError.message : 'Unknown error')
       return NextResponse.json({ error: 'Failed to fetch investments' }, { status: 500 })
     }
 
@@ -127,7 +127,7 @@ export async function GET() {
       },
     })
   } catch (error) {
-    console.error('Partner investments API error:', error)
+    console.error('Partner investments API error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

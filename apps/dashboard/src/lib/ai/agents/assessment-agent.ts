@@ -623,7 +623,7 @@ export function getAssessmentAgent(): AssessmentAgent | MockAssessmentAgent {
     if (process.env.ANTHROPIC_API_KEY) {
       agentInstance = new AssessmentAgent()
     } else {
-      console.log('No ANTHROPIC_API_KEY found, using mock assessment agent')
+      console.warn('No ANTHROPIC_API_KEY found, using mock assessment agent')
       agentInstance = new MockAssessmentAgent()
     }
   }

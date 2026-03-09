@@ -168,7 +168,7 @@ export async function GET(request: NextRequest) {
       isMock: false,
     })
   } catch (error) {
-    console.error('Founder metrics API error:', error)
+    console.error('Founder metrics API error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({
       success: true,
       ...getEmptyMetricsData(),

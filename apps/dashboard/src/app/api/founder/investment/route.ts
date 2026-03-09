@@ -5,7 +5,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { createDb } from '@sanctuary/database'
-import { generateInvestmentMockData } from '@/lib/mock-data/investment-mock'
 import { format } from 'date-fns'
 
 /**
@@ -18,9 +17,7 @@ export async function GET(request: NextRequest) {
     const view = request.nextUrl.searchParams.get('view') // 'cash' | 'credits' | null
 
     if (!isSupabaseConfigured()) {
-      // No DB — return mock data so the UI is still usable
-      const mock = generateInvestmentMockData()
-      return returnViewFiltered(mock.investment, mock.transactions, view, mock.cashDashboard, true)
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
     }
 
     const supabase = await createClient()
@@ -28,9 +25,7 @@ export async function GET(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      // Not logged in — return mock data so the page isn't blank
-      const mock = generateInvestmentMockData()
-      return returnViewFiltered(mock.investment, mock.transactions, view, mock.cashDashboard, true)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Find the founder's application
@@ -39,18 +34,28 @@ export async function GET(request: NextRequest) {
     const application = Array.isArray(applicationList) ? applicationList[0] : applicationList
 
     if (!application) {
-      // No application — return mock data
-      const mock = generateInvestmentMockData()
-      return returnViewFiltered(mock.investment, mock.transactions, view, mock.cashDashboard, true)
+      // No application yet — return empty state
+      return NextResponse.json({
+        success: true,
+        investment: null,
+        transactions: [],
+        isMock: false,
+        message: 'No application found',
+      })
     }
 
     // Find the investment for this application
     const { data: investment } = await db.investments.getByApplicationId(application.id)
 
     if (!investment) {
-      // No investment — return mock data
-      const mock = generateInvestmentMockData()
-      return returnViewFiltered(mock.investment, mock.transactions, view, mock.cashDashboard, true)
+      // Application exists but no investment allocated yet
+      return NextResponse.json({
+        success: true,
+        investment: null,
+        transactions: [],
+        isMock: false,
+        message: 'No investment allocated yet',
+      })
     }
 
     // Get all transactions for this investment
@@ -144,7 +149,7 @@ export async function GET(request: NextRequest) {
 
     return returnViewFiltered(formattedInvestment, formattedTransactions, view, cashDashboard, false)
   } catch (error) {
-    console.error('Founder investment API error:', error)
+    console.error('Founder investment API error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

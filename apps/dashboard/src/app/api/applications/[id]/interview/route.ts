@@ -190,7 +190,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // If Supabase is not configured, return demo response
     if (!isSupabaseConfigured()) {
-      console.log(`Demo mode: Interview ${data.action} for application ${applicationId}`)
       return NextResponse.json({
         success: true,
         applicationId,
@@ -240,9 +239,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       })
 
       if (updateError) {
-        console.error('Database error:', updateError)
+        console.error('Database error:', updateError instanceof Error ? updateError.message : 'Unknown error')
         return NextResponse.json(
-          { error: 'Failed to start interview', details: updateError.message },
+          { error: 'Failed to start interview' },
           { status: 500 }
         )
       }
@@ -275,9 +274,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       })
 
       if (updateError) {
-        console.error('Database error:', updateError)
+        console.error('Database error:', updateError instanceof Error ? updateError.message : 'Unknown error')
         return NextResponse.json(
-          { error: 'Failed to save interview', details: updateError.message },
+          { error: 'Failed to save interview' },
           { status: 500 }
         )
       }
@@ -331,7 +330,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       { status: 400 }
     )
   } catch (error) {
-    console.error('API error:', error)
+    console.error('API error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -401,7 +400,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       interview_transcript: (application as any).interview_transcript,
     })
   } catch (error) {
-    console.error('API error:', error)
+    console.error('API error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

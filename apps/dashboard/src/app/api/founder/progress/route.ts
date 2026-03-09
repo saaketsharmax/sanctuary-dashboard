@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     const { data: checkpoints, error: checkpointsError } = await db.startups.getCheckpoints(profile.startup_id)
 
     if (checkpointsError) {
-      console.error('Checkpoints fetch error:', checkpointsError)
+      console.error('Checkpoints fetch error:', checkpointsError instanceof Error ? checkpointsError.message : 'Unknown error')
     }
 
     // Get partner feedback
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     })
 
     if (feedbackError) {
-      console.error('Feedback fetch error:', feedbackError)
+      console.error('Feedback fetch error:', feedbackError instanceof Error ? feedbackError.message : 'Unknown error')
     }
 
     // Get startup stage info
@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
       isMock: false,
     })
   } catch (error) {
-    console.error('Founder progress API error:', error)
+    console.error('Founder progress API error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({
       success: true,
       ...getEmptyProgressData(),
@@ -187,12 +187,12 @@ export async function PATCH(request: NextRequest) {
     const { data: updated, error: updateError } = await db.startups.updateCheckpoint(checkpointId, updates)
 
     if (updateError) {
-      return NextResponse.json({ error: updateError.message }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to update checkpoint' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, checkpoint: updated })
   } catch (error) {
-    console.error('Update checkpoint error:', error)
+    console.error('Update checkpoint error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -867,7 +867,7 @@ export function getDDReportGenerator(): DDReportGenerator | MockDDReportGenerato
     if (process.env.ANTHROPIC_API_KEY) {
       agentInstance = new DDReportGenerator()
     } else {
-      console.log('Missing API keys, using mock DD report generator')
+      console.warn('Missing API keys, using mock DD report generator')
       agentInstance = new MockDDReportGenerator()
     }
   }

@@ -15,22 +15,14 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
 
     if (!supabase) {
-      return NextResponse.json({
-        success: true,
-        documents: getEmptyDocuments(),
-        isMock: true,
-      })
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
     }
 
     const db = createDb({ type: 'supabase-client', client: supabase })
 
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json({
-        success: true,
-        documents: getEmptyDocuments(),
-        isMock: true,
-      })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Get user's startup_id
@@ -39,8 +31,8 @@ export async function GET(request: NextRequest) {
     if (!profile?.startup_id) {
       return NextResponse.json({
         success: true,
-        documents: getEmptyDocuments(),
-        isMock: true,
+        documents: [],
+        isMock: false,
       })
     }
 
@@ -51,12 +43,8 @@ export async function GET(request: NextRequest) {
     })
 
     if (docsError) {
-      console.error('Documents fetch error:', docsError)
-      return NextResponse.json({
-        success: true,
-        documents: getEmptyDocuments(),
-        isMock: true,
-      })
+      console.error('Documents fetch error:', docsError instanceof Error ? docsError.message : 'Unknown error')
+      return NextResponse.json({ error: 'Failed to fetch documents' }, { status: 500 })
     }
 
     const formattedDocs = (documents || []).map((doc) => ({
@@ -78,12 +66,8 @@ export async function GET(request: NextRequest) {
       isMock: false,
     })
   } catch (error) {
-    console.error('Founder documents API error:', error)
-    return NextResponse.json({
-      success: true,
-      documents: getEmptyDocuments(),
-      isMock: true,
-    })
+    console.error('Founder documents API error:', error instanceof Error ? error.message : 'Unknown error')
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -131,7 +115,7 @@ export async function POST(request: NextRequest) {
       .upload(fileName, file)
 
     if (uploadError) {
-      console.error('Upload error:', uploadError)
+      console.error('Upload error:', uploadError instanceof Error ? uploadError.message : 'Unknown error')
       return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 })
     }
 
@@ -162,7 +146,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (docError || !document) {
-      console.error('Document record error:', docError)
+      console.error('Document record error:', docError instanceof Error ? docError.message : 'Unknown error')
       return NextResponse.json({ error: 'Failed to save document' }, { status: 500 })
     }
 
@@ -179,7 +163,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Upload document error:', error)
+    console.error('Upload document error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -235,7 +219,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Delete document error:', error)
+    console.error('Delete document error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

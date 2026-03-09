@@ -56,7 +56,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       report: (report as any).report_data,
     })
   } catch (error) {
-    console.error('DD report GET error:', error)
+    console.error('DD report GET error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -184,7 +184,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       report: result.report,
     })
   } catch (error) {
-    console.error('DD report POST error:', error)
+    console.error('DD report POST error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

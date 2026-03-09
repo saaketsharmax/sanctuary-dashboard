@@ -362,7 +362,7 @@ export function getClaimExtractionAgent(): ClaimExtractionAgent | MockClaimExtra
     if (process.env.ANTHROPIC_API_KEY) {
       agentInstance = new ClaimExtractionAgent()
     } else {
-      console.log('Missing API keys, using mock claim extraction agent')
+      console.warn('Missing API keys, using mock claim extraction agent')
       agentInstance = new MockClaimExtractionAgent()
     }
   }

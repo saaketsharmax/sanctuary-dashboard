@@ -58,7 +58,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       message: 'No research data available. POST to this endpoint to trigger research.',
     })
   } catch (error) {
-    console.error('Research GET error:', error)
+    console.error('Research GET error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     })
 
     if (updateError) {
-      console.error('Research update error:', updateError)
+      console.error('Research update error:', updateError instanceof Error ? updateError.message : 'Unknown error')
     }
 
     return NextResponse.json({
@@ -161,12 +161,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       metadata: result.metadata,
     })
   } catch (error) {
-    console.error('Research API error:', error)
+    console.error('Research API error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json(
-      {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

@@ -68,7 +68,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       } : null,
     })
   } catch (error) {
-    console.error('DD GET error:', error)
+    console.error('DD GET error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -254,7 +254,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const { data: insertedClaims, error: insertError } = await db.dd.insertClaims(claimInserts)
 
     if (insertError || !insertedClaims) {
-      console.error('Failed to insert claims:', insertError)
+      console.error('Failed to insert claims:', insertError instanceof Error ? insertError.message : 'Unknown error')
       await db.applications.update(id, { dd_status: 'failed' })
       return NextResponse.json({ error: 'Failed to store claims' }, { status: 500 })
     }
@@ -439,7 +439,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     })
 
     if (reportError || !insertedReport) {
-      console.error('Failed to insert report:', reportError)
+      console.error('Failed to insert report:', reportError instanceof Error ? reportError.message : 'Unknown error')
     }
 
     // Log report generation
@@ -481,9 +481,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       },
     })
   } catch (error) {
-    console.error('DD pipeline error:', error)
+    console.error('DD pipeline error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

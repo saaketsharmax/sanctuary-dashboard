@@ -369,7 +369,7 @@ export function getClaimVerificationAgent(): ClaimVerificationAgent | MockClaimV
     if (process.env.ANTHROPIC_API_KEY && process.env.TAVILY_API_KEY) {
       agentInstance = new ClaimVerificationAgent()
     } else {
-      console.log('Missing API keys, using mock claim verification agent')
+      console.warn('Missing API keys, using mock claim verification agent')
       agentInstance = new MockClaimVerificationAgent()
     }
   }

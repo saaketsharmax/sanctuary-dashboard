@@ -609,7 +609,7 @@ export function getResearchAgent(): ResearchAgent | MockResearchAgent {
     if (process.env.ANTHROPIC_API_KEY && process.env.TAVILY_API_KEY) {
       agentInstance = new ResearchAgent()
     } else {
-      console.log('Missing API keys, using mock research agent')
+      console.warn('Missing API keys, using mock research agent')
       agentInstance = new MockResearchAgent()
     }
   }

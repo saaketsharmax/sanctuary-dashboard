@@ -524,7 +524,7 @@ export function getMemoGenerator(): MemoGenerator | MockMemoGenerator {
     if (process.env.ANTHROPIC_API_KEY) {
       generatorInstance = new MemoGenerator()
     } else {
-      console.log('No ANTHROPIC_API_KEY found, using mock memo generator')
+      console.warn('No ANTHROPIC_API_KEY found, using mock memo generator')
       generatorInstance = new MockMemoGenerator()
     }
   }

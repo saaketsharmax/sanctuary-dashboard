@@ -16,11 +16,7 @@ export async function GET(request: NextRequest) {
 
     // Check if Supabase is configured
     if (!supabase) {
-      return NextResponse.json({
-        success: true,
-        company: getEmptyCompanyData(),
-        isMock: true,
-      })
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
     }
 
     const db = createDb({ type: 'supabase-client', client: supabase })
@@ -28,11 +24,7 @@ export async function GET(request: NextRequest) {
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json({
-        success: true,
-        company: getEmptyCompanyData(),
-        isMock: true,
-      })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Get user profile with startup_id
@@ -72,8 +64,8 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        company: getEmptyCompanyData(),
-        isMock: true,
+        company: null,
+        isMock: false,
       })
     }
 
@@ -83,8 +75,8 @@ export async function GET(request: NextRequest) {
     if (startupError || !startup) {
       return NextResponse.json({
         success: true,
-        company: getEmptyCompanyData(),
-        isMock: true,
+        company: null,
+        isMock: false,
       })
     }
 
@@ -119,12 +111,8 @@ export async function GET(request: NextRequest) {
       isMock: false,
     })
   } catch (error) {
-    console.error('Founder company API error:', error)
-    return NextResponse.json({
-      success: true,
-      company: getEmptyCompanyData(),
-      isMock: true,
-    })
+    console.error('Founder company API error:', error instanceof Error ? error.message : 'Unknown error')
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -174,7 +162,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ success: true, company: updated })
   } catch (error) {
-    console.error('Update company error:', error)
+    console.error('Update company error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

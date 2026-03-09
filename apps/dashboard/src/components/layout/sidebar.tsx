@@ -18,6 +18,7 @@ import {
   Handshake,
 } from 'lucide-react'
 import { useAuthStore, useUser } from '@/lib/stores/auth-store'
+import { signOut } from '@/lib/supabase/auth'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -63,7 +64,8 @@ export function Sidebar() {
   const { clearRole, role } = useAuthStore()
   const [collapsed, setCollapsed] = useState(false)
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut()
     clearRole()
     router.push('/')
   }

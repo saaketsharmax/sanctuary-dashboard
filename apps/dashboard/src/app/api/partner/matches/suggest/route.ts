@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server'
-import { isSupabaseConfigured } from '@/lib/supabase/server'
+import { requirePartnerAuth } from '@/lib/api-auth'
 import { createDb } from '@sanctuary/database'
 import { getMatchmakingAgent } from '@/lib/ai/agents/matchmaking-agent'
 import type { MatchRequest, MatchCandidate } from '@/lib/ai/types/matchmaking'
@@ -15,22 +15,25 @@ import type { MatchRequest, MatchCandidate } from '@/lib/ai/types/matchmaking'
  * Find best matches for a startup
  */
 export async function POST(request: NextRequest) {
-  const body = await request.json()
-  const { matchRequest } = body as { matchRequest: MatchRequest }
+  try {
+    const auth = await requirePartnerAuth()
+    if (!auth.ok) return auth.response
 
-  if (!matchRequest) {
-    return NextResponse.json({ error: 'Missing matchRequest' }, { status: 400 })
-  }
+    const body = await request.json()
+    const { matchRequest } = body as { matchRequest: MatchRequest }
 
-  // Fetch candidates from database if configured, otherwise use empty array
-  let candidates: MatchCandidate[] = []
-  let historicalMatches: { candidateId: string; startupId: string; outcome: 'successful' | 'neutral' | 'unsuccessful'; feedback: string }[] = []
+    if (!matchRequest) {
+      return NextResponse.json({ error: 'Missing matchRequest' }, { status: 400 })
+    }
 
-  if (isSupabaseConfigured()) {
-    const db = createDb({ type: 'admin' })
+    // Use admin DB for cross-user queries (candidates from all mentors)
+    const adminDb = createDb({ type: 'admin' })
+
+    let candidates: MatchCandidate[] = []
+    let historicalMatches: { candidateId: string; startupId: string; outcome: 'successful' | 'neutral' | 'unsuccessful'; feedback: string }[] = []
 
     // Fetch mentors as candidates
-    const { data: mentors } = await db.mentors.getCandidates()
+    const { data: mentors } = await adminDb.mentors.getCandidates()
 
     if (mentors) {
       candidates = mentors.map((m: Record<string, unknown>) => ({
@@ -48,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch historical match outcomes
-    const { data: matches } = await db.mentors.getHistoricalMatches(['completed', 'rejected'])
+    const { data: matches } = await adminDb.mentors.getHistoricalMatches(['completed', 'rejected'])
 
     if (matches) {
       historicalMatches = matches.map((m: Record<string, unknown>) => ({
@@ -58,16 +61,19 @@ export async function POST(request: NextRequest) {
         feedback: (m.feedback as string) || '',
       }))
     }
+
+    const agent = getMatchmakingAgent()
+    const result = await agent.findMatches({
+      request: matchRequest,
+      candidates,
+      historicalMatches,
+    })
+
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error('Matchmaking error:', error instanceof Error ? error.message : 'Unknown error')
+    return NextResponse.json({ error: 'Failed to generate match suggestions' }, { status: 500 })
   }
-
-  const agent = getMatchmakingAgent()
-  const result = await agent.findMatches({
-    request: matchRequest,
-    candidates,
-    historicalMatches,
-  })
-
-  return NextResponse.json(result)
 }
 
 /**
@@ -75,24 +81,28 @@ export async function POST(request: NextRequest) {
  * Return existing suggestions for a startup
  */
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const startupId = searchParams.get('startupId')
+  try {
+    const auth = await requirePartnerAuth()
+    if (!auth.ok) return auth.response
 
-  if (!startupId) {
-    return NextResponse.json({ error: 'Missing startupId query param' }, { status: 400 })
+    const { searchParams } = new URL(request.url)
+    const startupId = searchParams.get('startupId')
+
+    if (!startupId) {
+      return NextResponse.json({ error: 'Missing startupId query param' }, { status: 400 })
+    }
+
+    const adminDb = createDb({ type: 'admin' })
+
+    const { data: matches, error } = await adminDb.mentors.getMatches(startupId)
+
+    if (error) {
+      return NextResponse.json({ error: 'Failed to fetch matches' }, { status: 500 })
+    }
+
+    return NextResponse.json({ matches: matches || [] })
+  } catch (error) {
+    console.error('Fetch matches error:', error instanceof Error ? error.message : 'Unknown error')
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-
-  if (!isSupabaseConfigured()) {
-    return NextResponse.json({ matches: [], message: 'Database not configured' })
-  }
-
-  const db = createDb({ type: 'admin' })
-
-  const { data: matches, error } = await db.mentors.getMatches(startupId)
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  return NextResponse.json({ matches: matches || [] })
 }

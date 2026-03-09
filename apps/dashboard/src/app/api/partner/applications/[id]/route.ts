@@ -107,7 +107,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       isMock: false,
     })
   } catch (error) {
-    console.error('Partner application detail API error:', error)
+    console.error('Partner application detail error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -164,8 +164,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     })
 
     if (updateError) {
-      console.error('Update error:', updateError)
-      return NextResponse.json({ error: updateError.message }, { status: 500 })
+      console.error('Application update error:', updateError instanceof Error ? updateError.message : 'Unknown error')
+      return NextResponse.json({ error: 'Failed to update application' }, { status: 500 })
     }
 
     // Auto-create investment record on approval
@@ -182,7 +182,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         })
       } catch (investmentError) {
         // Fire-and-forget: log but don't block approval
-        console.error('Failed to auto-create investment:', investmentError)
+        console.error('Failed to auto-create investment:', investmentError instanceof Error ? investmentError.message : 'Unknown error')
       }
     }
 
@@ -191,7 +191,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       application: updated,
     })
   } catch (error) {
-    console.error('Partner application update error:', error)
+    console.error('Partner application update error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

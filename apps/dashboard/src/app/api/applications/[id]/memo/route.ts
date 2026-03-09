@@ -51,7 +51,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       generatedAt: (application as any).memo_generated_at,
     })
   } catch (error) {
-    console.error('Memo GET error:', error)
+    console.error('Memo GET error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -192,7 +192,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     })
 
     if (updateError) {
-      console.error('Failed to save memo:', updateError)
+      console.error('Failed to save memo:', updateError instanceof Error ? updateError.message : 'Unknown error')
       // Still return the memo even if save failed
     }
 
@@ -203,12 +203,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       metadata: result.metadata,
     })
   } catch (error) {
-    console.error('Memo API error:', error)
+    console.error('Memo API error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json(
-      {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

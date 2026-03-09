@@ -89,7 +89,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       total: formattedClaims.length,
     })
   } catch (error) {
-    console.error('DD claims GET error:', error)
+    console.error('DD claims GET error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

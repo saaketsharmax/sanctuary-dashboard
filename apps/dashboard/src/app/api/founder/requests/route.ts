@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     const { data: requests, error: requestsError } = await db.requests.getByStartupId(profile.startup_id)
 
     if (requestsError) {
-      console.error('Requests fetch error:', requestsError)
+      console.error('Requests fetch error:', requestsError instanceof Error ? requestsError.message : 'Unknown error')
       return NextResponse.json({
         success: true,
         requests: getEmptyRequests(),
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
       isMock: false,
     })
   } catch (error) {
-    console.error('Founder requests API error:', error)
+    console.error('Founder requests API error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({
       success: true,
       requests: getEmptyRequests(),
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (insertError || !newRequest) {
-      console.error('Insert request error:', insertError)
+      console.error('Insert request error:', insertError instanceof Error ? insertError.message : 'Unknown error')
       return NextResponse.json({ error: 'Failed to create request' }, { status: 500 })
     }
 
@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Create request error:', error)
+    console.error('Create request error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -212,12 +212,12 @@ export async function PATCH(request: NextRequest) {
     const { data: updated, error: updateError } = await db.requests.update(requestId, { status: 'cancelled' })
 
     if (updateError) {
-      return NextResponse.json({ error: updateError.message }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to update request' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, request: updated })
   } catch (error) {
-    console.error('Update request error:', error)
+    console.error('Update request error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

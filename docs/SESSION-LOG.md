@@ -5,6 +5,83 @@
 
 ---
 
+## Session: 2026-03-07 — Production Security Hardening
+
+### What Was Done
+
+Comprehensive production-readiness pass across the entire codebase.
+
+**1. API Auth Helper (`lib/api-auth.ts`) — NEW FILE**
+- Created `requireAuth()`, `requirePartnerAuth()`, `requireFounderAuth()` helpers
+- Returns user, supabase client, db instance, and userType — or 401/403/503 response
+- Used by all fixed routes below
+
+**2. Fixed 5 Unprotected API Routes (CRITICAL)**
+- `api/interview/chat/route.ts` — Added auth, removed mock fallback (returns 503 if no API key)
+- `api/interview/voice/route.ts` — Added auth + try/catch + API key check
+- `api/partner/matches/suggest/route.ts` — Added partner auth to both POST & GET
+- `api/applications/[id]/decision/route.ts` — Added partner auth + Zod validation
+- `api/applications/[id]/dd/god-mode/route.ts` — Added partner auth + API key check
+
+**3. Removed Mock Data Fallbacks (4 routes)**
+- `api/founder/company/route.ts` — Returns 401 (not mock data) when auth fails
+- `api/founder/documents/route.ts` — Returns 401 (not empty array) when auth fails
+- `api/founder/investment/route.ts` — Returns 401/empty state (not mock data) when auth fails
+- `api/applications/route.ts` — Returns 503 (not demo ID) when DB not configured
+
+**4. Console Logging Cleanup (35+ files)**
+- All `console.error('...:', error)` calls → `error instanceof Error ? error.message : 'Unknown error'`
+- Removed `console.log('Demo mode: Application data:', data)` from applications route
+- Removed `console.log` from interview route (leaked full application data)
+- 9 agent factory files: `console.log` → `console.warn` for missing API key messages
+- Removed raw `error.message` leaks in 500 responses to clients (8 occurrences)
+
+**5. Security Headers (next.config.ts)**
+- X-Frame-Options: DENY
+- X-Content-Type-Options: nosniff
+- Referrer-Policy: strict-origin-when-cross-origin
+- Strict-Transport-Security: max-age=31536000
+- Permissions-Policy: camera=(), microphone=(self), geolocation=()
+
+**6. Input Validation**
+- `api/applications/[id]/decision/route.ts` — Added Zod schema for decision, notes (max 5000 chars), conditions (max 20 items)
+
+**7. Cleanup**
+- Removed orphaned `packages/ui/` (29 files, not imported anywhere since design revert)
+- Removed unused `generateInvestmentMockData` import
+- Created `apps/dashboard/.env.example` with all required env vars documented
+
+**Files Created (2):**
+1. `apps/dashboard/src/lib/api-auth.ts`
+2. `apps/dashboard/.env.example`
+
+**Files Deleted (29):**
+- Entire `packages/ui/` directory
+
+**Files Modified (36):**
+- 27 API route files (auth, error handling, mock removal)
+- 9 AI agent files (console.log → console.warn)
+- 1 config file (next.config.ts)
+
+**Build:** `npm run build:dashboard` passes with 0 errors.
+**Tests:** 59/59 passing.
+
+### Current State
+
+- **Branch:** `main`, uncommitted changes
+- **Build:** Passes
+- **Security:** All API routes authenticated, no data leaks
+
+### What's Next
+
+1. Commit + push + deploy
+2. Wire God Mode DD into partner UI (button on DD page)
+3. Community + Marketing apps (real data)
+4. E2E tests (Playwright)
+5. Rate limiting on sensitive endpoints
+
+---
+
 ## Session: 2026-02-27 (b) — Comprehensive Responsive Breakpoints
 
 ### What Was Done

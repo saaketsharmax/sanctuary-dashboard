@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     )
 
     if (txnError) {
-      console.error('Transactions fetch error:', txnError)
+      console.error('Transactions fetch error:', txnError instanceof Error ? txnError.message : 'Unknown error')
       return NextResponse.json({ error: 'Failed to fetch transactions' }, { status: 500 })
     }
 
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
       transactions: formatted,
     })
   } catch (error) {
-    console.error('Partner transactions API error:', error)
+    console.error('Partner transactions API error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -161,12 +161,12 @@ export async function PATCH(request: NextRequest) {
     })
 
     if (updateError) {
-      return NextResponse.json({ error: updateError.message }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to update transaction' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, transaction: updated })
   } catch (error) {
-    console.error('Partner transaction update error:', error)
+    console.error('Partner transaction update error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

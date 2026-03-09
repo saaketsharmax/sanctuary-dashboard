@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     const { data: applications, error } = await db.applications.getAll(fields)
 
     if (error) {
-      console.error('Applications fetch error:', error)
+      console.error('Applications fetch error:', error instanceof Error ? error.message : 'Unknown error')
       return NextResponse.json({
         success: false,
         applications: [],
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
       applications: formattedApplications,
     })
   } catch (error) {
-    console.error('Partner applications API error:', error)
+    console.error('Partner applications API error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({
       success: false,
       applications: [],
