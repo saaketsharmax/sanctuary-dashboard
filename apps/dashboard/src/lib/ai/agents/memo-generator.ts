@@ -2,7 +2,9 @@
 // SANCTUARY MEMO GENERATOR — Synthesize All Data into Investment Memo
 // ═══════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk'
+import { generateObject } from 'ai'
+import { getModel, MAX_TOKENS, SANCTUARY_MODEL_ID, ANTHROPIC_CACHE_OPTIONS } from '../config'
+import { memoOutputSchema } from '../schemas/memo'
 import { MEMO_SYSTEM_PROMPT, MEMO_GENERATION_PROMPT } from '../prompts/memo-system'
 import type {
   StartupMemo,
@@ -41,15 +43,7 @@ export interface MemoResult {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export class MemoGenerator {
-  private client: Anthropic
-  private model = 'claude-sonnet-4-20250514'
   private version = '1.0'
-
-  constructor() {
-    this.client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    })
-  }
 
   /**
    * Generate a comprehensive startup memo
@@ -75,35 +69,27 @@ export class MemoGenerator {
         researchData
       )
 
-      // Call Claude
-      const response = await this.client.messages.create({
-        model: this.model,
-        max_tokens: 8192,
+      // Call generateObject with structured output
+      const { object } = await generateObject({
+        model: getModel(),
+        schema: memoOutputSchema,
         system: MEMO_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: prompt }],
+        prompt,
+        maxOutputTokens: MAX_TOKENS.deep,
+        providerOptions: ANTHROPIC_CACHE_OPTIONS,
       })
 
-      // Extract text content
-      const textContent = response.content.find(c => c.type === 'text')
-      if (!textContent || textContent.type !== 'text') {
-        throw new Error('No text content in response')
-      }
-
-      // Parse JSON response
-      const jsonMatch = textContent.text.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) {
-        throw new Error('No JSON found in response')
-      }
-
-      const memoData = JSON.parse(jsonMatch[0])
-
-      // Add metadata
+      // Merge with metadata fields
       const memo: StartupMemo = {
         generatedAt: new Date().toISOString(),
         version: this.version,
         applicationId: application.id,
         companyName: application.companyName,
-        ...memoData,
+        ...object,
+        appendix: {
+          ...object.appendix,
+          interviewTranscriptUrl: null,
+        },
       }
 
       return {
@@ -111,7 +97,7 @@ export class MemoGenerator {
         memo,
         metadata: {
           processingTimeMs: Date.now() - startTime,
-          model: this.model,
+          model: SANCTUARY_MODEL_ID,
           version: this.version,
         },
       }
@@ -123,7 +109,7 @@ export class MemoGenerator {
         error: error instanceof Error ? error.message : 'Unknown error',
         metadata: {
           processingTimeMs: Date.now() - startTime,
-          model: this.model,
+          model: SANCTUARY_MODEL_ID,
           version: this.version,
         },
       }

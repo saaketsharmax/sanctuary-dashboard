@@ -3,7 +3,9 @@
 // Extracts verifiable factual claims from application materials
 // ═══════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk'
+import { generateObject } from 'ai'
+import { getModel, MAX_TOKENS, ANTHROPIC_CACHE_OPTIONS } from '../config'
+import { claimExtractionOutputSchema } from '../schemas/claim-extraction'
 import {
   CLAIM_EXTRACTION_SYSTEM_PROMPT,
   CLAIM_EXTRACTION_PROMPT,
@@ -23,15 +25,6 @@ import { getStageBenchmarks } from '../types/due-diligence'
 // ═══════════════════════════════════════════════════════════════════════════
 
 export class ClaimExtractionAgent {
-  private client: Anthropic
-  private model = 'claude-sonnet-4-20250514'
-
-  constructor() {
-    this.client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    })
-  }
-
   async extractClaims(input: ClaimExtractionInput): Promise<ClaimExtractionResult> {
     const startTime = Date.now()
 
@@ -49,34 +42,25 @@ export class ClaimExtractionAgent {
         benchmarkContext
       )
 
-      const response = await this.client.messages.create({
-        model: this.model,
-        max_tokens: 4096,
+      const { object: parsed } = await generateObject({
+        model: getModel('extraction'),
+        schema: claimExtractionOutputSchema,
         system: CLAIM_EXTRACTION_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: prompt }],
+        prompt: prompt,
+        maxOutputTokens: MAX_TOKENS.analysis,
+        providerOptions: ANTHROPIC_CACHE_OPTIONS,
       })
 
-      const textContent = response.content.find(c => c.type === 'text')
-      if (!textContent || textContent.type !== 'text') {
-        throw new Error('No text content in Claude response')
-      }
-
-      const jsonMatch = textContent.text.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) {
-        throw new Error('No JSON found in response')
-      }
-
-      const parsed = JSON.parse(jsonMatch[0])
       const rawClaims = parsed.claims || []
       const contradictions = parsed.contradictions || []
       const rawOmissions = parsed.omissions || []
 
       // Build claims with contradiction links
       const claims: Omit<DDClaim, 'id' | 'verifications'>[] = rawClaims.map(
-        (c: any, idx: number) => {
+        (c, idx: number) => {
           const contradictingIndices = contradictions
-            .filter((ct: any) => ct.claimA === idx || ct.claimB === idx)
-            .map((ct: any) => (ct.claimA === idx ? ct.claimB : ct.claimA))
+            .filter((ct) => ct.claimA === idx || ct.claimB === idx)
+            .map((ct) => (ct.claimA === idx ? ct.claimB : ct.claimA))
 
           return {
             applicationId: input.applicationId,
@@ -97,7 +81,7 @@ export class ClaimExtractionAgent {
       )
 
       // Parse omissions
-      const omissions: DDOmission[] = rawOmissions.map((o: any) => ({
+      const omissions: DDOmission[] = rawOmissions.map((o) => ({
         category: this.validateCategory(o.category || 'traction'),
         expectedInfo: o.expectedInfo || '',
         severity: this.validateSeverity(o.severity),

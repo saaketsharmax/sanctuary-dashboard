@@ -1,17 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// SANCTUARY RESEARCH AGENT — External Data Gathering & Validation
+// SANCTUARY RESEARCH AGENT — Vercel AI SDK + Tool-Use Implementation
+// Claude decides what to search, loops via stepCountIs, produces structured output
 // ═══════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk'
-import { getTavilyClient, type TavilySearchResponse } from '@/lib/research/tavily-client'
-import {
-  COMPETITOR_ANALYSIS_PROMPT,
-  MARKET_ANALYSIS_PROMPT,
-  FOUNDER_VALIDATION_PROMPT,
-  NEWS_SENTIMENT_PROMPT,
-  RESEARCH_SYNTHESIS_PROMPT,
-  RESEARCH_ANALYSIS_SYSTEM_PROMPT,
-} from '../prompts/research-system'
+import { generateText, tool, stepCountIs } from 'ai'
+import { z } from 'zod'
+import { getModel, MAX_TOKENS, SANCTUARY_MODEL_ID, ANTHROPIC_CACHE_OPTIONS } from '../config'
+import { getTavilyClient } from '@/lib/research/tavily-client'
+import { RESEARCH_ANALYSIS_SYSTEM_PROMPT } from '../prompts/research-system'
 import type {
   ResearchOutput,
   FounderProfile,
@@ -47,71 +43,178 @@ export interface ResearchResult {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export class ResearchAgent {
-  private client: Anthropic
   private tavily = getTavilyClient()
-  private model = 'claude-sonnet-4-20250514'
-
-  constructor() {
-    this.client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    })
-  }
 
   /**
-   * Run comprehensive research on a startup application
+   * Run comprehensive research on a startup application.
+   * Claude autonomously decides which tools to call and in what order.
    */
   async runResearch(input: ResearchInput): Promise<ResearchResult> {
     const startTime = Date.now()
     let totalSearches = 0
-    const allSources: string[] = []
 
     try {
       const { application } = input
-      const companyName = application.companyName
-      const description = application.companyDescription || application.companyOneLiner || ''
-      const industry = this.inferIndustry(description)
+      const tavily = this.tavily
 
-      // Run searches in parallel
-      const [competitorResults, marketResults, newsResults, ...founderResults] = await Promise.all([
-        this.searchCompetitors(companyName, industry, description),
-        this.searchMarket(industry, application.targetCustomer || ''),
-        this.searchNews(companyName, application.companyWebsite || undefined),
-        ...application.founders.map(f =>
-          this.searchFounder(f.name, companyName, f.linkedin || undefined)
-        ),
-      ])
+      // Track searches across tool invocations
+      const searchTracker = { count: 0 }
 
-      totalSearches = 3 + application.founders.length
+      const result = await generateText({
+        model: getModel(),
+        maxOutputTokens: MAX_TOKENS.deep,
+        stopWhen: stepCountIs(10),
+        system: buildSystemPrompt(),
+        providerOptions: ANTHROPIC_CACHE_OPTIONS,
+        messages: [
+          {
+            role: 'user',
+            content: buildUserPrompt(application),
+          },
+        ],
+        tools: {
+          searchCompetitors: tool({
+            description: 'Search for competitors in a specific industry',
+            inputSchema: z.object({
+              companyName: z.string(),
+              industry: z.string(),
+              productDescription: z.string(),
+            }),
+            execute: async ({ companyName, industry, productDescription }) => {
+              searchTracker.count++
+              const res = await tavily.searchCompetitors(companyName, industry, productDescription)
+              return {
+                answer: res.answer,
+                results: res.results.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  content: r.content.slice(0, 500),
+                })),
+              }
+            },
+          }),
+          searchMarket: tool({
+            description: 'Search for market size, TAM/SAM data, and trends',
+            inputSchema: z.object({
+              industry: z.string(),
+              targetMarket: z.string(),
+            }),
+            execute: async ({ industry, targetMarket }) => {
+              searchTracker.count++
+              const res = await tavily.searchMarketData(industry, targetMarket)
+              return {
+                answer: res.answer,
+                results: res.results.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  content: r.content.slice(0, 500),
+                })),
+              }
+            },
+          }),
+          searchCompanyNews: tool({
+            description: 'Search for recent news about a company',
+            inputSchema: z.object({
+              companyName: z.string(),
+              companyWebsite: z.string().optional(),
+            }),
+            execute: async ({ companyName, companyWebsite }) => {
+              searchTracker.count++
+              const res = await tavily.searchCompanyNews(companyName, companyWebsite)
+              return {
+                results: res.results.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  content: r.content.slice(0, 500),
+                  publishedDate: r.publishedDate,
+                })),
+              }
+            },
+          }),
+          searchFounderBackground: tool({
+            description: 'Search for a founder\'s background, experience, and LinkedIn',
+            inputSchema: z.object({
+              founderName: z.string(),
+              companyName: z.string(),
+              linkedinUrl: z.string().optional(),
+            }),
+            execute: async ({ founderName, companyName, linkedinUrl }) => {
+              searchTracker.count++
+              const res = await tavily.searchFounderBackground(founderName, companyName, linkedinUrl)
+              return {
+                answer: res.answer,
+                results: res.results.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  content: r.content.slice(0, 500),
+                })),
+              }
+            },
+          }),
+          validateClaim: tool({
+            description: 'Validate a specific claim by searching the web',
+            inputSchema: z.object({
+              claim: z.string(),
+              companyName: z.string(),
+            }),
+            execute: async ({ claim, companyName }) => {
+              searchTracker.count++
+              const res = await tavily.validateClaim(claim, companyName)
+              return {
+                answer: res.answer,
+                results: res.results.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  content: r.content.slice(0, 500),
+                })),
+              }
+            },
+          }),
+        },
+      })
 
-      // Collect sources
-      competitorResults.results.forEach(r => allSources.push(r.url))
-      marketResults.results.forEach(r => allSources.push(r.url))
-      newsResults.results.forEach(r => allSources.push(r.url))
-      founderResults.forEach(fr => fr.results.forEach(r => allSources.push(r.url)))
+      totalSearches = searchTracker.count
 
-      // Analyze results with Claude
-      const [competitors, marketAnalysis, newsItems, founderProfiles] = await Promise.all([
-        this.analyzeCompetitors(companyName, description, competitorResults),
-        this.analyzeMarket(industry, application.targetCustomer || '', marketResults),
-        this.analyzeNews(companyName, newsResults),
-        this.analyzeFounders(application.founders, founderResults),
-      ])
+      // Parse Claude's final text response as JSON
+      const jsonMatch = result.text.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) {
+        throw new Error('No JSON found in Claude response')
+      }
 
-      // Compile validation findings
-      const validationFindings = this.compileValidationFindings(
-        application,
-        founderProfiles,
-        competitors
-      )
+      const parsed = JSON.parse(jsonMatch[0])
 
+      // Normalize into ResearchOutput with safe defaults
       const research: ResearchOutput = {
-        founderProfiles,
-        marketAnalysis,
-        competitors,
-        validationFindings,
-        recentNews: newsItems,
+        founderProfiles: (parsed.founderProfiles || []).map((fp: any): FounderProfile => ({
+          name: fp.name || 'Unknown',
+          linkedinData: fp.linkedinData || null,
+          discrepancies: fp.discrepancies || [],
+        })),
+        marketAnalysis: normalizeMarketAnalysis(parsed.marketAnalysis),
+        competitors: (parsed.competitors || []).map((c: any): CompetitorInfo => ({
+          name: c.name || 'Unknown',
+          website: c.website || '',
+          description: c.description || '',
+          funding: c.funding || 'Unknown',
+          differentiator: c.differentiator || '',
+          threatLevel: c.threatLevel || 'medium',
+        })),
+        validationFindings: (parsed.validationFindings || []).map((v: any): ValidationFinding => ({
+          claim: v.claim || '',
+          source: v.source || 'Web Research',
+          verified: v.verified ?? false,
+          notes: v.notes || '',
+        })),
+        recentNews: (parsed.recentNews || []).map((n: any): NewsItem => ({
+          title: n.title || 'Untitled',
+          source: n.source || 'Unknown',
+          date: n.date || 'Unknown',
+          sentiment: n.sentiment || 'neutral',
+          summary: n.summary || '',
+          url: n.url || '',
+        })),
         researchedAt: new Date().toISOString(),
-        sources: [...new Set(allSources)],
+        sources: parsed.sources || [],
       }
 
       return {
@@ -121,7 +224,7 @@ export class ResearchAgent {
           totalSearches,
           totalSources: research.sources.length,
           processingTimeMs: Date.now() - startTime,
-          model: this.model,
+          model: SANCTUARY_MODEL_ID,
         },
       }
     } catch (error) {
@@ -132,305 +235,144 @@ export class ResearchAgent {
         error: error instanceof Error ? error.message : 'Unknown error',
         metadata: {
           totalSearches,
-          totalSources: allSources.length,
+          totalSources: 0,
           processingTimeMs: Date.now() - startTime,
-          model: this.model,
+          model: SANCTUARY_MODEL_ID,
         },
       }
     }
   }
+}
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SEARCH METHODS
-  // ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
+// PROMPT BUILDERS
+// ═══════════════════════════════════════════════════════════════════════════
 
-  private async searchCompetitors(
-    companyName: string,
-    industry: string,
-    description: string
-  ): Promise<TavilySearchResponse> {
-    return this.tavily.searchCompetitors(companyName, industry, description)
-  }
+function buildSystemPrompt(): string {
+  return `${RESEARCH_ANALYSIS_SYSTEM_PROMPT}
 
-  private async searchMarket(
-    industry: string,
-    targetCustomer: string
-  ): Promise<TavilySearchResponse> {
-    return this.tavily.searchMarketData(industry, targetCustomer)
-  }
+You have access to web search tools. Use them to research the startup thoroughly before producing your final output.
 
-  private async searchNews(
-    companyName: string,
-    website?: string
-  ): Promise<TavilySearchResponse> {
-    return this.tavily.searchCompanyNews(companyName, website)
-  }
+WORKFLOW:
+1. Search for competitors in the company's industry
+2. Search for market size and TAM/SAM data
+3. Search for recent news about the company
+4. Search for each founder's background
+5. If any claims seem notable, use validateClaim to check them
+6. After gathering all research, produce your final JSON output
 
-  private async searchFounder(
-    founderName: string,
-    companyName: string,
-    linkedinUrl?: string
-  ): Promise<TavilySearchResponse> {
-    return this.tavily.searchFounderBackground(founderName, companyName, linkedinUrl)
-  }
+You may call multiple tools and loop as needed. When you have gathered enough data, output your final analysis as a single JSON object (no markdown fences) with this exact schema:
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ANALYSIS METHODS
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  private async analyzeCompetitors(
-    companyName: string,
-    description: string,
-    searchResults: TavilySearchResponse
-  ): Promise<CompetitorInfo[]> {
-    const searchResultsStr = this.formatSearchResults(searchResults)
-    const prompt = COMPETITOR_ANALYSIS_PROMPT(companyName, description, searchResultsStr)
-
-    const response = await this.callClaude(prompt)
-    try {
-      const parsed = JSON.parse(response)
-      return (parsed.competitors || []).map((c: any) => ({
-        name: c.name || 'Unknown',
-        website: c.website || '',
-        description: c.description || '',
-        funding: c.funding || 'Unknown',
-        differentiator: c.differentiator || '',
-        threatLevel: c.threatLevel || 'medium',
-      }))
-    } catch {
-      console.error('Failed to parse competitor analysis')
-      return []
+{
+  "founderProfiles": [
+    {
+      "name": "string",
+      "linkedinData": {
+        "headline": "string",
+        "experience": [{ "company": "string", "title": "string", "startDate": "string", "endDate": "string or null", "description": "string or null" }],
+        "education": [{ "institution": "string", "degree": "string", "field": "string or null", "graduationYear": "number or null" }],
+        "connections": 0,
+        "validated": true
+      } or null,
+      "discrepancies": ["string array"]
     }
-  }
-
-  private async analyzeMarket(
-    industry: string,
-    targetCustomer: string,
-    searchResults: TavilySearchResponse
-  ): Promise<MarketAnalysis> {
-    const searchResultsStr = this.formatSearchResults(searchResults)
-    const prompt = MARKET_ANALYSIS_PROMPT(industry, targetCustomer, searchResultsStr)
-
-    const response = await this.callClaude(prompt)
-    try {
-      const parsed = JSON.parse(response)
-      return {
-        tamEstimate: parsed.tamEstimate || { value: 'Unknown', source: 'N/A', confidence: 'low' },
-        samEstimate: parsed.samEstimate || { value: 'Unknown', source: 'N/A', confidence: 'low' },
-        somEstimate: parsed.somEstimate || { value: 'Unknown', source: 'N/A', confidence: 'low' },
-        growthRate: parsed.growthRate || 'Unknown',
-        keyTrends: parsed.keyTrends || [],
-        sources: parsed.sources || [],
-      }
-    } catch {
-      console.error('Failed to parse market analysis')
-      return {
-        tamEstimate: { value: 'Unknown', source: 'N/A', confidence: 'low' },
-        samEstimate: { value: 'Unknown', source: 'N/A', confidence: 'low' },
-        somEstimate: { value: 'Unknown', source: 'N/A', confidence: 'low' },
-        growthRate: 'Unknown',
-        keyTrends: [],
-        sources: [],
-      }
+  ],
+  "marketAnalysis": {
+    "tamEstimate": { "value": "string", "source": "string", "confidence": "high|medium|low" },
+    "samEstimate": { "value": "string", "source": "string", "confidence": "high|medium|low" },
+    "somEstimate": { "value": "string", "source": "string", "confidence": "high|medium|low" },
+    "growthRate": "string",
+    "keyTrends": ["string array"],
+    "sources": ["string array of URLs"]
+  },
+  "competitors": [
+    {
+      "name": "string",
+      "website": "string",
+      "description": "string",
+      "funding": "string",
+      "differentiator": "string",
+      "threatLevel": "high|medium|low"
     }
-  }
-
-  private async analyzeNews(
-    companyName: string,
-    searchResults: TavilySearchResponse
-  ): Promise<NewsItem[]> {
-    const searchResultsStr = this.formatSearchResults(searchResults)
-    const prompt = NEWS_SENTIMENT_PROMPT(companyName, searchResultsStr)
-
-    const response = await this.callClaude(prompt)
-    try {
-      const parsed = JSON.parse(response)
-      return (parsed.newsItems || []).map((n: any) => ({
-        title: n.title || 'Untitled',
-        source: n.source || 'Unknown',
-        date: n.date || 'Unknown',
-        sentiment: n.sentiment || 'neutral',
-        summary: n.summary || '',
-        url: n.url || '',
-      }))
-    } catch {
-      console.error('Failed to parse news analysis')
-      return []
+  ],
+  "validationFindings": [
+    {
+      "claim": "string",
+      "source": "string",
+      "verified": true/false,
+      "notes": "string"
     }
-  }
-
-  private async analyzeFounders(
-    founders: ApplicationWithFounders['founders'],
-    searchResults: TavilySearchResponse[]
-  ): Promise<FounderProfile[]> {
-    const profiles: FounderProfile[] = []
-
-    for (let i = 0; i < founders.length; i++) {
-      const founder = founders[i]
-      const results = searchResults[i]
-
-      if (!results) {
-        profiles.push({
-          name: founder.name,
-          linkedinData: null,
-          discrepancies: [],
-        })
-        continue
-      }
-
-      const claimedBackground = `${founder.yearsExperience || 0} years experience, ${
-        founder.hasStartedBefore ? 'repeat founder' : 'first-time founder'
-      }${founder.previousStartupOutcome ? `, previous outcome: ${founder.previousStartupOutcome}` : ''}`
-
-      const searchResultsStr = this.formatSearchResults(results)
-      const prompt = FOUNDER_VALIDATION_PROMPT(founder.name, claimedBackground, searchResultsStr)
-
-      const response = await this.callClaude(prompt)
-      try {
-        const parsed = JSON.parse(response)
-        profiles.push({
-          name: founder.name,
-          linkedinData: parsed.validated ? parsed.linkedinData : null,
-          discrepancies: parsed.discrepancies || [],
-        })
-      } catch {
-        profiles.push({
-          name: founder.name,
-          linkedinData: null,
-          discrepancies: [],
-        })
-      }
+  ],
+  "recentNews": [
+    {
+      "title": "string",
+      "source": "string",
+      "date": "string",
+      "sentiment": "positive|neutral|negative",
+      "summary": "string",
+      "url": "string"
     }
+  ],
+  "sources": ["string array of all source URLs used across all searches"]
+}
 
-    return profiles
-  }
+IMPORTANT: Your final message must contain ONLY the JSON object — no prose, no markdown code fences.`
+}
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // HELPER METHODS
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  private async callClaude(prompt: string): Promise<string> {
-    const response = await this.client.messages.create({
-      model: this.model,
-      max_tokens: 2048,
-      system: RESEARCH_ANALYSIS_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: prompt }],
+function buildUserPrompt(application: ApplicationWithFounders): string {
+  const founders = application.founders
+    .map(f => {
+      const parts = [`- ${f.name} (${f.role || 'Founder'})`]
+      if (f.yearsExperience) parts.push(`  Experience: ${f.yearsExperience} years`)
+      if (f.hasStartedBefore) parts.push(`  Repeat founder: yes`)
+      if (f.previousStartupOutcome) parts.push(`  Previous outcome: ${f.previousStartupOutcome}`)
+      if (f.linkedin) parts.push(`  LinkedIn: ${f.linkedin}`)
+      return parts.join('\n')
     })
+    .join('\n')
 
-    const textContent = response.content.find(c => c.type === 'text')
-    if (!textContent || textContent.type !== 'text') {
-      throw new Error('No text content in Claude response')
+  return `Research the following startup application:
+
+COMPANY: ${application.companyName}
+ONE-LINER: ${application.companyOneLiner || 'N/A'}
+DESCRIPTION: ${application.companyDescription || 'N/A'}
+WEBSITE: ${application.companyWebsite || 'N/A'}
+PROBLEM: ${application.problemDescription || 'N/A'}
+SOLUTION: ${application.solutionDescription || 'N/A'}
+TARGET CUSTOMER: ${application.targetCustomer || 'N/A'}
+STAGE: ${application.stage || 'N/A'}
+USERS: ${application.userCount ?? 'N/A'}
+MRR: ${application.mrr ? `$${application.mrr}` : 'N/A'}
+
+FOUNDERS:
+${founders || 'No founder data'}
+
+Please use the search tools to research this company's competitive landscape, market opportunity, founder backgrounds, and recent news. Then produce the final JSON research output.`
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function normalizeMarketAnalysis(raw: any): MarketAnalysis {
+  const defaultEstimate = { value: 'Unknown', source: 'N/A', confidence: 'low' }
+  if (!raw) {
+    return {
+      tamEstimate: defaultEstimate,
+      samEstimate: defaultEstimate,
+      somEstimate: defaultEstimate,
+      growthRate: 'Unknown',
+      keyTrends: [],
+      sources: [],
     }
-
-    // Extract JSON from response
-    const jsonMatch = textContent.text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-      throw new Error('No JSON found in response')
-    }
-
-    return jsonMatch[0]
   }
-
-  private formatSearchResults(results: TavilySearchResponse): string {
-    const lines: string[] = []
-
-    if (results.answer) {
-      lines.push(`SUMMARY: ${results.answer}`)
-      lines.push('')
-    }
-
-    for (const result of results.results) {
-      lines.push(`TITLE: ${result.title}`)
-      lines.push(`URL: ${result.url}`)
-      lines.push(`CONTENT: ${result.content}`)
-      if (result.publishedDate) {
-        lines.push(`DATE: ${result.publishedDate}`)
-      }
-      lines.push('')
-    }
-
-    return lines.join('\n')
-  }
-
-  private inferIndustry(description: string): string {
-    const desc = description.toLowerCase()
-    if (desc.includes('developer') || desc.includes('api') || desc.includes('sdk')) {
-      return 'Developer Tools'
-    }
-    if (desc.includes('fintech') || desc.includes('payment') || desc.includes('bank')) {
-      return 'Fintech'
-    }
-    if (desc.includes('health') || desc.includes('medical') || desc.includes('patient')) {
-      return 'Healthtech'
-    }
-    if (desc.includes('ai') || desc.includes('machine learning') || desc.includes('ml')) {
-      return 'AI/ML'
-    }
-    if (desc.includes('enterprise') || desc.includes('b2b')) {
-      return 'Enterprise SaaS'
-    }
-    if (desc.includes('consumer') || desc.includes('app')) {
-      return 'Consumer'
-    }
-    return 'B2B SaaS'
-  }
-
-  private compileValidationFindings(
-    application: ApplicationWithFounders,
-    founderProfiles: FounderProfile[],
-    competitors: CompetitorInfo[]
-  ): ValidationFinding[] {
-    const findings: ValidationFinding[] = []
-
-    // Check founder discrepancies
-    for (const profile of founderProfiles) {
-      if (profile.discrepancies.length > 0) {
-        findings.push({
-          claim: `Founder ${profile.name}'s background claims`,
-          source: 'LinkedIn / Web Research',
-          verified: false,
-          notes: profile.discrepancies.join('; '),
-        })
-      } else if (profile.linkedinData) {
-        findings.push({
-          claim: `Founder ${profile.name}'s background claims`,
-          source: 'LinkedIn / Web Research',
-          verified: true,
-          notes: 'Background verified through public records',
-        })
-      }
-    }
-
-    // Check if claimed competitors match research
-    if (competitors.length > 0) {
-      findings.push({
-        claim: 'Competitive landscape',
-        source: 'Web Research',
-        verified: true,
-        notes: `Found ${competitors.length} relevant competitors through research`,
-      })
-    }
-
-    // Check user/revenue claims if present
-    if (application.userCount && application.userCount > 0) {
-      findings.push({
-        claim: `${application.userCount} users`,
-        source: 'Self-reported',
-        verified: false,
-        notes: 'User count is self-reported, not externally verified',
-      })
-    }
-
-    if (application.mrr && application.mrr > 0) {
-      findings.push({
-        claim: `$${application.mrr} MRR`,
-        source: 'Self-reported',
-        verified: false,
-        notes: 'MRR is self-reported, not externally verified',
-      })
-    }
-
-    return findings
+  return {
+    tamEstimate: raw.tamEstimate || defaultEstimate,
+    samEstimate: raw.samEstimate || defaultEstimate,
+    somEstimate: raw.somEstimate || defaultEstimate,
+    growthRate: raw.growthRate || 'Unknown',
+    keyTrends: raw.keyTrends || [],
+    sources: raw.sources || [],
   }
 }
 

@@ -3,15 +3,15 @@
 // Primarily computational — tracks prediction accuracy, calibration, drift
 // ═══════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk';
+import { generateText } from 'ai';
+import { getModel } from '../config';
 import type { DDAccuracyInput, DDAccuracyMetrics } from '../types/dd-accuracy';
 
 export class DDAccuracyAgent {
-  private client: Anthropic | null;
-  private model = 'claude-sonnet-4-20250514';
+  private hasApiKey: boolean;
 
   constructor() {
-    this.client = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null;
+    this.hasApiKey = !!process.env.ANTHROPIC_API_KEY;
   }
 
   async calculateAccuracyMetrics(input: DDAccuracyInput): Promise<DDAccuracyMetrics> {
@@ -270,23 +270,17 @@ export class DDAccuracyAgent {
   }
 
   async generateInsights(metrics: DDAccuracyMetrics): Promise<string[]> {
-    if (!this.client) {
+    if (!this.hasApiKey) {
       return this.generateDeterministicInsights(metrics);
     }
 
     try {
-      const response = await this.client.messages.create({
-        model: this.model,
-        max_tokens: 1024,
-        messages: [
-          {
-            role: 'user',
-            content: `Analyze these DD accuracy metrics and provide 3-5 actionable insights:\n${JSON.stringify(metrics, null, 2)}\n\nReturn a JSON array of strings, each a concise insight.`,
-          },
-        ],
+      const { text } = await generateText({
+        model: getModel(),
+        prompt: `Analyze these DD accuracy metrics and provide 3-5 actionable insights:\n${JSON.stringify(metrics, null, 2)}\n\nReturn a JSON array of strings, each a concise insight.`,
+        maxOutputTokens: 1024,
       });
 
-      const text = response.content[0].type === 'text' ? response.content[0].text : '[]';
       return JSON.parse(text);
     } catch {
       return this.generateDeterministicInsights(metrics);

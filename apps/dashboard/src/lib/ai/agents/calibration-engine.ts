@@ -4,7 +4,8 @@
 // detects drift, and generates actionable calibration reports
 // ═══════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk';
+import { generateText } from 'ai';
+import { getModel } from '../config';
 import type {
   CalibrationConfig,
   CalibrationEngineInput,
@@ -16,11 +17,10 @@ import type {
 } from '../types/calibration-engine';
 
 export class CalibrationEngine {
-  private client: Anthropic | null;
-  private model = 'claude-sonnet-4-20250514';
+  private hasApiKey: boolean;
 
   constructor() {
-    this.client = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null;
+    this.hasApiKey = !!process.env.ANTHROPIC_API_KEY;
   }
 
   async runCalibration(input: CalibrationEngineInput): Promise<CalibrationEngineOutput> {
@@ -484,30 +484,20 @@ export class CalibrationEngine {
   // ─── AI Recommendations ────────────────────────────────────────────────
 
   private async generateAIRecommendations(data: Record<string, unknown>): Promise<string[]> {
-    if (!this.client) {
+    if (!this.hasApiKey) {
       return this.generateDeterministicRecommendations(data);
     }
 
     try {
-      const response = await this.client.messages.create({
-        model: this.model,
-        max_tokens: 1024,
-        messages: [
-          {
-            role: 'user',
-            content: `You are the calibration engine for Sanctuary OS, an AI startup accelerator. Analyze these DD system metrics and provide 3-5 specific, actionable recommendations for improving prediction accuracy:\n\n${JSON.stringify(data, null, 2)}\n\nReturn a JSON array of strings. Each recommendation should be concrete and implementable.`,
-          },
-        ],
+      const { text } = await generateText({
+        model: getModel(),
+        prompt: `You are the calibration engine for Sanctuary OS, an AI startup accelerator. Analyze these DD system metrics and provide 3-5 specific, actionable recommendations for improving prediction accuracy:\n\n${JSON.stringify(data, null, 2)}\n\nReturn a JSON array of strings. Each recommendation should be concrete and implementable.`,
+        maxOutputTokens: 1024,
       });
 
-      const text = response.content?.[0]?.type === 'text' ? response.content[0].text : '[]';
       const jsonMatch = text.match(/\[[\s\S]*\]/);
       if (!jsonMatch) return this.generateDeterministicRecommendations(data);
-      try {
-        return JSON.parse(jsonMatch[0]);
-      } catch {
-        return this.generateDeterministicRecommendations(data);
-      }
+      return JSON.parse(jsonMatch[0]);
     } catch {
       return this.generateDeterministicRecommendations(data);
     }

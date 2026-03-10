@@ -82,6 +82,60 @@ Comprehensive production-readiness pass across the entire codebase.
 
 ---
 
+## Session: 2026-03-10 — AI Pipeline Cost Optimization (5 Phases)
+
+### What Was Done
+
+Implemented full cost optimization plan targeting ~35-50% reduction in per-application AI pipeline costs.
+
+**Phase 1: Token Limit Right-Sizing (`config.ts`)**
+- `deep`: 8192 → 6144 (Memo, God Mode DD)
+- `summary`: 3072 → 2048 (DD Report)
+- Added `voice: 256` tier, voice-interview-agent now uses `MAX_TOKENS.voice` instead of hardcoded `512`
+
+**Phase 2: Prompt Caching Across All Agents**
+- Added `ANTHROPIC_CACHE_OPTIONS` constant in `config.ts` (ephemeral cache → 90% cheaper cached input tokens)
+- Applied `providerOptions: ANTHROPIC_CACHE_OPTIONS` to all 14 agent `generateText`/`generateObject` calls
+- Biggest win: interview agents (20+ round trips with identical system prompt)
+
+**Phase 3: Model Tiering — Haiku for Simple Tasks**
+- Added `MODEL_TIERS` with `reasoning` (Sonnet) and `extraction` (Haiku) tiers
+- `getModel()` now accepts optional tier parameter, defaults to `'reasoning'`
+- Switched to Haiku: `claim-extraction-agent`, `matchmaking-agent`, `document-verification-agent`
+- All other agents remain on Sonnet (backward-compatible)
+
+**Phase 4: Tavily Optimizations**
+- Added `contentMaxLength` option to `TavilySearchOptions`, default 500 chars
+- All search results now truncated to 500 chars at client level
+- Reduced `maxResults`: competitors 10→5, market 8→5, news 5→3, founder 5→3, funding 8→5
+- All 5 agentic agent tool execute functions also truncate `r.content.slice(0, 500)`
+- Added in-memory search cache with 10min TTL (deduplicates searches across agents on same app)
+
+**Phase 5: Interview History Management**
+- Added `summarizeHistory()` sliding window (last 6 messages in full, older summarized as bullets)
+- Applied to `claude-interview-agent.ts` — summary prepended to system prompt
+- Applied to `voice-interview-agent.ts` — same sliding window pattern
+- Reduces uncacheable message history tokens significantly after turn 6
+
+### Verification
+- `npm run build:dashboard` — passes (9s)
+- `npx vitest run` — 59/59 tests pass
+- Files changed: `config.ts`, `tavily-client.ts`, all 14 real agent files
+
+### Cost Impact (estimated)
+- Before: ~$2.00/app core, ~$3.10 full
+- After: ~$1.00-1.50/app core, ~$1.50-2.10 full
+- Reduction: ~35-50%
+
+### Next Steps
+1. Monitor Anthropic dashboard for `cache_read_input_tokens` to verify caching works
+2. Run quality comparison on Haiku agents (claim-extraction, matchmaking, doc-verification)
+3. Enable Google/GitHub OAuth in Supabase dashboard
+4. Wire God Mode DD UI button
+5. E2E tests (Playwright)
+
+---
+
 ## Session: 2026-02-27 (b) — Comprehensive Responsive Breakpoints
 
 ### What Was Done
@@ -1565,3 +1619,44 @@ Completed the database abstraction layer implementation (Phases 1-3) and verifie
 
 ### Git State
 - Not committed yet
+
+---
+
+## Session: 2026-03-09 — Security Commit, Logout Fix, Vercel Deploy
+
+### What Was Done
+
+**1. Fixed Logout Not Clearing Supabase Session (BUG FIX)**
+- `components/layout/header.tsx` — Added `await signOut()` before `clearRole()` in `handleLogout`
+- `components/layout/sidebar.tsx` — Same fix: `await signOut()` before `clearRole()`
+- Both were only clearing Zustand store state but not calling Supabase `signOut()`, so the auth session persisted after "logout"
+
+**2. Committed + Pushed Security Hardening (from 2026-03-07 session)**
+- Commit `3ac5567`: "Security hardening + fix logout not clearing Supabase session"
+- 70 files changed, 655 insertions, 2,617 deletions
+- Includes: API auth guards, mock fallback removal, security headers, console cleanup, packages/ui/ deletion, .env.example, logout fix
+
+**3. Vercel Deployment**
+- Auto-deployed from push to `main`
+- Confirmed BUILDING → READY via Vercel API
+
+**4. OAuth Providers (Google + GitHub)**
+- Frontend code already fully wired (`signInWithOAuth`, buttons on login/signup, callback route)
+- Only needs Supabase dashboard config: enable Google + GitHub providers with client ID/secret
+- Redirect URI for both: `https://hkncorpplwqxccbjrkmo.supabase.co/auth/v1/callback`
+
+**5. Generated Investment Memos (Offline)**
+- Created PDF memos for two startup applications (ProjektAnalytics Technologies, SuperPlan)
+- Used taste.md design language (dark palette, editorial layout, color-coded labels)
+- Output: `~/Downloads/Memo — ProjektAnalytics Technologies.pdf`, `~/Downloads/Memo — SuperPlan.pdf`
+
+**6. Agent Inventory Audit**
+- Cataloged all 17 AI agents with their tech stacks, external API dependencies, and factory functions
+- 16/17 use `claude-sonnet-4-20250514` via Anthropic SDK
+- 5 agents use Tavily for web research, 1 uses Eleven Labs for TTS
+- All follow Real + Mock + factory pattern
+
+### Git State
+- Committed and pushed to `main` (commit `3ac5567`)
+- Vercel deployed and READY
+- Next tasks: 1) Enable Google/GitHub OAuth in Supabase dashboard, 2) Wire God Mode DD UI button, 3) Community + Marketing real data, 4) E2E tests (Playwright), 5) Rate limiting

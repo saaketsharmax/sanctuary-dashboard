@@ -1,14 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // SANCTUARY DD — Team Assessment Agent
-// Enriches founder profiles via Tavily, analyzes team via Claude
+// Vercel AI SDK + tools + stopWhen for autonomous founder research
 // ═══════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk'
-import { getTavilyClient, type TavilySearchResponse } from '@/lib/research/tavily-client'
-import {
-  TEAM_ASSESSMENT_SYSTEM_PROMPT,
-  TEAM_ASSESSMENT_USER_PROMPT,
-} from '../prompts/team-assessment-system'
+import { generateText, tool, stepCountIs } from 'ai'
+import { z } from 'zod'
+import { getModel, MAX_TOKENS, SANCTUARY_MODEL_ID, ANTHROPIC_CACHE_OPTIONS } from '../config'
+import { getTavilyClient } from '@/lib/research/tavily-client'
 import type {
   DDTeamAssessment,
   DDTeamAssessmentInput,
@@ -24,15 +22,7 @@ import type {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export class TeamAssessmentAgent {
-  private client: Anthropic
   private tavily = getTavilyClient()
-  private model = 'claude-sonnet-4-20250514'
-
-  constructor() {
-    this.client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    })
-  }
 
   async assessTeam(input: DDTeamAssessmentInput): Promise<DDTeamAssessmentResult> {
     const startTime = Date.now()
@@ -49,51 +39,7 @@ export class TeamAssessmentAgent {
         }
       }
 
-      // ─── Step 1: Enrich each founder via Tavily ───
-      const enrichmentResults: { name: string; results: TavilySearchResponse[] }[] = []
-
-      for (const founder of founders) {
-        const founderResults: TavilySearchResponse[] = []
-
-        // General background search
-        const bgResult = await this.tavily.searchFounderBackground(
-          founder.name,
-          companyName,
-          founder.linkedin || undefined
-        )
-        founderResults.push(bgResult)
-        tavilySearches++
-
-        // If they claim prior startups, search for those
-        if (founder.hasStartedBefore && founder.previousStartupOutcome) {
-          const startupResult = await this.tavily.search({
-            query: `"${founder.name}" startup founder CEO previous company exit acquisition`,
-            searchDepth: 'advanced',
-            maxResults: 5,
-            includeAnswer: true,
-          })
-          founderResults.push(startupResult)
-          tavilySearches++
-        }
-
-        // GitHub search for technical founders
-        const role = (founder.role || '').toLowerCase()
-        if (role.includes('cto') || role.includes('tech') || role.includes('engineer') || role.includes('developer')) {
-          const ghResult = await this.tavily.search({
-            query: `"${founder.name}" github.com contributions open source repositories`,
-            searchDepth: 'basic',
-            maxResults: 3,
-            includeAnswer: true,
-            includeDomains: ['github.com'],
-          })
-          founderResults.push(ghResult)
-          tavilySearches++
-        }
-
-        enrichmentResults.push({ name: founder.name, results: founderResults })
-      }
-
-      // ─── Step 2: Format data for Claude ───
+      // ─── Format input data for the prompt ───
       const foundersData = founders.map((f, i) => {
         return `FOUNDER ${i + 1}:
   Name: ${f.name}
@@ -104,26 +50,6 @@ export class TeamAssessmentAgent {
   LinkedIn: ${f.linkedin || 'Not provided'}`
       }).join('\n\n')
 
-      const enrichmentData = enrichmentResults.map(er => {
-        const allResults = er.results.flatMap(r => r.results)
-        const answers = er.results.map(r => r.answer).filter(Boolean)
-        if (allResults.length === 0 && answers.length === 0) {
-          return `═══ ${er.name} ═══\nNo web results found.`
-        }
-        const lines: string[] = [`═══ ${er.name} ═══`]
-        for (const answer of answers) {
-          lines.push(`SUMMARY: ${answer}`)
-        }
-        for (const result of allResults) {
-          lines.push(`TITLE: ${result.title}`)
-          lines.push(`URL: ${result.url}`)
-          lines.push(`CONTENT: ${result.content}`)
-          if (result.publishedDate) lines.push(`DATE: ${result.publishedDate}`)
-          lines.push('')
-        }
-        return lines.join('\n')
-      }).join('\n\n')
-
       const interviewData = interviewTranscript
         ? interviewTranscript
             .filter(msg => msg.role === 'user')
@@ -131,41 +57,207 @@ export class TeamAssessmentAgent {
             .join('\n\n')
         : null
 
-      // ─── Step 3: Claude analysis ───
-      const prompt = TEAM_ASSESSMENT_USER_PROMPT(
-        companyName,
-        companyDescription,
-        stage,
-        foundersData,
-        enrichmentData,
-        interviewData
-      )
+      // ─── Tavily reference for tool closures ───
+      const tavily = this.tavily
 
-      const response = await this.client.messages.create({
-        model: this.model,
-        max_tokens: 4096,
-        system: TEAM_ASSESSMENT_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: prompt }],
+      // ─── Run generateText with tools + stopWhen ───
+      const result = await generateText({
+        model: getModel(),
+        maxOutputTokens: MAX_TOKENS.analysis,
+        stopWhen: stepCountIs(10),
+        providerOptions: ANTHROPIC_CACHE_OPTIONS,
+        system: `You are a senior VC analyst specializing in founder and team due diligence at Sanctuary, a venture studio. Your task is to assess the founding team's strength, experience, and fit for building the described company.
+
+You have access to web search tools. For EACH founder, you MUST:
+1. Use searchFounderBackground to find their professional background, LinkedIn, and experience
+2. If they claim prior startups, use searchPreviousStartups to verify
+3. If they have a technical role (CTO, engineer, developer, etc.), use searchGithub to check open source contributions
+
+After gathering all research, produce your final assessment.
+
+## FOUNDER SCORING (0-100 per founder)
+- 90-100: Exceptional — serial successful founder, deep domain expertise, strong network
+- 70-89: Strong — relevant experience, verified track record, credible background
+- 50-69: Average — some experience but gaps, limited public validation
+- 30-49: Weak — limited relevant experience, unverified claims, concerning signals
+- 0-29: High risk — red flags, fabricated experience, missing critical skills
+
+## TEAM COMPLETENESS
+Score the team on whether key roles are covered:
+- CEO / Business Lead (vision, fundraising, strategy)
+- CTO / Technical Lead (product development, architecture)
+- Domain Expert (industry-specific knowledge)
+- Growth / Sales (go-to-market, customer acquisition)
+Scoring: 100 = all roles filled, 75 = 3 of 4, 50 = 2 of 4, 25 = 1 of 4
+
+## RED FLAG DETECTION
+Flag any of: employment gaps not explained, inflated titles, claims not matching web evidence, "advisor inflation" (listing advisors as quasi-founders), inconsistent timelines, prior startup failures not disclosed
+
+## INTERVIEW SIGNALS (if transcript available)
+Extract signals about: co-founder alignment, complementary skills, shared history, disagreements on strategy, vision clarity, technical depth
+
+## SCORING FORMULA
+Overall team score = 60% weighted average of founder scores + 25% team completeness + 15% interview signals bonus/penalty
+
+Be rigorous but fair. Early-stage founders may have limited public presence — that's not a red flag by itself.
+
+After completing all research, respond with ONLY a valid JSON object (no markdown fences) with this exact structure:
+{
+  "founderProfiles": [
+    {
+      "name": "string",
+      "role": "string or null",
+      "founderScore": 0-100,
+      "experienceVerified": true/false,
+      "experienceEvidence": "summary of what web search found about this person",
+      "linkedinFound": true/false,
+      "githubFound": true/false,
+      "githubScore": 0-100 or null,
+      "previousStartups": [
+        { "name": "string", "outcome": "string (exit/acquired/failed/active/unknown)", "verified": true/false }
+      ],
+      "redFlags": ["string — any concerning findings"],
+      "strengths": ["string — verified positive signals"],
+      "evidenceUrls": ["string — URLs from search results used as evidence"]
+    }
+  ],
+  "teamCompletenessScore": 0-100,
+  "missingRoles": ["string — key roles not covered by current team"],
+  "teamRedFlags": [
+    {
+      "claimId": "team",
+      "claimText": "string — what the flag is about",
+      "category": "team_background",
+      "severity": "critical | high | medium",
+      "reason": "string — why this is a red flag",
+      "evidence": "string — supporting evidence"
+    }
+  ],
+  "teamStrengths": ["string — team-level strengths"],
+  "interviewSignals": [
+    {
+      "signal": "string — what was observed",
+      "sentiment": "positive | neutral | concerning",
+      "source": "string — which part of the interview"
+    }
+  ],
+  "overallTeamScore": 0-100,
+  "teamGrade": "A | B | C | D | F"
+}`,
+        tools: {
+          searchFounderBackground: tool({
+            description: 'Search for a founder\'s professional background, LinkedIn, and experience',
+            inputSchema: z.object({
+              founderName: z.string().describe('Full name of the founder'),
+              companyName: z.string().describe('Name of the company they are founding'),
+              linkedinUrl: z.string().optional().describe('LinkedIn URL if available'),
+            }),
+            execute: async ({ founderName, companyName: cn, linkedinUrl }) => {
+              tavilySearches++
+              const result = await tavily.searchFounderBackground(
+                founderName,
+                cn,
+                linkedinUrl || undefined
+              )
+              return {
+                answer: result.answer || null,
+                results: result.results.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  content: r.content.slice(0, 500),
+                  publishedDate: r.publishedDate || null,
+                })),
+              }
+            },
+          }),
+          searchPreviousStartups: tool({
+            description: 'Search for a founder\'s previous startups and outcomes',
+            inputSchema: z.object({
+              founderName: z.string().describe('Full name of the founder'),
+              startupName: z.string().optional().describe('Name of a specific previous startup to search for'),
+            }),
+            execute: async ({ founderName, startupName }) => {
+              tavilySearches++
+              const query = startupName
+                ? `"${founderName}" "${startupName}" startup founder CEO exit acquisition outcome`
+                : `"${founderName}" startup founder CEO previous company exit acquisition`
+              const result = await tavily.search({
+                query,
+                searchDepth: 'advanced',
+                maxResults: 3,
+                includeAnswer: true,
+              })
+              return {
+                answer: result.answer || null,
+                results: result.results.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  content: r.content.slice(0, 500),
+                  publishedDate: r.publishedDate || null,
+                })),
+              }
+            },
+          }),
+          searchGithub: tool({
+            description: 'Search GitHub for a founder\'s open source contributions',
+            inputSchema: z.object({
+              founderName: z.string().describe('Full name of the founder'),
+              companyName: z.string().describe('Name of the company'),
+            }),
+            execute: async ({ founderName, companyName: cn }) => {
+              tavilySearches++
+              const result = await tavily.search({
+                query: `"${founderName}" github.com contributions open source repositories`,
+                searchDepth: 'basic',
+                maxResults: 3,
+                includeAnswer: true,
+                includeDomains: ['github.com'],
+              })
+              return {
+                answer: result.answer || null,
+                results: result.results.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  content: r.content.slice(0, 500),
+                })),
+              }
+            },
+          }),
+        },
+        messages: [
+          {
+            role: 'user',
+            content: `Assess the founding team for ${companyName}.
+
+COMPANY CONTEXT:
+- Description: ${companyDescription || 'Not provided'}
+- Stage: ${stage || 'Not specified'}
+
+FOUNDERS FROM APPLICATION:
+${foundersData}
+
+${interviewData ? `INTERVIEW TRANSCRIPT EXCERPTS:\n${interviewData}` : 'No interview transcript available.'}
+
+Use the search tools to research each founder, then produce your final DDTeamAssessment JSON.`,
+          },
+        ],
       })
 
-      const textContent = response.content.find(c => c.type === 'text')
-      if (!textContent || textContent.type !== 'text') {
-        throw new Error('No text content in team assessment response')
-      }
-
-      const jsonMatch = textContent.text.match(/\{[\s\S]*\}/)
+      // ─── Parse final response ───
+      const text = result.text
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
       if (!jsonMatch) {
         throw new Error('No JSON found in team assessment response')
       }
 
       const parsed = JSON.parse(jsonMatch[0])
-      const assessment = this.parseAssessment(parsed, enrichmentResults)
+      const assessment = this.parseAssessment(parsed)
 
       return {
         success: true,
         assessment,
         metadata: {
-          foundersEnriched: enrichmentResults.length,
+          foundersEnriched: founders.length,
           tavilySearches,
           processingTimeMs: Date.now() - startTime,
         },
@@ -189,17 +281,8 @@ export class TeamAssessmentAgent {
   // PARSING & VALIDATION
   // ═══════════════════════════════════════════════════════════════════════════
 
-  private parseAssessment(
-    parsed: any,
-    enrichmentResults: { name: string; results: TavilySearchResponse[] }[]
-  ): DDTeamAssessment {
+  private parseAssessment(parsed: any): DDTeamAssessment {
     const founderProfiles: DDFounderProfile[] = (parsed.founderProfiles || []).map((fp: any, i: number) => {
-      // Collect evidence URLs from enrichment
-      const enrichment = enrichmentResults[i]
-      const evidenceUrls = enrichment
-        ? enrichment.results.flatMap(r => r.results.map(res => res.url))
-        : []
-
       return {
         name: fp.name || `Founder ${i + 1}`,
         role: fp.role || null,
@@ -216,7 +299,7 @@ export class TeamAssessmentAgent {
         })),
         redFlags: Array.isArray(fp.redFlags) ? fp.redFlags : [],
         strengths: Array.isArray(fp.strengths) ? fp.strengths : [],
-        evidenceUrls,
+        evidenceUrls: Array.isArray(fp.evidenceUrls) ? fp.evidenceUrls : [],
       }
     })
 

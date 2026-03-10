@@ -4,7 +4,9 @@
 // mentor matching triggers, and weekly check-in schedules
 // ═══════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk';
+import { generateObject } from 'ai';
+import { getModel, MAX_TOKENS, SANCTUARY_MODEL_ID, ANTHROPIC_CACHE_OPTIONS } from '../config';
+import { programmeOutputSchema } from '../schemas/programme';
 import {
   PROGRAMME_SYSTEM_PROMPT,
   PROGRAMME_USER_PROMPT,
@@ -19,41 +21,23 @@ import type {
 // ─── Programme Agent ─────────────────────────────────────────────────────
 
 export class ProgrammeAgent {
-  private client: Anthropic;
-  private model = 'claude-sonnet-4-20250514';
-
-  constructor() {
-    this.client = new Anthropic();
-  }
-
   async generateProgramme(input: ProgrammeInput): Promise<Programme> {
-    const response = await this.client.messages.create({
-      model: this.model,
-      max_tokens: 4096,
-      system: PROGRAMME_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: PROGRAMME_USER_PROMPT(
-            input.companyName,
-            JSON.stringify(input.applicationData, null, 2),
-            JSON.stringify(input.founders, null, 2),
-            input.aiAssessment ? JSON.stringify(input.aiAssessment, null, 2) : 'Not available',
-            input.ddReport ? JSON.stringify(input.ddReport, null, 2) : 'Not available',
-          ),
-        },
-      ],
-    });
+    const prompt = PROGRAMME_USER_PROMPT(
+      input.companyName,
+      JSON.stringify(input.applicationData, null, 2),
+      JSON.stringify(input.founders, null, 2),
+      input.aiAssessment ? JSON.stringify(input.aiAssessment, null, 2) : 'Not available',
+      input.ddReport ? JSON.stringify(input.ddReport, null, 2) : 'Not available',
+    );
 
-    const text = response.content?.[0]?.type === 'text' ? response.content[0].text : '';
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let parsed: any = {};
-    try {
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
-    } catch {
-      console.error('Programme agent: failed to parse response JSON');
-    }
+    const { object: parsed } = await generateObject({
+      model: getModel(),
+      schema: programmeOutputSchema,
+      system: PROGRAMME_SYSTEM_PROMPT,
+      prompt,
+      maxOutputTokens: MAX_TOKENS.analysis,
+      providerOptions: ANTHROPIC_CACHE_OPTIONS,
+    });
 
     // Post-process: fill in computed fields
     const startDate = new Date();
@@ -67,14 +51,14 @@ export class ProgrammeAgent {
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
       currentWeek: 1,
-      phases: Array.isArray(parsed.phases) ? parsed.phases : [],
+      phases: (parsed.phases ?? []) as unknown as ProgrammePhase[],
       overallProgress: 0,
       riskLevel: this.assessRisk(input),
-      nextMilestone: this.findNextMilestone(parsed.phases || []),
+      nextMilestone: this.findNextMilestone((parsed.phases ?? []) as unknown as ProgrammePhase[]),
       mentorMatchingTriggers: parsed.mentorMatchingTriggers || [],
       weeklyCheckInSchedule: parsed.weeklyCheckInSchedule || this.generateDefaultSchedule(),
       generatedAt: new Date().toISOString(),
-      modelUsed: this.model,
+      modelUsed: SANCTUARY_MODEL_ID,
     };
 
     // Ensure milestone IDs and dates

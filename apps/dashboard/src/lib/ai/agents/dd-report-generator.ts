@@ -3,7 +3,9 @@
 // Aggregates claims + verifications into a structured DD report
 // ═══════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk'
+import { generateObject } from 'ai'
+import { getModel, MAX_TOKENS, ANTHROPIC_CACHE_OPTIONS } from '../config'
+import { ddExecSummaryOutputSchema } from '../schemas/dd-report'
 import {
   DD_REPORT_SYSTEM_PROMPT,
   DD_EXECUTIVE_SUMMARY_PROMPT,
@@ -34,15 +36,6 @@ import {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export class DDReportGenerator {
-  private client: Anthropic
-  private model = 'claude-sonnet-4-20250514'
-
-  constructor() {
-    this.client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    })
-  }
-
   async generateReport(input: DDReportInput): Promise<DDReportResult> {
     const startTime = Date.now()
 
@@ -674,38 +667,28 @@ Strengths: ${marketAssessment.marketStrengths.join(', ') || 'None identified'}`
     )
 
     try {
-      const response = await this.client.messages.create({
-        model: this.model,
-        max_tokens: 3072,
+      const { object } = await generateObject({
+        model: getModel(),
+        schema: ddExecSummaryOutputSchema,
         system: DD_REPORT_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: prompt }],
+        prompt,
+        maxOutputTokens: MAX_TOKENS.summary,
+        providerOptions: ANTHROPIC_CACHE_OPTIONS,
       })
 
-      const textContent = response.content.find(c => c.type === 'text')
-      if (!textContent || textContent.type !== 'text') {
-        return this.fallbackResult(companyName, score, grade, categoryScores, redFlags, preliminaryVerdict)
-      }
-
-      const jsonMatch = textContent.text.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) {
-        return this.fallbackResult(companyName, score, grade, categoryScores, redFlags, preliminaryVerdict)
-      }
-
-      const parsed = JSON.parse(jsonMatch[0])
-
-      const aiFollowUps: DDFollowUpQuestion[] = (parsed.followUpQuestions || []).map((q: any) => ({
-        category: q.category || 'traction',
-        question: q.question || '',
-        reason: q.reason || '',
-        priority: q.priority || 'medium',
+      const aiFollowUps: DDFollowUpQuestion[] = (object.followUpQuestions || []).map((q) => ({
+        category: q.category,
+        question: q.question,
+        reason: q.reason,
+        priority: q.priority,
         source: 'ai_generated' as const,
       }))
 
       return {
-        executiveSummary: parsed.executiveSummary || this.fallbackSummary(companyName, score, grade, categoryScores, redFlags),
+        executiveSummary: object.executiveSummary || this.fallbackSummary(companyName, score, grade, categoryScores, redFlags),
         followUpQuestions: aiFollowUps,
-        recommendationConditions: parsed.recommendationConditions || [],
-        recommendationReasoning: parsed.recommendationReasoning || this.fallbackReasoningText(preliminaryVerdict),
+        recommendationConditions: object.recommendationConditions || [],
+        recommendationReasoning: object.recommendationReasoning || this.fallbackReasoningText(preliminaryVerdict),
       }
     } catch {
       return this.fallbackResult(companyName, score, grade, categoryScores, redFlags, preliminaryVerdict)

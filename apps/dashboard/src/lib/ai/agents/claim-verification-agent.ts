@@ -1,66 +1,164 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // SANCTUARY DD — Claim Verification Agent
-// Verifies claims using Tavily web search + Claude analysis
+// Verifies claims using Tavily web search + Claude analysis (Vercel AI SDK)
 // ═══════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk'
-import { getTavilyClient, type TavilySearchResponse } from '@/lib/research/tavily-client'
-import {
-  CLAIM_VERIFICATION_SYSTEM_PROMPT,
-  BATCH_VERIFICATION_PROMPT,
-} from '../prompts/claim-verification-system'
+import { generateText, tool, stepCountIs } from 'ai'
+import { z } from 'zod'
+import { getTavilyClient } from '@/lib/research/tavily-client'
+import { getModel, MAX_TOKENS, ANTHROPIC_CACHE_OPTIONS } from '../config'
+import { getSourceCredibilityTier } from '../types/due-diligence'
 import type {
   DDClaim,
   DDVerification,
-  DDClaimCategory,
   ClaimVerificationInput,
   ClaimVerificationResult,
 } from '../types/due-diligence'
-import { getSourceCredibilityTier } from '../types/due-diligence'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CLAIM VERIFICATION AGENT CLASS
 // ═══════════════════════════════════════════════════════════════════════════
 
 export class ClaimVerificationAgent {
-  private client: Anthropic
   private tavily = getTavilyClient()
-  private model = 'claude-sonnet-4-20250514'
-
-  constructor() {
-    this.client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    })
-  }
 
   async verifyClaims(input: ClaimVerificationInput): Promise<ClaimVerificationResult> {
     const startTime = Date.now()
     let totalSearches = 0
 
     try {
-      const { claims, companyName } = input
+      const { claims, companyName, companyWebsite } = input
 
-      // Group claims by category for efficient searching
-      const categoryGroups = this.groupByCategory(claims)
-      const allVerifications: Omit<DDVerification, 'id'>[] = []
+      // Build structured claim data for the system prompt
+      const claimsData = claims.map((claim, idx) => ({
+        index: idx,
+        claimId: claim.id,
+        claimText: claim.claimText,
+        category: claim.category,
+        priority: claim.priority,
+      }))
 
-      // Process each category group
-      for (const [category, categoryClaims] of Object.entries(categoryGroups)) {
-        const { verifications, searches } = await this.verifyCategoryBatch(
-          companyName,
-          category as DDClaimCategory,
-          categoryClaims,
-          input.companyWebsite
-        )
-        allVerifications.push(...verifications)
-        totalSearches += searches
+      const { text } = await generateText({
+        model: getModel(),
+        maxOutputTokens: MAX_TOKENS.analysis,
+        stopWhen: stepCountIs(15),
+        providerOptions: ANTHROPIC_CACHE_OPTIONS,
+        system: `You are a due diligence analyst verifying startup claims for an investment fund.
+You have access to web search tools. Use them to find evidence for or against each claim.
+
+COMPANY: "${companyName}"
+${companyWebsite ? `WEBSITE: ${companyWebsite}` : ''}
+
+CLAIMS TO VERIFY:
+${JSON.stringify(claimsData, null, 2)}
+
+INSTRUCTIONS:
+1. For each claim, use the searchWeb tool to find evidence. Use "advanced" searchDepth for critical/high priority claims.
+2. For team_background claims that mention a person's name, use the searchFounderBackground tool instead.
+3. Search strategically — you can combine related claims into a single search query when they share a category.
+4. After gathering evidence, return your analysis as a JSON array.
+
+RESPONSE FORMAT — return ONLY a JSON array (no markdown fences, no wrapper object):
+[
+  {
+    "claimIndex": <number>,
+    "claimId": "<string>",
+    "verdict": "confirmed" | "partially_confirmed" | "unconfirmed" | "disputed" | "refuted",
+    "confidence": <number 0-1>,
+    "evidence": "<summary of evidence found>",
+    "evidenceUrls": ["<url1>", "<url2>"],
+    "notes": "<optional additional context>"
+  }
+]
+
+Every claim must have exactly one entry in the array. Be rigorous — only mark "confirmed" if you found strong corroborating evidence from credible sources.`,
+        prompt: `Verify all ${claims.length} claims listed above for "${companyName}". Search the web for evidence and return your verdicts as a JSON array.`,
+        tools: {
+          searchWeb: tool({
+            description: 'Search the web to verify a claim',
+            inputSchema: z.object({
+              query: z.string(),
+              searchDepth: z.enum(['basic', 'advanced']).optional(),
+            }),
+            execute: async ({ query, searchDepth }) => {
+              const result = await this.tavily.search({
+                query,
+                searchDepth: searchDepth || 'basic',
+                maxResults: 3,
+                includeAnswer: true,
+              })
+              totalSearches++
+              return {
+                answer: result.answer,
+                results: result.results.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  content: r.content.slice(0, 500),
+                  score: r.score,
+                })),
+              }
+            },
+          }),
+          searchFounderBackground: tool({
+            description: 'Search for a founder by name to verify team claims',
+            inputSchema: z.object({
+              founderName: z.string(),
+              companyName: z.string(),
+            }),
+            execute: async ({ founderName, companyName: coName }) => {
+              const result = await this.tavily.searchFounderBackground(founderName, coName)
+              totalSearches++
+              return {
+                answer: result.answer,
+                results: result.results.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  content: r.content.slice(0, 500),
+                })),
+              }
+            },
+          }),
+        },
+      })
+
+      // Parse the final text response as a JSON array of verifications
+      const jsonMatch = text.match(/\[[\s\S]*\]/)
+      if (!jsonMatch) {
+        throw new Error('No JSON array found in verification response')
       }
+
+      const rawVerifications = JSON.parse(jsonMatch[0])
+
+      const verifications: Omit<DDVerification, 'id'>[] = rawVerifications.map((v: any) => {
+        const claim = claims[v.claimIndex] || claims.find(c => c.id === v.claimId) || claims[0]
+        const urls: string[] = v.evidenceUrls || []
+        const rawConfidence = Math.min(1, Math.max(0, v.confidence || 0.5))
+
+        // Compute source credibility score as average weight of evidence URLs
+        const sourceCredibilityScore = this.computeSourceCredibilityScore(urls, companyWebsite)
+
+        // Adjust confidence: rawConfidence * avgSourceWeight (clamped 0-1)
+        const adjustedConfidence = Math.min(1, Math.max(0, rawConfidence * sourceCredibilityScore))
+
+        return {
+          claimId: claim.id,
+          sourceType: 'ai_research' as const,
+          sourceName: 'Tavily Web Search + Claude Analysis',
+          sourceCredentials: null,
+          verdict: this.validateVerdict(v.verdict),
+          confidence: adjustedConfidence,
+          evidence: v.evidence || 'No evidence summary provided',
+          evidenceUrls: urls,
+          notes: v.notes || null,
+          sourceCredibilityScore,
+        }
+      })
 
       return {
         success: true,
-        verifications: allVerifications,
+        verifications,
         metadata: {
-          totalVerifications: allVerifications.length,
+          totalVerifications: verifications.length,
           totalSearches,
           processingTimeMs: Date.now() - startTime,
         },
@@ -81,229 +179,8 @@ export class ClaimVerificationAgent {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // CATEGORY-SPECIFIC VERIFICATION
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  private async verifyCategoryBatch(
-    companyName: string,
-    category: DDClaimCategory,
-    claims: DDClaim[],
-    companyWebsite: string | null
-  ): Promise<{ verifications: Omit<DDVerification, 'id'>[]; searches: number }> {
-    // Get shared search results for the category
-    const searchResults = await this.getCategorySearchResults(
-      companyName,
-      category,
-      claims,
-      companyWebsite
-    )
-
-    const searchCount = searchResults.length
-
-    // For each claim, also do a targeted search
-    const claimSearches = await Promise.all(
-      claims
-        .filter(c => c.priority === 'critical' || c.priority === 'high')
-        .map(async claim => {
-          const depth = claim.priority === 'critical' ? 'advanced' : 'basic'
-          const result = await this.tavily.search({
-            query: `"${companyName}" ${claim.claimText} verify evidence`,
-            searchDepth: depth as 'basic' | 'advanced',
-            maxResults: 3,
-            includeAnswer: true,
-          })
-          return { claimId: claim.id, result }
-        })
-    )
-
-    // Format all evidence for batch verification
-    const claimsWithEvidence = claims.map((claim, idx) => {
-      const categoryEvidence = this.formatSearchResults(searchResults)
-      const claimSpecific = claimSearches.find(cs => cs.claimId === claim.id)
-      const specificEvidence = claimSpecific
-        ? this.formatSearchResults([claimSpecific.result])
-        : ''
-
-      return `═══ CLAIM ${idx} ═══
-CLAIM: "${claim.claimText}"
-CATEGORY: ${claim.category}
-PRIORITY: ${claim.priority}
-CLAIM ID: ${claim.id}
-
-CATEGORY-LEVEL EVIDENCE:
-${categoryEvidence}
-
-${specificEvidence ? `CLAIM-SPECIFIC EVIDENCE:\n${specificEvidence}` : ''}`
-    }).join('\n\n')
-
-    // Send to Claude for batch analysis
-    const prompt = BATCH_VERIFICATION_PROMPT(companyName, claimsWithEvidence)
-
-    const response = await this.client.messages.create({
-      model: this.model,
-      max_tokens: 4096,
-      system: CLAIM_VERIFICATION_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    const textContent = response.content.find(c => c.type === 'text')
-    if (!textContent || textContent.type !== 'text') {
-      throw new Error('No text content in verification response')
-    }
-
-    const jsonMatch = textContent.text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-      throw new Error('No JSON found in verification response')
-    }
-
-    const parsed = JSON.parse(jsonMatch[0])
-    const rawVerifications = parsed.verifications || []
-
-    const verifications: Omit<DDVerification, 'id'>[] = rawVerifications.map((v: any) => {
-      const claim = claims[v.claimIndex] || claims[0]
-      const urls: string[] = v.evidenceUrls || []
-      const rawConfidence = Math.min(1, Math.max(0, v.confidence || 0.5))
-
-      // Compute source credibility score as average weight of evidence URLs
-      const sourceCredibilityScore = this.computeSourceCredibilityScore(urls, companyWebsite)
-
-      // Adjust confidence: rawConfidence * avgSourceWeight (clamped 0-1)
-      const adjustedConfidence = Math.min(1, Math.max(0, rawConfidence * sourceCredibilityScore))
-
-      return {
-        claimId: claim.id,
-        sourceType: 'ai_research' as const,
-        sourceName: 'Tavily Web Search + Claude Analysis',
-        sourceCredentials: null,
-        verdict: this.validateVerdict(v.verdict),
-        confidence: adjustedConfidence,
-        evidence: v.evidence || 'No evidence summary provided',
-        evidenceUrls: urls,
-        notes: v.notes || null,
-        sourceCredibilityScore,
-      }
-    })
-
-    return {
-      verifications,
-      searches: searchCount + claimSearches.length,
-    }
-  }
-
-  private async getCategorySearchResults(
-    companyName: string,
-    category: DDClaimCategory,
-    claims: DDClaim[],
-    companyWebsite: string | null
-  ): Promise<TavilySearchResponse[]> {
-    const results: TavilySearchResponse[] = []
-
-    switch (category) {
-      case 'revenue_metrics':
-      case 'traction':
-      case 'fundraising': {
-        const result = await this.tavily.search({
-          query: `"${companyName}" funding revenue traction startup metrics Crunchbase`,
-          searchDepth: 'advanced',
-          maxResults: 8,
-          includeAnswer: true,
-        })
-        results.push(result)
-        break
-      }
-      case 'team_background': {
-        // Search each unique founder mentioned in claims
-        const founderNames = [...new Set(
-          claims
-            .map(c => c.claimText.match(/^([A-Z][a-z]+ [A-Z][a-z]+)/)?.[1])
-            .filter(Boolean) as string[]
-        )]
-        for (const name of founderNames.slice(0, 3)) {
-          const result = await this.tavily.searchFounderBackground(name, companyName)
-          results.push(result)
-        }
-        break
-      }
-      case 'market_size': {
-        const marketClaim = claims[0]?.claimText || ''
-        const result = await this.tavily.search({
-          query: `${marketClaim} market size TAM 2025 2026 research report`,
-          searchDepth: 'advanced',
-          maxResults: 5,
-          includeAnswer: true,
-        })
-        results.push(result)
-        break
-      }
-      case 'competitive': {
-        const result = await this.tavily.search({
-          query: `"${companyName}" competitors market landscape alternative`,
-          searchDepth: 'advanced',
-          maxResults: 8,
-          includeAnswer: true,
-        })
-        results.push(result)
-        break
-      }
-      case 'technology_ip': {
-        const result = await this.tavily.search({
-          query: `"${companyName}" patent technology product github`,
-          searchDepth: 'basic',
-          maxResults: 5,
-          includeAnswer: true,
-        })
-        results.push(result)
-        break
-      }
-      case 'customer_reference': {
-        const result = await this.tavily.search({
-          query: `"${companyName}" customer case study testimonial review`,
-          searchDepth: 'basic',
-          maxResults: 5,
-          includeAnswer: true,
-        })
-        results.push(result)
-        break
-      }
-      default: {
-        const result = await this.tavily.validateClaim(claims[0]?.claimText || companyName, companyName)
-        results.push(result)
-      }
-    }
-
-    return results
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
   // HELPERS
   // ═══════════════════════════════════════════════════════════════════════════
-
-  private groupByCategory(claims: DDClaim[]): Record<string, DDClaim[]> {
-    const groups: Record<string, DDClaim[]> = {}
-    for (const claim of claims) {
-      if (!groups[claim.category]) groups[claim.category] = []
-      groups[claim.category].push(claim)
-    }
-    return groups
-  }
-
-  private formatSearchResults(responses: TavilySearchResponse[]): string {
-    const lines: string[] = []
-    for (const response of responses) {
-      if (response.answer) {
-        lines.push(`SUMMARY: ${response.answer}`)
-        lines.push('')
-      }
-      for (const result of response.results) {
-        lines.push(`TITLE: ${result.title}`)
-        lines.push(`URL: ${result.url}`)
-        lines.push(`CONTENT: ${result.content}`)
-        if (result.publishedDate) lines.push(`DATE: ${result.publishedDate}`)
-        lines.push('')
-      }
-    }
-    return lines.join('\n') || 'No search results found.'
-  }
 
   private computeSourceCredibilityScore(urls: string[], companyWebsite: string | null): number {
     if (urls.length === 0) return 0.65 // default tier3 weight when no URLs

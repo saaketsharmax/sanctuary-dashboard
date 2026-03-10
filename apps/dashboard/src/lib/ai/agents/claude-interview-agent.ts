@@ -1,9 +1,10 @@
 // =====================================================
-// SANCTUARY INTERVIEW AGENT — Claude API Implementation
+// SANCTUARY INTERVIEW AGENT — Vercel AI SDK Implementation
 // =====================================================
 
-import Anthropic from '@anthropic-ai/sdk'
+import { generateText } from 'ai'
 import type { InterviewSection, InterviewMessage } from '@/types'
+import { getModel, MAX_TOKENS, ANTHROPIC_CACHE_OPTIONS } from '../config'
 import { INTERVIEW_PERSONA, SECTION_PROMPTS, INTERVIEW_CLOSING } from '../prompts/interview-system'
 
 // Types for interview signals extracted in real-time
@@ -31,15 +32,6 @@ interface ApplicationContext {
 }
 
 export class ClaudeInterviewAgent {
-  private client: Anthropic
-  private model: string = 'claude-sonnet-4-20250514'
-
-  constructor() {
-    this.client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    })
-  }
-
   /**
    * Get the opening message for an interview
    */
@@ -126,6 +118,90 @@ You must respond with ONLY valid JSON in this exact format:
   }
 
   /**
+   * Summarize older messages into condensed bullet points to reduce token usage.
+   * Keeps the last `windowSize` messages in full, summarizes the rest.
+   */
+  private summarizeHistory(
+    messageHistory: InterviewMessage[],
+    windowSize: number = 6
+  ): { summary: string | null; recentMessages: InterviewMessage[] } {
+    if (messageHistory.length <= windowSize) {
+      return { summary: null, recentMessages: messageHistory }
+    }
+
+    const olderMessages = messageHistory.slice(0, messageHistory.length - windowSize)
+    const recentMessages = messageHistory.slice(messageHistory.length - windowSize)
+
+    // Build condensed summary of older messages
+    const bulletPoints: string[] = []
+    for (const msg of olderMessages) {
+      if (msg.role === 'user') {
+        // Truncate long responses to key content
+        const truncated = msg.content.length > 150
+          ? msg.content.slice(0, 150) + '...'
+          : msg.content
+        bulletPoints.push(`- [${msg.section}] Founder: ${truncated}`)
+      }
+    }
+
+    const summary = bulletPoints.length > 0
+      ? `## Earlier conversation summary (${olderMessages.length} messages):\n${bulletPoints.join('\n')}`
+      : null
+
+    return { summary, recentMessages }
+  }
+
+  /**
+   * Format message history into the shape expected by generateText
+   */
+  private formatMessages(
+    messageHistory: InterviewMessage[],
+    userMessage: string
+  ): Array<{ role: 'user' | 'assistant'; content: string }> {
+    const formatted: Array<{ role: 'user' | 'assistant'; content: string }> = []
+
+    for (const msg of messageHistory) {
+      if (msg.role === 'user' || msg.role === 'assistant') {
+        formatted.push({
+          role: msg.role,
+          content: msg.content,
+        })
+      }
+    }
+
+    formatted.push({
+      role: 'user',
+      content: userMessage,
+    })
+
+    return formatted
+  }
+
+  /**
+   * Parse Claude's JSON response, with fallback for malformed output
+   */
+  private parseResponse(text: string): {
+    response: string
+    shouldTransition: boolean
+    signals: InterviewSignal[]
+  } {
+    try {
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) {
+        throw new Error('No JSON found in response')
+      }
+      return JSON.parse(jsonMatch[0])
+    } catch {
+      console.error('Failed to parse Claude response as JSON:', text)
+      return {
+        response: text,
+        shouldTransition: false,
+        signals: [],
+      }
+    }
+  }
+
+  /**
    * Process a user message and generate a Claude response
    */
   async processMessage(
@@ -139,62 +215,24 @@ You must respond with ONLY valid JSON in this exact format:
       (m) => m.role === 'user' && m.section === currentSection
     ).length
 
-    // Build conversation history for Claude
-    const conversationMessages: { role: 'user' | 'assistant'; content: string }[] = []
-
-    // Add previous messages
-    for (const msg of messageHistory) {
-      if (msg.role === 'user' || msg.role === 'assistant') {
-        conversationMessages.push({
-          role: msg.role,
-          content: msg.content,
-        })
-      }
-    }
-
-    // Add current user message
-    conversationMessages.push({
-      role: 'user',
-      content: userMessage,
-    })
+    // Apply sliding window to compress older history
+    const { summary, recentMessages } = this.summarizeHistory(messageHistory)
+    const systemPrompt = this.buildSystemPrompt(currentSection, applicationContext, messageHistory)
+    const fullSystemPrompt = summary
+      ? `${systemPrompt}\n\n${summary}`
+      : systemPrompt
+    const formattedMessages = this.formatMessages(recentMessages, userMessage)
 
     try {
-      const response = await this.client.messages.create({
-        model: this.model,
-        max_tokens: 1024,
-        system: this.buildSystemPrompt(currentSection, applicationContext, messageHistory),
-        messages: conversationMessages,
+      const { text } = await generateText({
+        model: getModel(),
+        system: fullSystemPrompt,
+        messages: formattedMessages,
+        maxOutputTokens: MAX_TOKENS.conversational,
+        providerOptions: ANTHROPIC_CACHE_OPTIONS,
       })
 
-      // Parse the response
-      const textContent = response.content.find((c) => c.type === 'text')
-      if (!textContent || textContent.type !== 'text') {
-        throw new Error('No text content in response')
-      }
-
-      // Parse JSON response
-      let parsed: {
-        response: string
-        shouldTransition: boolean
-        signals: InterviewSignal[]
-      }
-
-      try {
-        // Try to extract JSON from the response (in case there's extra text)
-        const jsonMatch = textContent.text.match(/\{[\s\S]*\}/)
-        if (!jsonMatch) {
-          throw new Error('No JSON found in response')
-        }
-        parsed = JSON.parse(jsonMatch[0])
-      } catch {
-        // If parsing fails, use the raw response
-        console.error('Failed to parse Claude response as JSON:', textContent.text)
-        parsed = {
-          response: textContent.text,
-          shouldTransition: false,
-          signals: [],
-        }
-      }
+      const parsed = this.parseResponse(text)
 
       // Check if interview should complete
       const isComplete =
@@ -234,12 +272,46 @@ You must respond with ONLY valid JSON in this exact format:
   }
 }
 
-// Singleton instance
+// ─── Mock Implementation ────────────────────────────────────────────────
+
+class MockInterviewAgent extends ClaudeInterviewAgent {
+  async processMessage(
+    userMessage: string,
+    currentSection: InterviewSection,
+    messageHistory: InterviewMessage[],
+    _applicationContext?: ApplicationContext
+  ): Promise<ClaudeInterviewResponse> {
+    const userMessagesInSection = messageHistory.filter(
+      (m) => m.role === 'user' && m.section === currentSection
+    ).length
+
+    const shouldTransition = userMessagesInSection >= 3
+
+    return {
+      response: `[Mock] Thanks for sharing that. ${shouldTransition ? "I think we've covered enough here — let's move on." : 'Can you tell me more?'}`,
+      shouldTransition,
+      isComplete: currentSection === 'sanctuary_fit' && shouldTransition,
+      signals: [
+        {
+          type: 'founder_signal',
+          content: `Mock signal from "${userMessage.slice(0, 50)}"`,
+          dimension: 'founder',
+          impact: 3,
+        },
+      ],
+    }
+  }
+}
+
+// ─── Factory ────────────────────────────────────────────────────────────
+
 let agentInstance: ClaudeInterviewAgent | null = null
 
 export function getClaudeInterviewAgent(): ClaudeInterviewAgent {
   if (!agentInstance) {
-    agentInstance = new ClaudeInterviewAgent()
+    agentInstance = process.env.ANTHROPIC_API_KEY
+      ? new ClaudeInterviewAgent()
+      : new MockInterviewAgent()
   }
   return agentInstance
 }

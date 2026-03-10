@@ -11,6 +11,7 @@ export interface TavilySearchOptions {
   includeDomains?: string[]
   excludeDomains?: string[]
   topic?: 'general' | 'news'
+  contentMaxLength?: number
 }
 
 export interface TavilySearchResult {
@@ -47,6 +48,23 @@ export interface TavilyExtractResponse {
 // TAVILY CLIENT CLASS
 // ═══════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════
+// SEARCH CACHE — Deduplicates identical searches across agents (10min TTL)
+// ═══════════════════════════════════════════════════════════════════════════
+
+interface CacheEntry {
+  response: TavilySearchResponse
+  expiresAt: number
+}
+
+const searchCache = new Map<string, CacheEntry>()
+const CACHE_TTL_MS = 10 * 60 * 1000 // 10 minutes
+const DEFAULT_CONTENT_MAX_LENGTH = 500
+
+function getCacheKey(query: string, depth: string, maxResults: number): string {
+  return `${query}|${depth}|${maxResults}`
+}
+
 export class TavilyClient {
   private apiKey: string
   private baseUrl = 'https://api.tavily.com'
@@ -66,6 +84,17 @@ export class TavilyClient {
       return this.mockSearch(options)
     }
 
+    const depth = options.searchDepth || 'basic'
+    const maxResults = options.maxResults || 5
+    const contentMaxLength = options.contentMaxLength ?? DEFAULT_CONTENT_MAX_LENGTH
+
+    // Check cache
+    const cacheKey = getCacheKey(options.query, depth, maxResults)
+    const cached = searchCache.get(cacheKey)
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.response
+    }
+
     const response = await fetch(`${this.baseUrl}/search`, {
       method: 'POST',
       headers: {
@@ -74,10 +103,10 @@ export class TavilyClient {
       body: JSON.stringify({
         api_key: this.apiKey,
         query: options.query,
-        search_depth: options.searchDepth || 'basic',
+        search_depth: depth,
         include_answer: options.includeAnswer ?? true,
         include_raw_content: options.includeRawContent ?? false,
-        max_results: options.maxResults || 10,
+        max_results: maxResults,
         include_domains: options.includeDomains,
         exclude_domains: options.excludeDomains,
         topic: options.topic || 'general',
@@ -90,19 +119,24 @@ export class TavilyClient {
     }
 
     const data = await response.json()
-    return {
+    const result: TavilySearchResponse = {
       query: options.query,
       answer: data.answer,
       results: data.results.map((r: any) => ({
         title: r.title,
         url: r.url,
-        content: r.content,
+        content: contentMaxLength > 0 ? (r.content || '').slice(0, contentMaxLength) : r.content,
         score: r.score,
         publishedDate: r.published_date,
         rawContent: r.raw_content,
       })),
       responseTime: data.response_time,
     }
+
+    // Store in cache
+    searchCache.set(cacheKey, { response: result, expiresAt: Date.now() + CACHE_TTL_MS })
+
+    return result
   }
 
   /**
@@ -117,7 +151,7 @@ export class TavilyClient {
     return this.search({
       query,
       searchDepth: 'advanced',
-      maxResults: 10,
+      maxResults: 5,
       includeAnswer: true,
     })
   }
@@ -133,7 +167,7 @@ export class TavilyClient {
     return this.search({
       query,
       searchDepth: 'advanced',
-      maxResults: 8,
+      maxResults: 5,
       includeAnswer: true,
     })
   }
@@ -151,7 +185,7 @@ export class TavilyClient {
     return this.search({
       query,
       topic: 'news',
-      maxResults: 5,
+      maxResults: 3,
       includeAnswer: false,
     })
   }
@@ -170,7 +204,7 @@ export class TavilyClient {
     return this.search({
       query,
       searchDepth: 'advanced',
-      maxResults: 5,
+      maxResults: 3,
       includeAnswer: true,
       includeDomains: linkedinUrl ? ['linkedin.com'] : undefined,
     })

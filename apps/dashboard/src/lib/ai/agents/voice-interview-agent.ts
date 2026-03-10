@@ -3,7 +3,8 @@
 // Server-side logic for voice-first interviews. Client handles WebSocket/TTS.
 // ═══════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk';
+import { generateText } from 'ai';
+import { getModel, MAX_TOKENS, ANTHROPIC_CACHE_OPTIONS } from '../config';
 import {
   VOICE_INTERVIEW_PERSONA,
   VOICE_SECTION_PROMPTS,
@@ -34,13 +35,6 @@ const MIN_MESSAGES_PER_SECTION: Record<string, number> = {
 // ─── Voice Interview Agent ───────────────────────────────────────────────
 
 export class VoiceInterviewAgent {
-  private client: Anthropic;
-  private model = 'claude-sonnet-4-20250514';
-
-  constructor() {
-    this.client = new Anthropic();
-  }
-
   async processVoiceInput(
     transcribedText: string,
     voiceMetadata: {
@@ -57,29 +51,47 @@ export class VoiceInterviewAgent {
       applicationContext: string;
     },
   ): Promise<VoiceAgentResponse> {
-    const systemPrompt = VOICE_INTERVIEW_SYSTEM_PROMPT(
+    const baseSystemPrompt = VOICE_INTERVIEW_SYSTEM_PROMPT(
       session.currentSection,
       session.founderName,
       session.applicationContext,
     );
 
-    // Build conversation history
-    const messages: Anthropic.MessageParam[] = session.transcript.map((msg) => ({
+    // Build conversation history with sliding window
+    const WINDOW_SIZE = 6;
+    const transcript = session.transcript;
+    let systemPrompt = baseSystemPrompt;
+
+    let recentTranscript = transcript;
+    if (transcript.length > WINDOW_SIZE) {
+      const olderMessages = transcript.slice(0, transcript.length - WINDOW_SIZE);
+      recentTranscript = transcript.slice(transcript.length - WINDOW_SIZE);
+      const summary = olderMessages
+        .filter(msg => msg.role !== 'agent')
+        .map(msg => `- Founder: ${msg.content.slice(0, 150)}${msg.content.length > 150 ? '...' : ''}`)
+        .join('\n');
+      if (summary) {
+        systemPrompt = `${baseSystemPrompt}\n\n## Earlier conversation summary (${olderMessages.length} messages):\n${summary}`;
+      }
+    }
+
+    const messages = recentTranscript.map((msg) => ({
       role: msg.role === 'agent' ? 'assistant' as const : 'user' as const,
       content: msg.content,
     }));
 
     // Add current message
-    messages.push({ role: 'user', content: transcribedText });
+    messages.push({ role: 'user' as const, content: transcribedText });
 
-    const response = await this.client.messages.create({
-      model: this.model,
-      max_tokens: 512, // Voice responses must be SHORT
+    const result = await generateText({
+      model: getModel(),
+      maxOutputTokens: MAX_TOKENS.voice,
       system: systemPrompt,
       messages,
+      providerOptions: ANTHROPIC_CACHE_OPTIONS,
     });
 
-    const text = response.content[0].type === 'text' ? response.content[0].text : '';
+    const text = result.text;
 
     try {
       const parsed = JSON.parse(text);

@@ -1,13 +1,15 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // SANCTUARY DD — Market Assessment Agent
 // Validates market opportunity via Tavily research + Claude analysis
+// Uses Vercel AI SDK generateText with tools + stopWhen
 // ═══════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk'
-import { getTavilyClient, type TavilySearchResponse } from '@/lib/research/tavily-client'
+import { generateText, tool, stepCountIs } from 'ai'
+import { z } from 'zod'
+import { getModel, MAX_TOKENS, SANCTUARY_MODEL_ID, ANTHROPIC_CACHE_OPTIONS } from '../config'
+import { getTavilyClient } from '@/lib/research/tavily-client'
 import {
   MARKET_ASSESSMENT_SYSTEM_PROMPT,
-  MARKET_ASSESSMENT_USER_PROMPT,
 } from '../prompts/market-assessment-system'
 import type {
   DDMarketAssessment,
@@ -25,15 +27,7 @@ import type {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export class MarketAssessmentAgent {
-  private client: Anthropic
   private tavily = getTavilyClient()
-  private model = 'claude-sonnet-4-20250514'
-
-  constructor() {
-    this.client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    })
-  }
 
   async assessMarket(input: DDMarketAssessmentInput): Promise<DDMarketAssessmentResult> {
     const startTime = Date.now()
@@ -42,59 +36,9 @@ export class MarketAssessmentAgent {
     try {
       const { companyName, companyDescription, targetCustomer, stage, companyWebsite, interviewTranscript } = input
 
-      // ─── Step 1: Market sizing research ───
       const industry = this.extractIndustry(companyDescription, targetCustomer)
 
-      const marketResult = await this.tavily.searchMarketData(
-        industry,
-        targetCustomer || companyName
-      )
-      tavilySearches++
-
-      // Broader market trends search
-      const trendResult = await this.tavily.search({
-        query: `${industry} market trends growth forecast 2025 2026 CAGR`,
-        searchDepth: 'advanced',
-        maxResults: 5,
-        includeAnswer: true,
-      })
-      tavilySearches++
-
-      // ─── Step 2: Competitor research ───
-      const competitorResult = await this.tavily.searchCompetitors(
-        companyName,
-        industry,
-        companyDescription || ''
-      )
-      tavilySearches++
-
-      // Targeted competitor funding search
-      const fundingResult = await this.tavily.search({
-        query: `${industry} startup funding rounds 2024 2025 2026 competitors "${companyName}" alternatives`,
-        searchDepth: 'advanced',
-        maxResults: 8,
-        includeAnswer: true,
-      })
-      tavilySearches++
-
-      // If company website is available, search for their stated competitors
-      let companyClaimsResult: TavilySearchResponse | null = null
-      if (companyWebsite) {
-        companyClaimsResult = await this.tavily.search({
-          query: `site:${companyWebsite} competitors market`,
-          searchDepth: 'basic',
-          maxResults: 3,
-          includeAnswer: false,
-        })
-        tavilySearches++
-      }
-
-      // ─── Step 3: Format data for Claude ───
-      const marketResearchData = this.formatSearchResults([marketResult, trendResult])
-      const competitorResearchData = this.formatSearchResults(
-        [competitorResult, fundingResult, companyClaimsResult].filter(Boolean) as TavilySearchResponse[]
-      )
-
+      // Filter interview transcript for market-related excerpts
       const interviewData = interviewTranscript
         ? interviewTranscript
             .filter(msg => {
@@ -114,30 +58,186 @@ export class MarketAssessmentAgent {
             .join('\n\n')
         : null
 
-      // ─── Step 4: Claude analysis ───
-      const prompt = MARKET_ASSESSMENT_USER_PROMPT(
-        companyName,
-        companyDescription,
-        targetCustomer,
-        stage,
-        marketResearchData,
-        competitorResearchData,
-        interviewData && interviewData.length > 0 ? interviewData : null
-      )
+      const tavily = this.tavily
 
-      const response = await this.client.messages.create({
-        model: this.model,
-        max_tokens: 4096,
-        system: MARKET_ASSESSMENT_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: prompt }],
+      const result = await generateText({
+        model: getModel(),
+        maxOutputTokens: MAX_TOKENS.analysis,
+        stopWhen: stepCountIs(10),
+        providerOptions: ANTHROPIC_CACHE_OPTIONS,
+        system: `${MARKET_ASSESSMENT_SYSTEM_PROMPT}
+
+You have access to web search and extraction tools. Use them to research the market opportunity before generating your assessment.
+
+Research strategy:
+1. Search for TAM/SAM market size data and CAGR for the industry
+2. Search for market trends and growth forecasts
+3. Search for competitors, their funding, and positioning
+4. Search for recent funding activity in the sector
+5. If a company website is provided, extract content from it
+
+After gathering research data, produce your final assessment as a JSON object with this exact structure:
+{
+  "tamValidation": {
+    "claimed": "string or null — what the company claims their TAM is",
+    "estimated": "string — your estimate based on research (e.g., '$15B by 2028')",
+    "confidence": 0.0-1.0,
+    "methodology": "string — how you derived the estimate (bottom-up + top-down)",
+    "sources": ["string — URLs of key sources used"]
+  },
+  "competitorMap": [
+    {
+      "name": "string",
+      "description": "string — 1-2 sentence description",
+      "funding": "string or null — e.g., '$50M Series B'",
+      "positioning": "string — how they compare to ${companyName}",
+      "threatLevel": "high | medium | low",
+      "differentiator": "string — what makes ${companyName} different from this competitor",
+      "sourceUrl": "string or null"
+    }
+  ],
+  "marketTimingScore": 0-100,
+  "marketTimingReasoning": "string — 2-3 sentences explaining the timing score",
+  "adjacentMarkets": ["string — realistic adjacent markets for expansion"],
+  "marketRedFlags": [
+    {
+      "claimId": "market",
+      "claimText": "string — what the flag is about",
+      "category": "market_size",
+      "severity": "critical | high | medium",
+      "reason": "string",
+      "evidence": "string"
+    }
+  ],
+  "marketStrengths": ["string — market-level strengths"],
+  "overallMarketScore": 0-100,
+  "marketGrade": "A | B | C | D | F"
+}
+
+Validate TAM estimates using both bottom-up and top-down approaches.
+Map competitors with name, funding, positioning, threat level, and differentiator.
+Score market timing 0-100.
+Identify adjacent markets.
+Flag market red flags.
+Score the overall market as: TAM attractiveness (30%) + competitive positioning (30%) + market timing (25%) + expansion potential (15%).
+
+Return only valid JSON as your final answer.`,
+        prompt: `Assess the market opportunity for ${companyName}.
+
+COMPANY CONTEXT:
+- Description: ${companyDescription || 'Not provided'}
+- Target Customer: ${targetCustomer || 'Not specified'}
+- Stage: ${stage || 'Not specified'}
+- Industry: ${industry}
+${companyWebsite ? `- Website: ${companyWebsite}` : ''}
+
+${interviewData && interviewData.length > 0 ? `INTERVIEW EXCERPTS (market-related):\n${interviewData}` : 'No interview transcript available.'}
+
+Use your search tools to gather market data, then provide your assessment as JSON.`,
+        tools: {
+          searchMarketSize: tool({
+            description: 'Search for TAM/SAM market size data and CAGR for an industry and target customer segment',
+            inputSchema: z.object({
+              industry: z.string().describe('The industry or sector to search for'),
+              targetCustomer: z.string().describe('The target customer segment'),
+            }),
+            execute: async ({ industry: ind, targetCustomer: tc }) => {
+              tavilySearches++
+              const response = await tavily.searchMarketData(ind, tc)
+              return {
+                answer: response.answer || null,
+                results: response.results.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  content: r.content.slice(0, 500),
+                  publishedDate: r.publishedDate || null,
+                })),
+              }
+            },
+          }),
+          searchMarketTrends: tool({
+            description: 'Search for market trends and growth forecasts for an industry',
+            inputSchema: z.object({
+              industry: z.string().describe('The industry or sector to search trends for'),
+            }),
+            execute: async ({ industry: ind }) => {
+              tavilySearches++
+              const response = await tavily.search({
+                query: `${ind} market trends growth forecast 2025 2026 CAGR`,
+                searchDepth: 'advanced',
+                maxResults: 5,
+                includeAnswer: true,
+              })
+              return {
+                answer: response.answer || null,
+                results: response.results.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  content: r.content.slice(0, 500),
+                  publishedDate: r.publishedDate || null,
+                })),
+              }
+            },
+          }),
+          searchCompetitors: tool({
+            description: 'Search for competitors in a space, their funding levels, and market positioning',
+            inputSchema: z.object({
+              companyName: z.string().describe('The company name to find competitors for'),
+              industry: z.string().describe('The industry or sector'),
+            }),
+            execute: async ({ companyName: cn, industry: ind }) => {
+              tavilySearches++
+              const response = await tavily.searchCompetitors(cn, ind, companyDescription || '')
+              return {
+                answer: response.answer || null,
+                results: response.results.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  content: r.content.slice(0, 500),
+                  publishedDate: r.publishedDate || null,
+                })),
+              }
+            },
+          }),
+          searchFunding: tool({
+            description: 'Search for recent funding activity and investment rounds in a sector',
+            inputSchema: z.object({
+              industry: z.string().describe('The industry or sector to search funding for'),
+            }),
+            execute: async ({ industry: ind }) => {
+              tavilySearches++
+              const response = await tavily.search({
+                query: `${ind} startup funding rounds 2024 2025 2026 competitors "${companyName}" alternatives`,
+                searchDepth: 'advanced',
+                maxResults: 5,
+                includeAnswer: true,
+              })
+              return {
+                answer: response.answer || null,
+                results: response.results.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  content: r.content.slice(0, 500),
+                  publishedDate: r.publishedDate || null,
+                })),
+              }
+            },
+          }),
+          searchCompanyWebsite: tool({
+            description: 'Extract content from a company website URL to understand their positioning and claims',
+            inputSchema: z.object({
+              url: z.string().describe('The URL to extract content from'),
+            }),
+            execute: async ({ url }) => {
+              tavilySearches++
+              const response = await tavily.extract({ urls: [url] })
+              return { content: response.results[0]?.rawContent || 'Could not extract content' }
+            },
+          }),
+        },
       })
 
-      const textContent = response.content.find(c => c.type === 'text')
-      if (!textContent || textContent.type !== 'text') {
-        throw new Error('No text content in market assessment response')
-      }
-
-      const jsonMatch = textContent.text.match(/\{[\s\S]*\}/)
+      const jsonMatch = result.text.match(/\{[\s\S]*\}/)
       if (!jsonMatch) {
         throw new Error('No JSON found in market assessment response')
       }
@@ -217,7 +317,6 @@ export class MarketAssessmentAgent {
   }
 
   private extractIndustry(description: string | null, targetCustomer: string | null): string {
-    // Extract a rough industry label from description for search queries
     const text = `${description || ''} ${targetCustomer || ''}`.toLowerCase()
     if (text.includes('fintech') || text.includes('financial') || text.includes('banking')) return 'fintech'
     if (text.includes('healthtech') || text.includes('health') || text.includes('medical')) return 'healthtech'
@@ -229,26 +328,7 @@ export class MarketAssessmentAgent {
     if (text.includes('marketplace')) return 'marketplace'
     if (text.includes('devtool') || text.includes('developer')) return 'developer tools'
     if (text.includes('climate') || text.includes('clean') || text.includes('energy')) return 'cleantech'
-    // Fallback: use the first meaningful phrase from description
     return description?.split('.')[0]?.slice(0, 50) || 'technology startup'
-  }
-
-  private formatSearchResults(responses: TavilySearchResponse[]): string {
-    const lines: string[] = []
-    for (const response of responses) {
-      if (response.answer) {
-        lines.push(`SUMMARY: ${response.answer}`)
-        lines.push('')
-      }
-      for (const result of response.results) {
-        lines.push(`TITLE: ${result.title}`)
-        lines.push(`URL: ${result.url}`)
-        lines.push(`CONTENT: ${result.content}`)
-        if (result.publishedDate) lines.push(`DATE: ${result.publishedDate}`)
-        lines.push('')
-      }
-    }
-    return lines.join('\n') || 'No search results found.'
   }
 
   private clampScore(score: any): number {

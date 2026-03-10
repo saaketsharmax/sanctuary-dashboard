@@ -4,7 +4,9 @@
 // contrarian signals, moat durability, and non-obvious correlations
 // ═══════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk';
+import { generateObject } from 'ai';
+import { getModel, MAX_TOKENS, SANCTUARY_MODEL_ID, ANTHROPIC_CACHE_OPTIONS } from '../config';
+import { godModeDDOutputSchema } from '../schemas/god-mode-dd';
 import {
   GOD_MODE_DD_SYSTEM_PROMPT,
   GOD_MODE_DD_USER_PROMPT,
@@ -14,13 +16,6 @@ import type { GodModeDDInput, GodModeDDReport } from '../types/god-mode-dd';
 // ─── God Mode DD Agent ───────────────────────────────────────────────────
 
 export class GodModeDDAgent {
-  private client: Anthropic;
-  private model = 'claude-sonnet-4-20250514';
-
-  constructor() {
-    this.client = new Anthropic();
-  }
-
   async analyze(input: GodModeDDInput): Promise<GodModeDDReport> {
     // Format all input data for the prompt
     const applicationData = JSON.stringify(input.applicationData, null, 2);
@@ -31,38 +26,33 @@ export class GodModeDDAgent {
     const ddReport = input.ddReport ? JSON.stringify(input.ddReport, null, 2) : 'No standard DD report available';
     const existingMemo = input.existingMemo ? JSON.stringify(input.existingMemo, null, 2) : 'No existing memo available';
 
-    const response = await this.client.messages.create({
-      model: this.model,
-      max_tokens: 8192,
+    const { object } = await generateObject({
+      model: getModel(),
+      schema: godModeDDOutputSchema,
       system: GOD_MODE_DD_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: GOD_MODE_DD_USER_PROMPT(
-            input.companyName,
-            applicationData,
-            interviewTranscript,
-            signals,
-            assessment,
-            researchData,
-            ddReport,
-            existingMemo,
-          ),
-        },
-      ],
+      prompt: GOD_MODE_DD_USER_PROMPT(
+        input.companyName,
+        applicationData,
+        interviewTranscript,
+        signals,
+        assessment,
+        researchData,
+        ddReport,
+        existingMemo,
+      ),
+      maxOutputTokens: MAX_TOKENS.deep,
+      providerOptions: ANTHROPIC_CACHE_OPTIONS,
     });
 
-    const text = response.content[0].type === 'text' ? response.content[0].text : '';
-    const parsed = JSON.parse(text) as GodModeDDReport;
+    // Post-process: calculate composite godModeScore, conviction, metadata
+    const report = object as GodModeDDReport;
+    report.godModeScore = this.calculateGodModeScore(report);
+    report.convictionLevel = this.determineConviction(report.godModeScore);
+    report.generatedAt = new Date().toISOString();
+    report.modelUsed = SANCTUARY_MODEL_ID;
+    report.analysisDepth = this.countDataSources(input);
 
-    // Post-process: calculate composite godModeScore if not already set
-    parsed.godModeScore = this.calculateGodModeScore(parsed);
-    parsed.convictionLevel = this.determineConviction(parsed.godModeScore);
-    parsed.generatedAt = new Date().toISOString();
-    parsed.modelUsed = this.model;
-    parsed.analysisDepth = this.countDataSources(input);
-
-    return parsed;
+    return report;
   }
 
   private formatTranscript(transcript: { role: string; content: string; timestamp?: string }[]): string {

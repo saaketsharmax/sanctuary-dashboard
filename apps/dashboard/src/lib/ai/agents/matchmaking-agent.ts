@@ -3,7 +3,9 @@
 // Deep mentor-startup and GP-startup matching beyond keyword alignment
 // ═══════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk';
+import { generateObject } from 'ai'
+import { getModel, MAX_TOKENS, ANTHROPIC_CACHE_OPTIONS } from '../config'
+import { matchmakingOutputSchema } from '../schemas/matchmaking'
 import {
   MATCHMAKING_SYSTEM_PROMPT,
   MATCHMAKING_USER_PROMPT,
@@ -18,13 +20,6 @@ import type {
 // ─── Matchmaking Agent ───────────────────────────────────────────────────
 
 export class MatchmakingAgent {
-  private client: Anthropic;
-  private model = 'claude-sonnet-4-20250514';
-
-  constructor() {
-    this.client = new Anthropic();
-  }
-
   async findMatches(input: MatchmakingInput): Promise<MatchmakingOutput> {
     // Pre-filter: remove candidates with hard dealbreakers
     const eligibleCandidates = this.preFilter(input);
@@ -43,34 +38,55 @@ export class MatchmakingAgent {
       };
     }
 
-    const response = await this.client.messages.create({
-      model: this.model,
-      max_tokens: 4096,
+    const prompt = MATCHMAKING_USER_PROMPT(
+      JSON.stringify(input.request, null, 2),
+      JSON.stringify(eligibleCandidates, null, 2),
+      JSON.stringify(input.historicalMatches || [], null, 2),
+    );
+
+    const { object } = await generateObject({
+      model: getModel('extraction'),
+      schema: matchmakingOutputSchema,
       system: MATCHMAKING_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: MATCHMAKING_USER_PROMPT(
-            JSON.stringify(input.request, null, 2),
-            JSON.stringify(eligibleCandidates, null, 2),
-            JSON.stringify(input.historicalMatches || [], null, 2),
-          ),
-        },
-      ],
+      prompt,
+      maxOutputTokens: MAX_TOKENS.analysis,
+      providerOptions: ANTHROPIC_CACHE_OPTIONS,
     });
 
-    const text = response.content[0].type === 'text' ? response.content[0].text : '';
-    const parsed = JSON.parse(text) as MatchmakingOutput;
+    // Build a lookup map from candidateId → full candidate
+    const candidateMap = new Map<string, MatchCandidate>();
+    for (const c of eligibleCandidates) {
+      candidateMap.set(c.id, c);
+    }
 
-    // Post-process: ensure proper ranking and scoring
-    parsed.matches = parsed.matches
-      .sort((a, b) => b.score.overallScore - a.score.overallScore)
-      .map((match, idx) => ({ ...match, rank: idx + 1 }));
+    // Post-process: sort by score, add rank, map candidateId back to full candidate
+    const sorted = object.matches
+      .sort((a, b) => b.score.overallScore - a.score.overallScore);
+    const matches: MatchResult[] = [];
+    for (const [idx, match] of sorted.entries()) {
+      const candidate = candidateMap.get(match.candidateId);
+      if (!candidate) continue;
+      matches.push({
+        id: `match-${idx + 1}`,
+        matchType: input.request.matchType,
+        candidate,
+        score: match.score,
+        rank: idx + 1,
+        status: 'suggested' as const,
+      });
+    }
 
-    parsed.requestId = input.request.requesterId;
-    parsed.marketplaceInsights.totalCandidatesEvaluated = input.candidates.length;
-
-    return parsed;
+    return {
+      requestId: input.request.requesterId,
+      matches,
+      searchStrategy: object.searchStrategy,
+      marketplaceInsights: {
+        totalCandidatesEvaluated: input.candidates.length,
+        averageScore: object.marketplaceInsights.averageScore,
+        gapAnalysis: object.marketplaceInsights.gapAnalysis,
+        recommendations: object.marketplaceInsights.recommendations,
+      },
+    };
   }
 
   private preFilter(input: MatchmakingInput): MatchCandidate[] {

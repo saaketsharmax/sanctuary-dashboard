@@ -1,8 +1,10 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// SANCTUARY ASSESSMENT AGENT — Claude API Implementation
+// SANCTUARY ASSESSMENT AGENT — Vercel AI SDK Implementation
 // ═══════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk'
+import { generateObject } from 'ai'
+import { getModel, MAX_TOKENS, SANCTUARY_MODEL_ID, ANTHROPIC_CACHE_OPTIONS } from '../config'
+import { assessmentOutputSchema } from '../schemas/assessment'
 import { ASSESSMENT_SYSTEM_PROMPT, ASSESSMENT_USER_PROMPT } from '../prompts/assessment-system'
 import type { AssessmentMetadata } from '@/types/metadata'
 
@@ -145,16 +147,8 @@ export interface AssessmentResult {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export class AssessmentAgent {
-  private client: Anthropic
-  private model: string = 'claude-sonnet-4-20250514'
   private promptVersion: string = 'v1.0'
   private rubricVersion: string = 'v1.0'
-
-  constructor() {
-    this.client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    })
-  }
 
   /**
    * Format application data for the prompt
@@ -249,7 +243,7 @@ ${data.whatTheyWant}`
 
     // Initialize metadata
     const metadata: AssessmentMetadata = {
-      model_used: this.model,
+      model_used: SANCTUARY_MODEL_ID,
       generated_at: new Date().toISOString(),
       generation_time_ms: 0,
       prompt_version: this.promptVersion,
@@ -285,35 +279,15 @@ ${data.whatTheyWant}`
         signalsStr
       )
 
-      // Call Claude
-      const response = await this.client.messages.create({
-        model: this.model,
-        max_tokens: 4096,
+      // Call Claude via Vercel AI SDK generateObject
+      const { object: assessment } = await generateObject({
+        model: getModel(),
+        schema: assessmentOutputSchema,
         system: ASSESSMENT_SYSTEM_PROMPT,
-        messages: [
-          { role: 'user', content: userPrompt }
-        ],
+        prompt: userPrompt,
+        maxOutputTokens: MAX_TOKENS.analysis,
+        providerOptions: ANTHROPIC_CACHE_OPTIONS,
       })
-
-      // Extract text content
-      const textContent = response.content.find(c => c.type === 'text')
-      if (!textContent || textContent.type !== 'text') {
-        throw new Error('No text content in response')
-      }
-
-      // Parse JSON response
-      let assessment: AssessmentOutput
-      try {
-        // Try to extract JSON from response
-        const jsonMatch = textContent.text.match(/\{[\s\S]*\}/)
-        if (!jsonMatch) {
-          throw new Error('No JSON found in response')
-        }
-        assessment = JSON.parse(jsonMatch[0]) as AssessmentOutput
-      } catch (parseError) {
-        console.error('Failed to parse assessment JSON:', textContent.text)
-        throw new Error('Failed to parse assessment response as JSON')
-      }
 
       // Update metadata with results
       metadata.generation_time_ms = Date.now() - startTime
@@ -361,7 +335,7 @@ ${data.whatTheyWant}`
       }))
 
       // Map scoring breakdown
-      const mapBreakdown = (breakdown: DimensionScoringBreakdown) => ({
+      const mapBreakdown = (breakdown: { baseScore: number; signalsApplied: Array<{ signal: string; impact: number; quote?: string }>; finalScore: number }) => ({
         base_score: breakdown.baseScore,
         signals_applied: breakdown.signalsApplied.map(s => ({
           signal: s.signal,
@@ -382,7 +356,7 @@ ${data.whatTheyWant}`
 
       return {
         success: true,
-        assessment,
+        assessment: assessment as AssessmentOutput,
         metadata,
       }
     } catch (error) {
